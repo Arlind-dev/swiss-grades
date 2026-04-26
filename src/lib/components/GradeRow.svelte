@@ -5,11 +5,12 @@
   import { numericInput, clampInput } from '$lib/actions';
   import { m } from '$lib/i18n';
 
-  let { entry, onchange, onremove, depth = 0 }: {
+  let { entry, onchange, onremove, depth = 0, removable = true }: {
     entry: GradeEntry;
     onchange: (updated: GradeEntry) => void;
     onremove: () => void;
     depth?: number;
+    removable?: boolean;
   } = $props();
 
   function emit(changes: Partial<GradeEntry>) {
@@ -34,8 +35,17 @@
     emit({ subgrades, grade });
   }
 
+  let small = $state(false);
+  $effect(() => {
+    const mq = window.matchMedia('(max-width: 600px)');
+    small = mq.matches;
+    const handler = (e: MediaQueryListEvent) => { small = e.matches; };
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  });
+
   let indent = $derived(depth * 16);
-  let treeLineLeft = $derived(indent - 10);
+  let treeLineLeft = $derived(indent + 6);
 
   let gradeNum = $derived(parseFloat(entry.grade));
   let hasSubgrades = $derived(entry.subgrades.length > 0);
@@ -67,12 +77,11 @@
       class="input-grade"
       class:readonly={hasSubgrades}
       inputmode="decimal"
-      placeholder={$m.gradeRow.placeholderGrade}
+      placeholder={small ? $m.gradeRow.placeholderGradeShort : $m.gradeRow.placeholderGrade}
       value={entry.grade}
       readonly={hasSubgrades}
       use:numericInput
-      use:clampInput={{ min: 1, max: 6, decimals: 2 }}
-      oninput={(e) => !hasSubgrades && emit({ grade: e.currentTarget.value })}
+      use:clampInput={{ min: 1, max: 6, decimals: 2, oncommit: (v) => !hasSubgrades && emit({ grade: v }) }}
     />
 
     <!-- Weight input -->
@@ -81,11 +90,10 @@
         type="text"
         class="input-weight"
         inputmode="decimal"
-        placeholder={$m.gradeRow.placeholderWeight}
+        placeholder={small ? $m.gradeRow.placeholderWeightShort : $m.gradeRow.placeholderWeight}
         value={entry.weight}
         use:numericInput
-        use:clampInput={{ min: 0, max: 100 }}
-        oninput={(e) => emit({ weight: e.currentTarget.value })}
+        use:clampInput={{ min: 0, max: 100, oncommit: (v) => emit({ weight: v }) }}
       />
       {#if entry.weight}
         <span class="weight-suffix">%</span>
@@ -93,7 +101,7 @@
     </div>
 
     <button type="button" onclick={addSubgrade}>{$m.gradeRow.addSubgrade}</button>
-    <button type="button" class="btn-remove" onclick={onremove}>✕</button>
+    <button type="button" class="btn-remove" onclick={onremove} disabled={!removable}>✕</button>
   </div>
 
   <!-- Subgrades tree (recursive) — expands below, not to the right -->
@@ -159,15 +167,15 @@
     border-color: var(--ctp-lavender);
   }
 
-  .input-name   { flex: 1 1 120px; min-width: 80px; max-width: 200px; }
-  .input-grade  { width: 130px; flex-shrink: 0; }
+  .input-name   { flex: 1 1 210px; min-width: 80px; max-width: 290px; }
+  .input-grade  { width: 175px; flex-shrink: 0; }
 
   .input-weight-wrapper {
     display: flex;
     align-items: center;
     border: 2px solid var(--ctp-surface2);
     border-radius: 3px;
-    width: 130px;
+    width: 155px;
     flex-shrink: 0;
     transition: border-color 0.15s;
     background: var(--ctp-base);
@@ -177,9 +185,9 @@
     .row-outer {
       gap: 3px;
     }
-    .input-name  { max-width: none; }
-    .input-grade { width: 90px; }
-    .input-weight-wrapper { width: 90px; }
+    .input-name  { display: none; }
+    .input-grade { width: 80px; }
+    .input-weight-wrapper { width: 110px; }
   }
 
   .input-weight-wrapper:focus-within {
@@ -245,6 +253,11 @@
     padding: 4px 7px;
     border-radius: 3px;
     line-height: 1;
+  }
+
+  .btn-remove:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
   }
 
   .btn-remove:hover {

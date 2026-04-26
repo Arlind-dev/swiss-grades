@@ -60,6 +60,24 @@
     averageGrade = null;
   }
 
+  let confirmClear = $state(false);
+  let confirmTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function handleClearAll() {
+    if (window.matchMedia('(pointer: coarse)').matches) {
+      if (confirmClear) {
+        confirmClear = false;
+        if (confirmTimer) clearTimeout(confirmTimer);
+        clearAll();
+      } else {
+        confirmClear = true;
+        confirmTimer = setTimeout(() => { confirmClear = false; }, 3000);
+      }
+    } else {
+      clearAll();
+    }
+  }
+
   // ── Drag-to-reorder ──────────────────────────────────────────────────────
 
   let draggableIndex = $state<number | null>(null);
@@ -152,6 +170,7 @@
       <div class="row-container">
         <GradeRow
           {entry}
+          removable={$grades.length > 1}
           onchange={(updated) => updateGrade(entry.id, updated)}
           onremove={() => removeGrade(entry.id)}
         />
@@ -161,12 +180,16 @@
 </div>
 
 <div class="actions">
-  <button type="button" onclick={addGrade}>{$m.average.addGrade}</button>
+  <button type="button" class="btn-add" onclick={addGrade}>{$m.average.addGrade}</button>
+</div>
+<div class="actions">
   <button type="button" onclick={calculateAverage}>{$m.average.calculateButton}</button>
-  <button type="button" onclick={clearAll}>{$m.average.clearAll}</button>
+  <button type="button" class="btn-clear" class:confirming={confirmClear} onclick={handleClearAll}>
+    {confirmClear ? $m.average.clearConfirm : $m.average.clearAll}
+  </button>
 </div>
 <p class="shortcuts-hint">
-  <kbd>Ctrl</kbd>+<kbd>Enter</kbd> {$m.average.shortcutAdd} &nbsp;·&nbsp;
+  <kbd>Ctrl</kbd>+<kbd>Enter</kbd> {$m.average.shortcutAdd} &nbsp;|&nbsp;
   <kbd>Ctrl</kbd>+<kbd>Del</kbd> {$m.average.shortcutDelete}
 </p>
 
@@ -217,11 +240,49 @@
     cursor: grabbing;
   }
 
+  @media (pointer: coarse) {
+    .drag-handle { display: none; }
+  }
+
   .actions {
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
     margin-bottom: 12px;
+    align-items: flex-start;
+  }
+
+  .btn-add {
+    background: none;
+    border: 1px dashed var(--ctp-overlay1);
+    color: var(--ctp-subtext0);
+    padding: 4px 10px;
+    border-radius: 3px;
+  }
+
+  .btn-add:hover {
+    border-color: var(--ctp-lavender);
+    color: var(--ctp-lavender);
+    background: none;
+  }
+
+  @media (pointer: coarse) {
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    .actions button:first-child {
+      grid-column: 1 / -1;
+    }
+    .btn-clear {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .btn-clear.confirming {
+    background: var(--ctp-red);
+    border-color: var(--ctp-red);
+    color: var(--ctp-base);
   }
 
   .result {
@@ -234,6 +295,10 @@
     font-size: 0.8rem;
     color: var(--ctp-overlay1);
     margin: 4px 0 12px;
+  }
+
+  @media (pointer: coarse) {
+    .shortcuts-hint { display: none; }
   }
 
   kbd {

@@ -1,6 +1,7 @@
 <script lang="ts">
   import '../app.css';
   import NavBar from '$lib/components/NavBar.svelte';
+  import Footer from '$lib/components/Footer.svelte';
   import { theme } from '$lib/stores/theme';
 
   let { children } = $props();
@@ -10,13 +11,20 @@
   });
 </script>
 
-<NavBar />
-
-<main>
-  {@render children()}
-</main>
+<div class="layout">
+  <NavBar />
+  <main>
+    {@render children()}
+  </main>
+  <Footer />
+</div>
 
 <style>
+  .layout {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
   main {
     width: fit-content;
   }

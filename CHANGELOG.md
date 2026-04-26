@@ -4,8 +4,6 @@
 
 * add semantic-release with verified bot commits ([#4](https://github.com/Arlind-dev/swiss-grades/issues/4)) ([4cd4e75](https://github.com/Arlind-dev/swiss-grades/commit/4cd4e757ba53ffa8c327d4639b368ab6663b054e))
 
-# Changelog
-
 ## [1.1.1](https://github.com/Arlind-dev/swiss-grades/compare/v1.1.0...v1.1.1) (2026-04-26)
 
 ### Bug Fixes

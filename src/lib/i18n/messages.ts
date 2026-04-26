@@ -7,7 +7,9 @@ export interface Messages {
   gradeRow: {
     placeholderName: string;
     placeholderGrade: string;
+    placeholderGradeShort: string;
     placeholderWeight: string;
+    placeholderWeightShort: string;
     addSubgrade: string;
   };
   rounding: {
@@ -17,7 +19,9 @@ export interface Messages {
   };
   calculator: {
     title: string;
-    formula: string;
+    formulaLabel: string;
+    formulaNumerator: string;
+    formulaDenominator: string;
     pointsLabel: string;
     maxPointsLabel: string;
     calculateButton: string;
@@ -30,6 +34,7 @@ export interface Messages {
     addGrade: string;
     calculateButton: string;
     clearAll: string;
+    clearConfirm: string;
     shortcutAdd: string;
     shortcutDelete: string;
     dragHandleTitle: string;
@@ -50,6 +55,8 @@ export interface Messages {
     shortcutAdd: string;
     shortcutDelete: string;
     invalidTarget: string;
+    noGradesBefore: string;
+    noGradesAfter: string;
     assumption: string;
     tableExam: string;
     tableRequired: string;
