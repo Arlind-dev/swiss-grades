@@ -71,8 +71,7 @@
       value={entry.grade}
       readonly={hasSubgrades}
       use:numericInput
-      use:clampInput={{ min: 1, max: 6, decimals: 2 }}
-      oninput={(e) => !hasSubgrades && emit({ grade: e.currentTarget.value })}
+      use:clampInput={{ min: 1, max: 6, decimals: 2, oncommit: (v) => !hasSubgrades && emit({ grade: v }) }}
     />
 
     <!-- Weight input -->
@@ -84,8 +83,7 @@
         placeholder={$m.gradeRow.placeholderWeight}
         value={entry.weight}
         use:numericInput
-        use:clampInput={{ min: 0, max: 100 }}
-        oninput={(e) => emit({ weight: e.currentTarget.value })}
+        use:clampInput={{ min: 0, max: 100, oncommit: (v) => emit({ weight: v }) }}
       />
       {#if entry.weight}
         <span class="weight-suffix">%</span>

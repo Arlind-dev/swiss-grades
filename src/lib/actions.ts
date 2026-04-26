@@ -27,23 +27,30 @@ interface ClampParams {
   max: number;
   /** Number of decimal places to format on blur. Omit for no formatting. */
   decimals?: number;
+  /** Called with the clamped value after blur. Use instead of oninput for deferred emit. */
+  oncommit?: (value: string) => void;
 }
 
 /**
  * Svelte action: clamps an input value to [min, max] on blur.
- * Dispatches a synthetic 'input' event after clamping so stores stay in sync.
+ * Calls oncommit(value) if provided, otherwise dispatches a synthetic 'input' event.
  */
 export function clampInput(node: HTMLInputElement, params: ClampParams) {
   function handleBlur() {
     const val = parseFloat(node.value);
+    let result: string;
     if (isNaN(val)) {
-      node.value = '';
-      node.dispatchEvent(new Event('input'));
-      return;
+      result = '';
+    } else {
+      const clamped = Math.min(params.max, Math.max(params.min, val));
+      result = params.decimals != null ? clamped.toFixed(params.decimals) : String(clamped);
     }
-    const clamped = Math.min(params.max, Math.max(params.min, val));
-    node.value = params.decimals != null ? clamped.toFixed(params.decimals) : String(clamped);
-    node.dispatchEvent(new Event('input'));
+    node.value = result;
+    if (params.oncommit) {
+      params.oncommit(result);
+    } else {
+      node.dispatchEvent(new Event('input', { bubbles: true }));
+    }
   }
 
   node.addEventListener('blur', handleBlur);
