@@ -9,7 +9,7 @@
   <span>© {year} Arlind Sulejmani</span>
   <span class="sep">|</span>
   <a
-    href="https://github.com/Arlind-dev/swiss-grades/commits/main"
+    href="https://github.com/Arlind-dev/swiss-grades"
     target="_blank"
     rel="noopener noreferrer"
     class="meta"
