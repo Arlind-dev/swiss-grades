@@ -35,7 +35,7 @@
   }
 
   let indent = $derived(depth * 16);
-  let treeLineLeft = $derived(indent - 10);
+  let treeLineLeft = $derived(indent + 6);
 
   let gradeNum = $derived(parseFloat(entry.grade));
   let hasSubgrades = $derived(entry.subgrades.length > 0);
