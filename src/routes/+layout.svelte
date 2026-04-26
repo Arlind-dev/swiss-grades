@@ -11,15 +11,20 @@
   });
 </script>
 
-<NavBar />
-
-<main>
-  {@render children()}
-</main>
-
-<Footer />
+<div class="layout">
+  <NavBar />
+  <main>
+    {@render children()}
+  </main>
+  <Footer />
+</div>
 
 <style>
+  .layout {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
   main {
     width: fit-content;
   }

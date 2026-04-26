@@ -19,8 +19,8 @@ export function gradeColor(grade: number): string {
   return 'var(--ctp-red)';
 }
 
-/** Weighted average of entries that have a parseable grade. Returns null if none. */
-export function computeWeightedAverage(entries: GradeEntry[]): number | null {
+/** Returns the raw weighted sums for entries that have a parseable grade. */
+export function computeWeightedSums(entries: GradeEntry[]): { weightSum: number; weightedSum: number } {
   let weightSum = 0;
   let weightedSum = 0;
   for (const entry of entries) {
@@ -31,6 +31,12 @@ export function computeWeightedAverage(entries: GradeEntry[]): number | null {
     weightedSum += gradeVal * weight;
     weightSum += weight;
   }
+  return { weightSum, weightedSum };
+}
+
+/** Weighted average of entries that have a parseable grade. Returns null if none. */
+export function computeWeightedAverage(entries: GradeEntry[]): number | null {
+  const { weightSum, weightedSum } = computeWeightedSums(entries);
   return weightSum > 0 ? weightedSum / weightSum : null;
 }
 

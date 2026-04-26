@@ -1,6 +1,6 @@
 <script lang="ts">
   import { grades } from '$lib/stores/grades';
-  import { gradeColor } from '$lib/utils/grading';
+  import { gradeColor, computeWeightedSums } from '$lib/utils/grading';
   import { numericInput, clampInput } from '$lib/actions';
   import { m } from '$lib/i18n';
   import { get } from 'svelte/store';
@@ -24,6 +24,7 @@
 
 let results = $state<ExamResult[]>([]);
   let errorText = $state('');
+  let noGradesError = $state(false);
 
   function addExam() {
     futureExams = [...futureExams, { id: crypto.randomUUID(), name: '', weight: '' }];
@@ -35,6 +36,7 @@ let results = $state<ExamResult[]>([]);
 
   function calculate() {
     errorText = '';
+    noGradesError = false;
     results = [];
 
     const target = parseFloat(targetAverage);
@@ -43,17 +45,21 @@ let results = $state<ExamResult[]>([]);
       return;
     }
 
-    // Current weighted sum from the grades store
-    let weightSum = 0;
-    let weightedSum = 0;
-    for (const entry of $grades) {
-      const gradeVal = parseFloat(entry.grade);
-      if (isNaN(gradeVal)) continue;
-      const weightVal = parseFloat(entry.weight);
-      const weight = isNaN(weightVal) || weightVal <= 0 ? 100 : weightVal;
-      weightedSum += gradeVal * weight;
-      weightSum += weight;
+    // Require at least one grade in the store
+    const hasGrades = $grades.some((e) => e.grade !== '' && !isNaN(parseFloat(e.grade)));
+    if (!hasGrades) {
+      noGradesError = true;
+      return;
     }
+
+    // Fill empty weights with '100' so the UI reflects what's used in the calculation
+    futureExams = futureExams.map((e) => ({
+      ...e,
+      weight: e.weight === '' || parseFloat(e.weight) <= 0 ? '100' : e.weight,
+    }));
+
+    // Current weighted sum from the grades store (shared logic with average page)
+    const { weightSum, weightedSum } = computeWeightedSums($grades);
 
     // Total weight of all future exams
     const futureWeightSum = futureExams.reduce((sum, e) => {
@@ -159,13 +165,17 @@ let results = $state<ExamResult[]>([]);
 
   <button type="button" class="btn-calculate" onclick={calculate}>{$m.needed.calculateButton}</button>
   <p class="shortcuts-hint">
-    <kbd>Ctrl</kbd>+<kbd>Enter</kbd> {$m.needed.shortcutAdd} &nbsp;·&nbsp;
+    <kbd>Ctrl</kbd>+<kbd>Enter</kbd> {$m.needed.shortcutAdd} &nbsp;|&nbsp;
     <kbd>Ctrl</kbd>+<kbd>Del</kbd> {$m.needed.shortcutDelete}
   </p>
 </div>
 
 {#if errorText}
   <p class="error">{errorText}</p>
+{/if}
+
+{#if noGradesError}
+  <p class="error">{$m.needed.noGradesBefore}<a href="/average">{$m.nav.average}</a>{$m.needed.noGradesAfter}</p>
 {/if}
 
 {#if results.length > 0}
@@ -258,6 +268,10 @@ let results = $state<ExamResult[]>([]);
     width: 200px;
   }
 
+  @media (pointer: coarse) {
+    .input-name { display: none; }
+  }
+
   .input-weight-wrapper {
     display: flex;
     align-items: center;
@@ -329,10 +343,23 @@ let results = $state<ExamResult[]>([]);
     align-self: flex-start;
   }
 
+  @media (pointer: coarse) {
+    .btn-add,
+    .btn-calculate {
+      width: 100%;
+      align-self: stretch;
+      text-align: center;
+    }
+  }
+
   .shortcuts-hint {
     font-size: 0.8rem;
     color: var(--ctp-overlay1);
     margin: 4px 0 0;
+  }
+
+  @media (pointer: coarse) {
+    .shortcuts-hint { display: none; }
   }
 
   kbd {

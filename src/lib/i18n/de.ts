@@ -9,7 +9,9 @@ export const de: Messages = {
   gradeRow: {
     placeholderName: 'Fach / Prüfung',
     placeholderGrade: 'Note (1.00 – 6.00)',
+    placeholderGradeShort: 'Note',
     placeholderWeight: 'Gewichtung (%)',
+    placeholderWeightShort: 'Gewichtung',
     addSubgrade: 'Teilnote',
   },
   rounding: {
@@ -30,8 +32,9 @@ export const de: Messages = {
   average: {
     title: 'Notenschnitt',
     addGrade: 'Note hinzufügen',
-    calculateButton: 'Schnitt berechnen',
+    calculateButton: 'Berechnen',
     clearAll: 'Alle löschen',
+    clearConfirm: 'Sicher?',
     shortcutAdd: 'neue Note',
     shortcutDelete: 'fokussierte Note löschen',
     dragHandleTitle: 'Zeile verschieben',
@@ -52,6 +55,8 @@ export const de: Messages = {
     shortcutAdd: 'Prüfung hinzufügen',
     shortcutDelete: 'fokussierte Prüfung löschen',
     invalidTarget: 'Bitte gültigen Zielschnitt (1.0 – 6.0) eingeben.',
+    noGradesBefore: 'Bitte zuerst Noten im ',
+    noGradesAfter: ' eingeben.',
     assumption: 'Annahme: Du erzielst in allen zukünftigen Prüfungen dieselbe Note.',
     tableExam: 'Prüfung',
     tableRequired: 'Benötigte Note',

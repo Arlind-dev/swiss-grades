@@ -25,12 +25,26 @@
   footer {
     display: flex;
     align-items: baseline;
-    gap: 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
     margin-top: 2rem;
     padding-top: 0.75rem;
     border-top: 2px solid var(--ctp-surface1);
     color: var(--ctp-overlay1);
     font-size: 1rem;
+  }
+
+  @media (max-width: 600px) {
+    footer {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 0.25rem;
+    }
+
+    .sep {
+      display: none;
+    }
   }
 
   .meta {

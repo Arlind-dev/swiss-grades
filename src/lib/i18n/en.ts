@@ -9,7 +9,9 @@ export const en: Messages = {
   gradeRow: {
     placeholderName: 'Subject / Exam',
     placeholderGrade: 'Grade (1.00 – 6.00)',
+    placeholderGradeShort: 'Grade',
     placeholderWeight: 'Weight (%)',
+    placeholderWeightShort: 'Weight',
     addSubgrade: 'Sub-grade',
   },
   rounding: {
@@ -30,8 +32,9 @@ export const en: Messages = {
   average: {
     title: 'Grade Average',
     addGrade: 'Add grade',
-    calculateButton: 'Calculate average',
+    calculateButton: 'Calculate',
     clearAll: 'Clear all',
+    clearConfirm: 'Sure?',
     shortcutAdd: 'new grade',
     shortcutDelete: 'delete focused grade',
     dragHandleTitle: 'Move row',
@@ -52,6 +55,8 @@ export const en: Messages = {
     shortcutAdd: 'add exam',
     shortcutDelete: 'delete focused exam',
     invalidTarget: 'Please enter a valid target average (1.0 – 6.0).',
+    noGradesBefore: 'Please enter grades in ',
+    noGradesAfter: ' first.',
     assumption: 'Assumption: you achieve the same grade in all future exams.',
     tableExam: 'Exam',
     tableRequired: 'Required grade',

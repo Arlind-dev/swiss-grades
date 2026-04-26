@@ -5,11 +5,12 @@
   import { numericInput, clampInput } from '$lib/actions';
   import { m } from '$lib/i18n';
 
-  let { entry, onchange, onremove, depth = 0 }: {
+  let { entry, onchange, onremove, depth = 0, removable = true }: {
     entry: GradeEntry;
     onchange: (updated: GradeEntry) => void;
     onremove: () => void;
     depth?: number;
+    removable?: boolean;
   } = $props();
 
   function emit(changes: Partial<GradeEntry>) {
@@ -33,6 +34,15 @@
     const grade = subgrades.length > 0 ? recomputeParentGrade(subgrades) : entry.grade;
     emit({ subgrades, grade });
   }
+
+  let small = $state(false);
+  $effect(() => {
+    const mq = window.matchMedia('(max-width: 600px)');
+    small = mq.matches;
+    const handler = (e: MediaQueryListEvent) => { small = e.matches; };
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  });
 
   let indent = $derived(depth * 16);
   let treeLineLeft = $derived(indent + 6);
@@ -67,7 +77,7 @@
       class="input-grade"
       class:readonly={hasSubgrades}
       inputmode="decimal"
-      placeholder={$m.gradeRow.placeholderGrade}
+      placeholder={small ? $m.gradeRow.placeholderGradeShort : $m.gradeRow.placeholderGrade}
       value={entry.grade}
       readonly={hasSubgrades}
       use:numericInput
@@ -80,7 +90,7 @@
         type="text"
         class="input-weight"
         inputmode="decimal"
-        placeholder={$m.gradeRow.placeholderWeight}
+        placeholder={small ? $m.gradeRow.placeholderWeightShort : $m.gradeRow.placeholderWeight}
         value={entry.weight}
         use:numericInput
         use:clampInput={{ min: 0, max: 100, oncommit: (v) => emit({ weight: v }) }}
@@ -91,7 +101,7 @@
     </div>
 
     <button type="button" onclick={addSubgrade}>{$m.gradeRow.addSubgrade}</button>
-    <button type="button" class="btn-remove" onclick={onremove}>✕</button>
+    <button type="button" class="btn-remove" onclick={onremove} disabled={!removable}>✕</button>
   </div>
 
   <!-- Subgrades tree (recursive) — expands below, not to the right -->
@@ -175,8 +185,8 @@
     .row-outer {
       gap: 3px;
     }
-    .input-name  { max-width: none; }
-    .input-grade { width: 130px; }
+    .input-name  { display: none; }
+    .input-grade { width: 80px; }
     .input-weight-wrapper { width: 110px; }
   }
 
@@ -243,6 +253,11 @@
     padding: 4px 7px;
     border-radius: 3px;
     line-height: 1;
+  }
+
+  .btn-remove:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
   }
 
   .btn-remove:hover {
