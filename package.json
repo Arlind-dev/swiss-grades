@@ -1,15 +1,6 @@
 {
   "name": "swiss-grades",
-  "private": false,
   "version": "1.2.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite dev",
-    "build": "vite build",
-    "preview": "vite preview",
-    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
-  },
   "devDependencies": {
     "@sveltejs/adapter-cloudflare": "^7.2.8",
     "@sveltejs/kit": "^2.58.0",
@@ -19,5 +10,17 @@
     "svelte-check": "^4.4.6",
     "typescript": "^6.0.3",
     "vite": "^8.0.10"
+  },
+  "private": false,
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+  },
+  "type": "module",
+  "dependencies": {
+    "flowbite-svelte-icons": "^3.1.0"
   }
 }

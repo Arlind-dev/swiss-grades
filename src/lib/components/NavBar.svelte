@@ -2,7 +2,8 @@
   import { page } from '$app/stores';
   import { m, locale, type Locale } from '$lib/i18n';
   import { theme, type Theme } from '$lib/stores/theme';
-
+  import MoonOutline from 'flowbite-svelte-icons/MoonOutline.svelte';
+  import SunOutline from 'flowbite-svelte-icons/SunOutline.svelte';
   const locales: { value: Locale; label: string }[] = [
     { value: 'de', label: 'DE' },
     { value: 'en', label: 'EN' },
@@ -25,7 +26,7 @@
       class="theme-toggle"
       title={$theme === 'latte' ? 'Switch to dark mode' : 'Switch to light mode'}
       onclick={toggleTheme}
-    >{$theme === 'latte' ? '☽' : '☀'}</button>
+    >{#if $theme === 'latte'}<MoonOutline class="icon" />{:else}<SunOutline class="icon" />{/if}</button>
     <div class="locale-switcher">
       {#each locales as loc}
         <button
@@ -97,6 +98,15 @@
   .theme-toggle {
     background: none;
     color: var(--ctp-subtext0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .theme-toggle :global(.icon) {
+    width: 18px;
+    height: 18px;
+    pointer-events: none;
   }
 
   .theme-toggle:hover {
@@ -126,5 +136,25 @@
     background: var(--ctp-lavender);
     color: var(--ctp-base);
     border-color: var(--ctp-lavender);
+  }
+
+  @media (max-width: 600px) {
+    nav {
+      gap: 6px;
+    }
+    .links {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .links::-webkit-scrollbar {
+      display: none;
+    }
+    a {
+      padding: 6px 10px;
+      font-size: 0.9rem;
+      white-space: nowrap;
+    }
   }
 </style>
