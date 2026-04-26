@@ -1,0 +1,127 @@
+/* ── Catppuccin Latte (light, default) ─────────────────────────────────── */
+:root,
+[data-theme="latte"] {
+  --ctp-base:     #EFF1F5;
+  --ctp-mantle:   #E6E9EF;
+  --ctp-crust:    #DCE0E8;
+  --ctp-surface0: #CCD0DA;
+  --ctp-surface1: #BCC0CC;
+  --ctp-surface2: #ACB0BE;
+  --ctp-overlay0: #9CA0B0;
+  --ctp-overlay1: #8C8FA1;
+  --ctp-overlay2: #7C7F93;
+  --ctp-subtext0: #6C6F85;
+  --ctp-subtext1: #5C5F77;
+  --ctp-text:     #4C4F69;
+  --ctp-lavender: #7287FD;
+  --ctp-blue:     #1E66F5;
+  --ctp-green:    #40A02B;
+  --ctp-red:      #D20F39;
+  --ctp-yellow:   #DF8E1D;
+  --ctp-mauve:    #8839EF;
+  --ctp-peach:    #FE640B;
+}
+
+/* ── Catppuccin Mocha (dark) ────────────────────────────────────────────── */
+[data-theme="mocha"] {
+  --ctp-base:     #1E1E2E;
+  --ctp-mantle:   #181825;
+  --ctp-crust:    #11111B;
+  --ctp-surface0: #313244;
+  --ctp-surface1: #45475A;
+  --ctp-surface2: #585B70;
+  --ctp-overlay0: #6C7086;
+  --ctp-overlay1: #7F849C;
+  --ctp-overlay2: #9399B2;
+  --ctp-subtext0: #A6ADC8;
+  --ctp-subtext1: #BAC2DE;
+  --ctp-text:     #CDD6F4;
+  --ctp-lavender: #B4BEFE;
+  --ctp-blue:     #89B4FA;
+  --ctp-green:    #A6E3A1;
+  --ctp-red:      #F38BA8;
+  --ctp-yellow:   #F9E2AF;
+  --ctp-mauve:    #CBA6F7;
+  --ctp-peach:    #FAB387;
+}
+
+/* ── Reset ──────────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ── Base ───────────────────────────────────────────────────────────────── */
+body {
+  margin: 0;
+  padding: 20px;
+  font-family: system-ui, -apple-system, sans-serif;
+  background: var(--ctp-base);
+  color: var(--ctp-text);
+  transition: background 0.2s, color 0.2s;
+}
+
+@media (max-width: 600px) {
+  body {
+    padding: 12px;
+  }
+}
+
+h1 {
+  margin-top: 0;
+  color: var(--ctp-text);
+}
+
+p {
+  color: var(--ctp-subtext1);
+}
+
+a {
+  color: var(--ctp-blue);
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--ctp-subtext1);
+}
+
+/* ── Buttons ────────────────────────────────────────────────────────────── */
+button {
+  cursor: pointer;
+  padding: 6px 12px;
+  font-size: 0.95rem;
+  background: var(--ctp-surface0);
+  color: var(--ctp-text);
+  border: 1px solid var(--ctp-surface2);
+  border-radius: 4px;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+button:hover {
+  background: var(--ctp-surface1);
+  border-color: var(--ctp-overlay0);
+}
+
+/* ── Inputs ─────────────────────────────────────────────────────────────── */
+input[type='text'],
+select {
+  background: var(--ctp-base);
+  color: var(--ctp-text);
+  border: 2px solid var(--ctp-surface2);
+  border-radius: 4px;
+  font-size: 1rem;
+  padding: 5px 8px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+input[type='text']:focus,
+select:focus {
+  border-color: var(--ctp-lavender);
+}
+
+input::placeholder {
+  color: var(--ctp-overlay1);
+}
