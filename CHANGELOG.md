@@ -1,3 +1,9 @@
+## [1.3.0](https://github.com/Arlind-dev/swiss-grades/compare/v1.2.0...v1.3.0) (2026-04-26)
+
+### Features
+
+* ui improvements and project documentation, add footer ([#5](https://github.com/Arlind-dev/swiss-grades/issues/5)) ([3c2ffa9](https://github.com/Arlind-dev/swiss-grades/commit/3c2ffa9226c0d16c5c0e150cc938ab91c7036996))
+
 ## [1.2.0](https://github.com/Arlind-dev/swiss-grades/compare/v1.1.1...v1.2.0) (2026-04-26)
 
 ### Features
