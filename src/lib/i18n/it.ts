@@ -21,7 +21,9 @@ export const it: Messages = {
   },
   calculator: {
     title: 'Calcolatore voti',
-    formula: 'Formula: (Punti × 5 / Punti max) + 1',
+    formulaLabel: 'Voto =',
+    formulaNumerator: 'Punti ottenuti × 5',
+    formulaDenominator: 'Punti massimi',
     pointsLabel: 'Punti ottenuti',
     maxPointsLabel: 'Punti massimi',
     calculateButton: 'Calcola voto',

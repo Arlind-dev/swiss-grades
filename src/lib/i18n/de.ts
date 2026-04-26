@@ -21,7 +21,9 @@ export const de: Messages = {
   },
   calculator: {
     title: 'Notenrechner',
-    formula: 'Formel: (Punkte × 5 / Maximalpunkte) + 1',
+    formulaLabel: 'Note =',
+    formulaNumerator: 'Erreichte Punkte × 5',
+    formulaDenominator: 'Maximalpunkte',
     pointsLabel: 'Erreichte Punkte',
     maxPointsLabel: 'Maximalpunkte',
     calculateButton: 'Note berechnen',

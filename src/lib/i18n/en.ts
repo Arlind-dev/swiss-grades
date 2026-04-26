@@ -21,7 +21,9 @@ export const en: Messages = {
   },
   calculator: {
     title: 'Grade Calculator',
-    formula: 'Formula: (Points × 5 / Max points) + 1',
+    formulaLabel: 'Grade =',
+    formulaNumerator: 'Points achieved × 5',
+    formulaDenominator: 'Max points',
     pointsLabel: 'Points achieved',
     maxPointsLabel: 'Maximum points',
     calculateButton: 'Calculate grade',

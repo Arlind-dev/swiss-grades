@@ -19,7 +19,9 @@ export interface Messages {
   };
   calculator: {
     title: string;
-    formula: string;
+    formulaLabel: string;
+    formulaNumerator: string;
+    formulaDenominator: string;
     pointsLabel: string;
     maxPointsLabel: string;
     calculateButton: string;

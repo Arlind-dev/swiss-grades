@@ -45,7 +45,16 @@
 <svelte:head><title>{$m.calculator.title}</title></svelte:head>
 
 <h1>{$m.calculator.title}</h1>
-<p>{$m.calculator.formula}</p>
+
+<div class="formula">
+  <span class="frac-label">{$m.calculator.formulaLabel}</span>
+  <span class="frac">
+    <span class="num">{$m.calculator.formulaNumerator}</span>
+    <span class="line"></span>
+    <span class="den">{$m.calculator.formulaDenominator}</span>
+  </span>
+  <span class="frac-rest">+ 1</span>
+</div>
 
 <div class="form">
   <label>
@@ -119,5 +128,44 @@
     margin-top: 16px;
     font-size: 1.2rem;
     font-weight: 600;
+  }
+
+  .formula {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    font-size: 1rem;
+    color: var(--ctp-subtext1);
+  }
+
+  .frac-label {
+    white-space: nowrap;
+  }
+
+  .frac {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .num {
+    padding: 0 6px 5px;
+    white-space: nowrap;
+  }
+
+  .line {
+    border-top: 1.5px solid var(--ctp-subtext1);
+    line-height: 0;
+  }
+
+  .den {
+    padding: 2px 6px 0;
+    white-space: nowrap;
+  }
+
+  .frac-rest {
+    white-space: nowrap;
   }
 </style>
