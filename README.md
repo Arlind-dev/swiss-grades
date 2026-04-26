@@ -2,6 +2,8 @@
 
 A Swiss grade calculator built with SvelteKit.
 
+**Live:** [grades.sulej.ch](https://grades.sulej.ch)
+
 ## Features
 
 - **Grade Calculator:** convert points to a Swiss grade using the formula `(Points × 5 / Max points) + 1`
