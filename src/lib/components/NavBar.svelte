@@ -11,6 +11,7 @@
     { value: 'de', label: 'DE' },
     { value: 'en', label: 'EN' },
     { value: 'fr', label: 'FR' },
+    { value: 'it', label: 'IT' },
   ];
 
   let menuOpen = $state(false);
