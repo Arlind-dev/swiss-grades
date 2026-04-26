@@ -10,6 +10,7 @@
   const locales: { value: Locale; label: string }[] = [
     { value: 'de', label: 'DE' },
     { value: 'en', label: 'EN' },
+    { value: 'fr', label: 'FR' },
   ];
 
   let menuOpen = $state(false);
