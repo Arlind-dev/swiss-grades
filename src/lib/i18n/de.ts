@@ -8,7 +8,7 @@ export const de: Messages = {
   },
   gradeRow: {
     placeholderName: 'Fach / Prüfung',
-    placeholderGrade: 'Note (1.0 – 6.0)',
+    placeholderGrade: 'Note (1.00 – 6.00)',
     placeholderWeight: 'Gewichtung (%)',
     addSubgrade: 'Teilnote',
   },

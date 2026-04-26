@@ -8,7 +8,7 @@ export const en: Messages = {
   },
   gradeRow: {
     placeholderName: 'Subject / Exam',
-    placeholderGrade: 'Grade (1.0 – 6.0)',
+    placeholderGrade: 'Grade (1.00 – 6.00)',
     placeholderWeight: 'Weight (%)',
     addSubgrade: 'Sub-grade',
   },

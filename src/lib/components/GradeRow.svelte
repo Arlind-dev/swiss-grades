@@ -157,15 +157,15 @@
     border-color: var(--ctp-lavender);
   }
 
-  .input-name   { flex: 1 1 120px; min-width: 80px; max-width: 200px; }
-  .input-grade  { width: 130px; flex-shrink: 0; }
+  .input-name   { flex: 1 1 210px; min-width: 80px; max-width: 290px; }
+  .input-grade  { width: 175px; flex-shrink: 0; }
 
   .input-weight-wrapper {
     display: flex;
     align-items: center;
     border: 2px solid var(--ctp-surface2);
     border-radius: 3px;
-    width: 130px;
+    width: 155px;
     flex-shrink: 0;
     transition: border-color 0.15s;
     background: var(--ctp-base);
@@ -176,8 +176,8 @@
       gap: 3px;
     }
     .input-name  { max-width: none; }
-    .input-grade { width: 90px; }
-    .input-weight-wrapper { width: 90px; }
+    .input-grade { width: 130px; }
+    .input-weight-wrapper { width: 110px; }
   }
 
   .input-weight-wrapper:focus-within {
