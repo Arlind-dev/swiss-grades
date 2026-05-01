@@ -57,3 +57,16 @@ jobs:
           GIT_COMMITTER_NAME: "arlind-bot[bot]"
           GIT_AUTHOR_EMAIL: "${{ vars.APP_ID }}+arlind-bot[bot]@users.noreply.github.com"
           GIT_COMMITTER_EMAIL: "${{ vars.APP_ID }}+arlind-bot[bot]@users.noreply.github.com"
+
+  cloudflare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    permissions:
+      contents: read
+
+    needs: [release]
+
+    steps:
+      - name: Trigger deploy hook
+        run: curl -X POST "${{ secrets.CF_DEPLOY_HOOK_URL }}"
