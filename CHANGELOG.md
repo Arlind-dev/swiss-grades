@@ -1,3 +1,9 @@
+## [1.3.1](https://github.com/Arlind-dev/swiss-grades/compare/v1.3.0...v1.3.1) (2026-05-01)
+
+### Bug Fixes
+
+* **navbar:** fix flat bottom corners on desktop nav links ([#11](https://github.com/Arlind-dev/swiss-grades/issues/11)) ([d9991d1](https://github.com/Arlind-dev/swiss-grades/commit/d9991d19b391af73521613e4abfd586285bb4ba1))
+
 ## [1.3.0](https://github.com/Arlind-dev/swiss-grades/compare/v1.2.0...v1.3.0) (2026-04-26)
 
 ### Features
