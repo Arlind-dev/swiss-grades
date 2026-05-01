@@ -100,7 +100,7 @@
     padding: 6px 14px;
     text-decoration: none;
     color: var(--ctp-subtext1);
-    border-radius: 4px 4px 0 0;
+    border-radius: 6px;
     font-weight: 500;
     transition: background 0.15s, color 0.15s;
     white-space: nowrap;
