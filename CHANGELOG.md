@@ -1,3 +1,9 @@
+## [1.8.0](https://github.com/Arlind-dev/swiss-grades/compare/v1.7.2...v1.8.0) (2026-05-02)
+
+### Features
+
+* add rounding selector with persistence and ommit calculate button ([#31](https://github.com/Arlind-dev/swiss-grades/issues/31)) ([03f2ed2](https://github.com/Arlind-dev/swiss-grades/commit/03f2ed2c50b6af212cd77f90fcb27b09dd3fb106))
+
 ## [1.7.2](https://github.com/Arlind-dev/swiss-grades/compare/v1.7.1...v1.7.2) (2026-05-02)
 
 ### Bug Fixes
