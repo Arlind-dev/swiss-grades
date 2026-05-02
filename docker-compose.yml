@@ -4,3 +4,8 @@ services:
     ports:
       - "8080:80"
     restart: unless-stopped
+    networks:
+      - swiss-grades
+
+networks:
+  swiss-grades:
