@@ -124,7 +124,9 @@ let results = $state<ExamResult[]>([]);
     {$m.needed.targetLabel}
     <input
       type="text"
+      class="input-target"
       inputmode="decimal"
+      placeholder={$m.gradeRow.placeholderGrade}
       bind:value={targetAverage}
       use:numericInput
       use:clampInput={{ min: 1, max: 6, decimals: 2 }}
@@ -235,6 +237,16 @@ let results = $state<ExamResult[]>([]);
     flex-direction: column;
     gap: 4px;
     font-weight: 500;
+  }
+
+  .input-target {
+    width: 175px;
+  }
+
+  @media (max-width: 600px) {
+    .input-target {
+      width: 80px;
+    }
   }
 
   input[type='text'] {
