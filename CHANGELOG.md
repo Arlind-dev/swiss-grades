@@ -1,3 +1,9 @@
+## [1.7.2](https://github.com/Arlind-dev/swiss-grades/compare/v1.7.1...v1.7.2) (2026-05-02)
+
+### Bug Fixes
+
+* **needed:** persist exam names and prevent autocomplete prefill ([#30](https://github.com/Arlind-dev/swiss-grades/issues/30)) ([2490923](https://github.com/Arlind-dev/swiss-grades/commit/249092329706e7818eb194bff36a070500b9e319))
+
 ## [1.7.1](https://github.com/Arlind-dev/swiss-grades/compare/v1.7.0...v1.7.1) (2026-05-02)
 
 ### Bug Fixes
