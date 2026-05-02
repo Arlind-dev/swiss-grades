@@ -46,6 +46,7 @@
       <button
         type="button"
         class="theme-toggle"
+        aria-label={$theme === 'latte' ? 'Switch to dark mode' : 'Switch to light mode'}
         title={$theme === 'latte' ? 'Switch to dark mode' : 'Switch to light mode'}
         onclick={toggleTheme}
       >{#if $theme === 'latte'}<MoonOutline class="icon" />{:else}<SunOutline class="icon" />{/if}</button>

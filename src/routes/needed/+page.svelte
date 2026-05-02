@@ -7,8 +7,9 @@
   import { browser } from '$app/environment';
   import { settings } from '$lib/stores/settings';
   import RoundingSelect from '$lib/components/RoundingSelect.svelte';
+  import { STORAGE_KEYS } from '$lib/storage-keys';
 
-  const STORAGE_KEY = 'swiss-grades-needed';
+  const STORAGE_KEY = STORAGE_KEYS.needed;
 
   let rounding = $state($settings.neededRounding);
   $effect(() => { settings.update((s) => ({ ...s, neededRounding: rounding })); });

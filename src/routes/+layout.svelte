@@ -5,14 +5,7 @@
   import { theme } from '$lib/stores/theme';
   import { locale } from '$lib/i18n';
   import { onMount } from 'svelte';
-
-  const KNOWN_KEYS = new Set([
-    'swiss-grades-theme',
-    'swiss-grades-locale',
-    'swiss-grades-grades',
-    'swiss-grades-settings',
-    'swiss-grades-needed',
-  ]);
+  import { KNOWN_STORAGE_KEYS } from '$lib/storage-keys';
 
   let { children } = $props();
   let mounted = $state(false);
@@ -21,7 +14,7 @@
     mounted = true;
     try {
       Object.keys(localStorage)
-        .filter((k) => !KNOWN_KEYS.has(k))
+        .filter((k) => !KNOWN_STORAGE_KEYS.has(k))
         .forEach((k) => localStorage.removeItem(k));
     } catch {}
   });
