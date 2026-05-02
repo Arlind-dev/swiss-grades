@@ -1,3 +1,9 @@
+## [1.7.0](https://github.com/Arlind-dev/swiss-grades/compare/v1.6.1...v1.7.0) (2026-05-02)
+
+### Features
+
+* **persistence:** add localStorage and clear all button to calculator and needed pages ([#28](https://github.com/Arlind-dev/swiss-grades/issues/28)) ([92380b9](https://github.com/Arlind-dev/swiss-grades/commit/92380b9798acf64f90070c74eb2085aedc7a7904))
+
 ## [1.6.1](https://github.com/Arlind-dev/swiss-grades/compare/v1.6.0...v1.6.1) (2026-05-02)
 
 ### Bug Fixes
