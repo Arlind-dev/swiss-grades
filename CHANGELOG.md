@@ -1,3 +1,9 @@
+## [1.5.3](https://github.com/Arlind-dev/swiss-grades/compare/v1.5.2...v1.5.3) (2026-05-02)
+
+### Bug Fixes
+
+* **ci:** use step output to produce lowercase image name for Docker registry ([#25](https://github.com/Arlind-dev/swiss-grades/issues/25)) ([ca457b3](https://github.com/Arlind-dev/swiss-grades/commit/ca457b378b12bbd761e3e071a013af4e17983769))
+
 ## [1.5.2](https://github.com/Arlind-dev/swiss-grades/compare/v1.5.1...v1.5.2) (2026-05-02)
 
 ### Bug Fixes
