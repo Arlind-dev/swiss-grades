@@ -18,6 +18,7 @@
   let averageText = $derived(
     averageGrade !== null ? $m.average.resultPrefix + applyRounding(averageGrade, rounding) : ''
   );
+  let validCount = $derived($grades.filter((e) => !isNaN(parseFloat(e.grade))).length);
 
   // ── Grade list mutations ─────────────────────────────────────────────────
 
@@ -128,6 +129,8 @@
 
 <div class="grade-list" id="grade-list" role="list">
   {#each $grades as entry, i (entry.id)}
+    {@const gradeNum = parseFloat(entry.grade)}
+    {@const delta = !isNaN(gradeNum) && averageGrade !== null && validCount >= 2 ? gradeNum - averageGrade : null}
       <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
       <div
         class="grade-item"
@@ -154,6 +157,17 @@
           onremove={() => removeGrade(entry.id)}
         />
       </div>
+      {#if delta !== null}
+        <span
+          class="delta"
+          class:positive={delta > 0.005}
+          class:negative={delta < -0.005}
+          class:neutral={Math.abs(delta) <= 0.005}
+          aria-label="Delta from average: {delta >= 0 ? '+' : ''}{delta.toFixed(2)}"
+        >{delta >= 0 ? '+' : ''}{delta.toFixed(2)}</span>
+      {:else}
+        <span class="delta-placeholder"></span>
+      {/if}
     </div>
   {/each}
 </div>
@@ -220,6 +234,7 @@
 
   @media (pointer: coarse) {
     .drag-handle { display: none; }
+    .delta, .delta-placeholder { display: none; }
   }
 
   .actions {
@@ -267,6 +282,36 @@
     font-size: 1.2rem;
     font-weight: 600;
     margin-top: 8px;
+  }
+
+  .delta, .delta-placeholder {
+    font-size: 0.72rem;
+    font-weight: 600;
+    width: 3.5rem;
+    flex-shrink: 0;
+    align-self: center;
+    text-align: center;
+  }
+
+  .delta {
+    padding: 2px 6px;
+    border-radius: 10px;
+    white-space: nowrap;
+  }
+
+  .delta.positive {
+    color: var(--ctp-green);
+    background: color-mix(in srgb, var(--ctp-green) 15%, transparent);
+  }
+
+  .delta.negative {
+    color: var(--ctp-red);
+    background: color-mix(in srgb, var(--ctp-red) 15%, transparent);
+  }
+
+  .delta.neutral {
+    color: var(--ctp-overlay1);
+    background: color-mix(in srgb, var(--ctp-overlay1) 15%, transparent);
   }
 
   .shortcuts-hint {
