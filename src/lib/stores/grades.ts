@@ -3,7 +3,7 @@ import { browser } from '$app/environment';
 import type { GradeEntry } from '$lib/types';
 import { newEntry } from '$lib/utils/grading';
 
-const STORAGE_KEY = 'notenrechner-grades';
+const STORAGE_KEY = 'swiss-grades-grades';
 
 function loadInitial(): GradeEntry[] {
   if (!browser) return Array.from({ length: 10 }, newEntry);
