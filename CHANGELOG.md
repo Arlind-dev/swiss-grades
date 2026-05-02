@@ -1,3 +1,9 @@
+## [1.6.0](https://github.com/Arlind-dev/swiss-grades/compare/v1.5.3...v1.6.0) (2026-05-02)
+
+### Features
+
+* **needed:** show best attainable grade on required grade page ([#26](https://github.com/Arlind-dev/swiss-grades/issues/26)) ([d744136](https://github.com/Arlind-dev/swiss-grades/commit/d7441368047aa07f86446432e8c3fc5aadad58e3))
+
 ## [1.5.3](https://github.com/Arlind-dev/swiss-grades/compare/v1.5.2...v1.5.3) (2026-05-02)
 
 ### Bug Fixes
