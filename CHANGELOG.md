@@ -1,3 +1,9 @@
+## [1.4.0](https://github.com/Arlind-dev/swiss-grades/compare/v1.3.2...v1.4.0) (2026-05-02)
+
+### Features
+
+* add favicon  ([#15](https://github.com/Arlind-dev/swiss-grades/issues/15)) ([367933b](https://github.com/Arlind-dev/swiss-grades/commit/367933bf2fab97675073a077be67350891e9cdaa))
+
 ## [1.3.2](https://github.com/Arlind-dev/swiss-grades/compare/v1.3.1...v1.3.2) (2026-05-02)
 
 ### Bug Fixes
