@@ -23,6 +23,7 @@
   }
 
 let results = $state<ExamResult[]>([]);
+  let bestAttainable = $state(0);
   let errorText = $state('');
   let noGradesError = $state(false);
 
@@ -73,11 +74,15 @@ let results = $state<ExamResult[]>([]);
       ? target
       : (target * totalWeight - weightedSum) / futureWeightSum;
 
+    bestAttainable = totalWeight > 0
+      ? (weightedSum + 6.0 * futureWeightSum) / totalWeight
+      : 6.0;
+
     results = futureExams.map((exam) => ({
       name: exam.name || get(m).needed.examFallback,
       needed,
       impossible: needed > 6.0,
-      alreadyAchieved: needed < 1.0
+      alreadyAchieved: needed < 1.0,
     }));
   }
 
@@ -207,6 +212,7 @@ let results = $state<ExamResult[]>([]);
         {/each}
       </tbody>
     </table>
+    <p class="results-note">{$m.needed.bestAttainablePrefix}{bestAttainable.toFixed(2)}</p>
   </div>
 {/if}
 
