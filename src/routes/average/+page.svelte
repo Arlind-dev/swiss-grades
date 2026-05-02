@@ -7,8 +7,11 @@
   import GradeRow from '$lib/components/GradeRow.svelte';
   import { m } from '$lib/i18n';
   import { focusRowInput } from '$lib/utils/focus';
+  import { browser } from '$app/environment';
 
   let rounding = $state($settings.averageRounding);
+  let isMac = $state(false);
+  $effect(() => { if (browser) isMac = /Macintosh|Mac OS X/.test(navigator.userAgent); });
   $effect(() => { settings.update((s) => ({ ...s, averageRounding: rounding })); });
 
   let averageGrade = $derived(computeWeightedAverage($grades));
@@ -96,8 +99,8 @@
   // ── Keyboard shortcuts ─────────────────────────────────────────
 
   function onWindowKeydown(e: KeyboardEvent) {
-    // Ctrl+Enter → add new row and focus it
-    if (e.ctrlKey && e.key === 'Enter') {
+    // Ctrl+Enter / Cmd+Enter → add new row and focus it
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault();
       addGrade();
       setTimeout(() => focusRowInput('#grade-list', '.row-outer', $grades.length - 1), 0);
@@ -105,8 +108,8 @@
   }
 
   function onRowKeydown(e: KeyboardEvent, id: string) {
-    // Ctrl+Delete → remove this row, focus adjacent row
-    if (e.ctrlKey && e.key === 'Delete') {
+    // Ctrl+Delete / Cmd+Backspace → remove this row, focus adjacent row
+    if ((e.ctrlKey && e.key === 'Delete') || (e.metaKey && e.key === 'Backspace')) {
       e.preventDefault();
       const index = $grades.findIndex((g) => g.id === id);
       removeGrade(id);
@@ -164,8 +167,8 @@
   </button>
 </div>
 <p class="shortcuts-hint">
-  <kbd>Ctrl</kbd>+<kbd>Enter</kbd> {$m.average.shortcutAdd} &nbsp;|&nbsp;
-  <kbd>Ctrl</kbd>+<kbd>Del</kbd> {$m.average.shortcutDelete}
+  <kbd>{isMac ? '⌘' : 'Ctrl'}</kbd>+<kbd>Enter</kbd> {$m.average.shortcutAdd} &nbsp;|&nbsp;
+  <kbd>{isMac ? '⌘' : 'Ctrl'}</kbd>+<kbd>{isMac ? '⌫' : 'Del'}</kbd> {$m.average.shortcutDelete}
 </p>
 
 {#if averageText}
