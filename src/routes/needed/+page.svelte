@@ -197,8 +197,14 @@ let results = $state<ExamResult[]>([]);
         <input
           type="text"
           class="input-name"
+          autocomplete="off"
           placeholder={$m.needed.examNamePlaceholder}
-          bind:value={exam.name}
+          value={exam.name}
+          oninput={(e) => {
+            futureExams = futureExams.map((ex) =>
+              ex.id === exam.id ? { ...ex, name: e.currentTarget.value } : ex
+            );
+          }}
         />
         <div class="input-weight-wrapper">
           <input
