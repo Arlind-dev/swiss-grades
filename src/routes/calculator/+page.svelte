@@ -4,7 +4,6 @@
   import { calculateGradeFromPoints, applyRounding, gradeColor } from '$lib/utils/grading';
   import { settings } from '$lib/stores/settings';
   import { m } from '$lib/i18n';
-  import { get } from 'svelte/store';
 
   let points = $state($settings.calculatorPoints);
   let maxPoints = $state($settings.calculatorMaxPoints);
@@ -14,8 +13,23 @@
   $effect(() => { settings.update((s) => ({ ...s, calculatorMaxPoints: maxPoints })); });
   $effect(() => { settings.update((s) => ({ ...s, calculatorRounding: rounding })); });
 
-  let resultText = $state('');
-  let resultGrade = $state<number | null>(null);
+  let resultGrade = $derived.by(() => {
+    const p = parseFloat(points);
+    const max = parseFloat(maxPoints);
+    if (isNaN(p) || isNaN(max) || max <= 0 || p < 0 || p > max) return null;
+    return calculateGradeFromPoints(p, max);
+  });
+
+  let pointsError = $derived.by(() => {
+    const p = parseFloat(points);
+    const max = parseFloat(maxPoints);
+    if (!isNaN(p) && !isNaN(max) && max > 0 && p > max) return $m.calculator.pointsOutOfRange;
+    return '';
+  });
+
+  let resultText = $derived(
+    resultGrade !== null ? $m.calculator.resultPrefix + applyRounding(resultGrade, rounding) : ''
+  );
 
   let confirmClear = $state(false);
   let confirmTimer: ReturnType<typeof setTimeout> | null = null;
@@ -23,8 +37,6 @@
   function clearAll() {
     points = '';
     maxPoints = '';
-    resultText = '';
-    resultGrade = null;
   }
 
   function handleClearAll() {
@@ -42,29 +54,7 @@
     }
   }
 
-  function calculate() {
-    const p = parseFloat(points);
-    const max = parseFloat(maxPoints);
 
-    if (isNaN(p) || isNaN(max) || max <= 0) {
-      resultText = get(m).calculator.invalidInput;
-      resultGrade = null;
-      return;
-    }
-    if (p < 0 || p > max) {
-      resultText = get(m).calculator.pointsOutOfRange;
-      resultGrade = null;
-      return;
-    }
-
-    const grade = calculateGradeFromPoints(p, max);
-    resultGrade = grade;
-    resultText = get(m).calculator.resultPrefix + applyRounding(grade, rounding);
-  }
-
-  function handleKey(e: KeyboardEvent) {
-    if (e.key === 'Enter') calculate();
-  }
 </script>
 
 <svelte:head><title>{$m.calculator.title}</title></svelte:head>
@@ -89,7 +79,6 @@
       inputmode="decimal"
       bind:value={points}
       use:numericInput
-      onkeydown={handleKey}
     />
   </label>
 
@@ -100,19 +89,21 @@
       inputmode="decimal"
       bind:value={maxPoints}
       use:numericInput
-      onkeydown={handleKey}
     />
   </label>
 
   <RoundingSelect bind:value={rounding} />
 
   <div class="actions">
-    <button type="button" onclick={calculate}>{$m.calculator.calculateButton}</button>
     <button type="button" class="btn-clear" class:confirming={confirmClear} onclick={handleClearAll}>
       {confirmClear ? $m.calculator.clearConfirm : $m.calculator.clearAll}
     </button>
   </div>
 </div>
+
+{#if pointsError}
+  <p class="error">{pointsError}</p>
+{/if}
 
 {#if resultText}
   <p class="result" style:color={resultGrade !== null ? gradeColor(resultGrade) : undefined}>
@@ -180,6 +171,11 @@
     background: var(--ctp-red);
     border-color: var(--ctp-red);
     color: var(--ctp-base);
+  }
+
+  .error {
+    color: var(--ctp-red);
+    margin-top: 8px;
   }
 
   .result {

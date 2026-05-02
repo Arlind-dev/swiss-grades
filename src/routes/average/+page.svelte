@@ -6,14 +6,15 @@
   import RoundingSelect from '$lib/components/RoundingSelect.svelte';
   import GradeRow from '$lib/components/GradeRow.svelte';
   import { m } from '$lib/i18n';
-  import { get } from 'svelte/store';
   import { focusRowInput } from '$lib/utils/focus';
 
   let rounding = $state($settings.averageRounding);
   $effect(() => { settings.update((s) => ({ ...s, averageRounding: rounding })); });
 
-  let averageText = $state('');
-  let averageGrade = $state<number | null>(null);
+  let averageGrade = $derived(computeWeightedAverage($grades));
+  let averageText = $derived(
+    averageGrade !== null ? $m.average.resultPrefix + applyRounding(averageGrade, rounding) : ''
+  );
 
   // ── Grade list mutations ─────────────────────────────────────────────────
 
@@ -29,35 +30,10 @@
     grades.update((g) => g.map((e) => (e.id === id ? updated : e)));
   }
 
-  // ── Average calculation ──────────────────────────────────────────────────
-
-  /** Fill in weight=100 for any row that has a grade but no weight. */
-  function fillWeights(entry: GradeEntry): GradeEntry {
-    const weight = entry.grade && !entry.weight ? '100' : entry.weight;
-    const subgrades = entry.subgrades.map(fillWeights);
-    return { ...entry, weight, subgrades };
-  }
-
-  function calculateAverage() {
-    grades.update((g) => {
-      const nonEmpty = g.filter((e) => e.grade !== '');
-      return nonEmpty.map(fillWeights);
-    });
-
-    const avg = computeWeightedAverage($grades);
-    if (avg === null) {
-      averageText = '';
-      averageGrade = null;
-      return;
-    }
-    averageGrade = avg;
-    averageText = get(m).average.resultPrefix + applyRounding(avg, rounding);
-  }
+  // ── Average calculation is fully reactive via $derived above ───────────
 
   function clearAll() {
     grades.set(Array.from({ length: 10 }, newEntry));
-    averageText = '';
-    averageGrade = null;
   }
 
   let confirmClear = $state(false);
@@ -183,7 +159,6 @@
   <button type="button" class="btn-add" onclick={addGrade}>{$m.average.addGrade}</button>
 </div>
 <div class="actions">
-  <button type="button" onclick={calculateAverage}>{$m.average.calculateButton}</button>
   <button type="button" class="btn-clear" class:confirming={confirmClear} onclick={handleClearAll}>
     {confirmClear ? $m.average.clearConfirm : $m.average.clearAll}
   </button>
