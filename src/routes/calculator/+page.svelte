@@ -126,6 +126,13 @@
     flex-direction: column;
     gap: 8px;
     max-width: 340px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 900px) {
+    .form {
+      max-width: 100%;
+    }
   }
 
   label {
@@ -162,6 +169,9 @@
       grid-template-columns: 1fr 1fr;
     }
     .actions button:first-child {
+      grid-column: 1 / -1;
+    }
+    .btn-clear {
       grid-column: 1 / -1;
     }
   }

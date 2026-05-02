@@ -289,7 +289,6 @@ let results = $state<ExamResult[]>([]);
     display: flex;
     flex-direction: column;
     gap: 16px;
-    max-width: 480px;
   }
 
   label {
@@ -436,6 +435,9 @@ let results = $state<ExamResult[]>([]);
     .actions button:first-child {
       grid-column: 1 / -1;
     }
+    .btn-clear {
+      grid-column: 1 / -1;
+    }
   }
 
   .btn-clear.confirming {
@@ -472,6 +474,14 @@ let results = $state<ExamResult[]>([]);
   .results {
     margin-top: 16px;
     max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  @media (max-width: 600px) {
+    .results {
+      max-width: 100%;
+    }
   }
 
   .results-note {
