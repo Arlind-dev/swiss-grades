@@ -166,6 +166,9 @@ let results = $derived.by((): ExamResult[] => {
 <svelte:window onkeydown={onWindowKeydown} />
 
 <h1>{$m.needed.title}</h1>
+
+<RoundingSelect bind:value={rounding} />
+
 <p>{$m.needed.description}</p>
 <p class="hint">
   {$m.needed.hint} <a href="/average">{$m.needed.hintLink}</a> {$m.needed.hintSuffix}
@@ -184,8 +187,6 @@ let results = $derived.by((): ExamResult[] => {
       use:clampInput={{ min: 1, max: 6, decimals: 2 }}
     />
   </label>
-
-  <RoundingSelect bind:value={rounding} />
 
   <div class="future-exams">
     <p class="section-label">{$m.needed.futureExamsLabel}</p>
@@ -265,7 +266,7 @@ let results = $derived.by((): ExamResult[] => {
                 <span class="verdict" style:color={gradeColor(6)}>{$m.needed.alreadyAchieved}</span>
               {:else}
                 <span class="grade" style:color={gradeColor(Math.min(r.needed, 6.0))}>
-                  {applyRounding(Math.min(r.needed, 6.0), rounding)}
+                  {applyRounding(Math.min(r.needed, 6.0), '2')}
                 </span>
               {/if}
             </td>
@@ -273,7 +274,7 @@ let results = $derived.by((): ExamResult[] => {
         {/each}
       </tbody>
     </table>
-    <p class="results-note">{$m.needed.bestAttainablePrefix}{applyRounding(bestAttainable, rounding)}</p>
+    <p class="results-note">{$m.needed.bestAttainablePrefix}<span class="grade-chip" style:--chip-color={gradeColor(bestAttainable)}>{applyRounding(bestAttainable, '2')}</span></p>
   </div>
 {/if}
 
@@ -479,6 +480,20 @@ let results = $derived.by((): ExamResult[] => {
     font-size: 0.85rem;
     color: var(--ctp-overlay1);
     margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .grade-chip {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--chip-color);
+    background: color-mix(in srgb, var(--chip-color) 15%, transparent);
+    border: 1px solid color-mix(in srgb, var(--chip-color) 35%, transparent);
   }
 
   table {

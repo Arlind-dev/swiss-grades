@@ -27,10 +27,6 @@
     return '';
   });
 
-  let resultText = $derived(
-    resultGrade !== null ? $m.calculator.resultPrefix + applyRounding(resultGrade, rounding) : ''
-  );
-
   let confirmClear = $state(false);
   let confirmTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -71,6 +67,8 @@
   <span class="frac-rest">+ 1</span>
 </div>
 
+<RoundingSelect bind:value={rounding} />
+
 <div class="form">
   <label>
     {$m.calculator.pointsLabel}
@@ -92,8 +90,6 @@
     />
   </label>
 
-  <RoundingSelect bind:value={rounding} />
-
   <div class="actions">
     <button type="button" class="btn-clear" class:confirming={confirmClear} onclick={handleClearAll}>
       {confirmClear ? $m.calculator.clearConfirm : $m.calculator.clearAll}
@@ -105,9 +101,9 @@
   <p class="error">{pointsError}</p>
 {/if}
 
-{#if resultText}
-  <p class="result" style:color={resultGrade !== null ? gradeColor(resultGrade) : undefined}>
-    {resultText}
+{#if resultGrade !== null}
+  <p class="result">
+    {$m.calculator.resultPrefix}<span class="grade-chip" style:--chip-color={gradeColor(resultGrade)}>{applyRounding(resultGrade, rounding)}</span>
   </p>
 {/if}
 
@@ -134,8 +130,8 @@
   }
 
   input[type='text'] {
-    font-size: 1.1rem;
-    padding: 6px 10px;
+    font-size: 1.05rem;
+    padding: 5px 8px;
     border: 2px solid var(--ctp-surface2);
     border-radius: 3px;
     outline: none;
@@ -182,6 +178,19 @@
     margin-top: 16px;
     font-size: 1.2rem;
     font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .grade-chip {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-weight: 700;
+    color: var(--chip-color);
+    background: color-mix(in srgb, var(--chip-color) 15%, transparent);
+    border: 1px solid color-mix(in srgb, var(--chip-color) 35%, transparent);
   }
 
   .formula {

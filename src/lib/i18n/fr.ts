@@ -35,7 +35,7 @@ export const fr: Messages = {
   },
   average: {
     title: 'Moyenne des notes',
-    addGrade: 'Ajouter une note',
+    addGrade: '+ Ajouter une note',
     calculateButton: 'Calculer',
     clearAll: 'Tout effacer',
     clearConfirm: 'Sûr ?',
@@ -67,7 +67,7 @@ export const fr: Messages = {
     tableExam: 'Examen',
     tableRequired: 'Note requise',
     impossible: 'Impossible (max. 6.0)',
-    bestAttainablePrefix: 'Meilleure note atteignable : ',
+    bestAttainablePrefix: 'Meilleure note atteignable (6.0 à tous les examens futurs) : ',
     alreadyAchieved: 'Déjà atteint',
     examFallback: 'Examen',
   },

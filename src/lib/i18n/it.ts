@@ -35,7 +35,7 @@ export const it: Messages = {
   },
   average: {
     title: 'Media voti',
-    addGrade: 'Aggiungi voto',
+    addGrade: '+ Aggiungi voto',
     calculateButton: 'Calcola',
     clearAll: 'Cancella tutto',
     clearConfirm: 'Sicuro?',
@@ -67,7 +67,7 @@ export const it: Messages = {
     tableExam: 'Esame',
     tableRequired: 'Voto necessario',
     impossible: 'Impossibile (max. 6.0)',
-    bestAttainablePrefix: 'Massimo raggiungibile: ',
+    bestAttainablePrefix: 'Massimo raggiungibile (6.0 a tutti gli esami futuri): ',
     alreadyAchieved: 'Già raggiunto',
     examFallback: 'Esame',
   },

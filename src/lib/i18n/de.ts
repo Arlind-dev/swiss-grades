@@ -35,7 +35,7 @@ export const de: Messages = {
   },
   average: {
     title: 'Notenschnitt',
-    addGrade: 'Note hinzufügen',
+    addGrade: '+ Note hinzufügen',
     calculateButton: 'Berechnen',
     clearAll: 'Alle löschen',
     clearConfirm: 'Sicher?',
@@ -67,7 +67,7 @@ export const de: Messages = {
     tableExam: 'Prüfung',
     tableRequired: 'Benötigte Note',
     impossible: 'Nicht möglich (max. 6.0)',
-    bestAttainablePrefix: 'Bestmöglich erreichbar: ',
+    bestAttainablePrefix: 'Bestmöglich erreichbar (6.0 in allen künftigen Prüfungen): ',
     alreadyAchieved: 'Bereits erreicht',
     examFallback: 'Prüfung',
   },
