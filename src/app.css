@@ -1,6 +1,7 @@
 /* ── Catppuccin Latte (light, default) ─────────────────────────────────── */
 :root,
 [data-theme="latte"] {
+  color-scheme: light;
   --ctp-base:     #EFF1F5;
   --ctp-mantle:   #E6E9EF;
   --ctp-crust:    #DCE0E8;
@@ -24,6 +25,7 @@
 
 /* ── Catppuccin Mocha (dark) ────────────────────────────────────────────── */
 [data-theme="mocha"] {
+  color-scheme: dark;
   --ctp-base:     #1E1E2E;
   --ctp-mantle:   #181825;
   --ctp-crust:    #11111B;
@@ -53,9 +55,14 @@
 }
 
 /* ── Base ───────────────────────────────────────────────────────────────── */
+html {
+  background: var(--ctp-base);
+}
+
 body {
   margin: 0;
   padding: 20px;
+  min-height: 100dvh;
   font-family: system-ui, -apple-system, sans-serif;
   background: var(--ctp-base);
   color: var(--ctp-text);
