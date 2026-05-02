@@ -1,3 +1,9 @@
+## [1.5.1](https://github.com/Arlind-dev/swiss-grades/compare/v1.5.0...v1.5.1) (2026-05-02)
+
+### Bug Fixes
+
+* **ssr:** hide page content until hydrated to prevent data flash  ([#22](https://github.com/Arlind-dev/swiss-grades/issues/22)) ([ff2ff46](https://github.com/Arlind-dev/swiss-grades/commit/ff2ff46f44793e98038d9c7c9de37f6ff598c248))
+
 ## [1.5.0](https://github.com/Arlind-dev/swiss-grades/compare/v1.4.0...v1.5.0) (2026-05-02)
 
 ### Features
