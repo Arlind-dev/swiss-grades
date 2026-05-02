@@ -1,3 +1,9 @@
+## [1.8.2](https://github.com/Arlind-dev/swiss-grades/compare/v1.8.1...v1.8.2) (2026-05-02)
+
+### Bug Fixes
+
+* **theme:** cover full viewport and set color-scheme per theme ([#33](https://github.com/Arlind-dev/swiss-grades/issues/33)) ([bdda7de](https://github.com/Arlind-dev/swiss-grades/commit/bdda7de06eca417dcf27d433f7e360e1402a7ec4))
+
 ## [1.8.1](https://github.com/Arlind-dev/swiss-grades/compare/v1.8.0...v1.8.1) (2026-05-02)
 
 ### Bug Fixes
