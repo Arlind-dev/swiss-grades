@@ -15,6 +15,7 @@
   $effect(() => { settings.update((s) => ({ ...s, averageRounding: rounding })); });
 
   let averageGrade = $derived(computeWeightedAverage($grades));
+  let validCount = $derived($grades.filter((e) => !isNaN(parseFloat(e.grade))).length);
 
   // ── Grade list mutations ─────────────────────────────────────────────────
 
@@ -125,6 +126,8 @@
 
 <div class="grade-list" id="grade-list" role="list">
   {#each $grades as entry, i (entry.id)}
+    {@const gradeNum = parseFloat(entry.grade)}
+    {@const delta = !isNaN(gradeNum) && averageGrade !== null && validCount >= 2 ? gradeNum - averageGrade : null}
       <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
       <div
         class="grade-item"
@@ -151,6 +154,17 @@
           onremove={() => removeGrade(entry.id)}
         />
       </div>
+      {#if delta !== null}
+        <span
+          class="delta"
+          class:positive={delta > 0.005}
+          class:negative={delta < -0.005}
+          class:neutral={Math.abs(delta) <= 0.005}
+          aria-label="Delta from average: {delta >= 0 ? '+' : ''}{delta.toFixed(2)}"
+        >{delta >= 0 ? '+' : '−'}{Math.abs(delta).toFixed(2)}</span>
+      {:else}
+        <span class="delta-placeholder"></span>
+      {/if}
     </div>
   {/each}
 </div>
@@ -265,6 +279,9 @@
     font-size: 1.2rem;
     font-weight: 600;
     margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
   .grade-chip {
@@ -277,6 +294,33 @@
     border: 1px solid color-mix(in srgb, var(--chip-color) 35%, transparent);
   }
 
+  .delta, .delta-placeholder {
+    font-size: 0.72rem;
+    font-weight: 600;
+    width: 2.8rem;
+    flex-shrink: 0;
+    align-self: flex-start;
+    margin-top: 7px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .delta {
+    padding: 2px 6px;
+    border-radius: 10px;
+    white-space: nowrap;
+    color: var(--delta-color);
+    background: color-mix(in srgb, var(--delta-color) 15%, transparent);
+    border: 1px solid color-mix(in srgb, var(--delta-color) 35%, transparent);
+  }
+
+
+  .delta.positive { --delta-color: var(--ctp-green); }
+  .delta.negative { --delta-color: var(--ctp-red); }
+  .delta.neutral  { --delta-color: var(--ctp-overlay1); }
+
   .shortcuts-hint {
     font-size: 0.8rem;
     color: var(--ctp-overlay1);
@@ -285,6 +329,7 @@
 
   @media (pointer: coarse) {
     .shortcuts-hint { display: none; }
+    .delta, .delta-placeholder { display: none; }
   }
 
   kbd {
