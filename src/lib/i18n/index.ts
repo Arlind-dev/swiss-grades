@@ -4,6 +4,7 @@ import { en } from './en';
 import { fr } from './fr';
 import { it } from './it';
 import type { Messages } from './messages';
+import { STORAGE_KEYS } from '$lib/storage-keys';
 
 export type Locale = 'de' | 'en' | 'fr' | 'it';
 export type { Messages };
@@ -12,7 +13,7 @@ const catalogs: Record<Locale, Messages> = { de, en, fr, it };
 
 function detectLocale(): Locale {
   try {
-    const stored = localStorage.getItem('swiss-grades-locale');
+    const stored = localStorage.getItem(STORAGE_KEYS.locale);
     if (stored === 'de' || stored === 'en' || stored === 'fr' || stored === 'it') return stored;
     const browser = navigator.language.split('-')[0];
     if (browser === 'de' || browser === 'en' || browser === 'fr' || browser === 'it') return browser;
@@ -26,7 +27,7 @@ const _locale = writable<Locale>(typeof window !== 'undefined' ? detectLocale() 
 export const locale = {
   ..._locale,
   set(value: Locale) {
-    try { localStorage.setItem('swiss-grades-locale', value); } catch {}
+    try { localStorage.setItem(STORAGE_KEYS.locale, value); } catch {}
     _locale.set(value);
   }
 };

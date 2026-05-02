@@ -1,6 +1,7 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 import type { RoundingKey } from '$lib/types';
+import { STORAGE_KEYS } from '$lib/storage-keys';
 
 export interface Settings {
   calculatorRounding: RoundingKey;
@@ -10,7 +11,7 @@ export interface Settings {
   calculatorMaxPoints: string;
 }
 
-const STORAGE_KEY = 'swiss-grades-settings';
+const STORAGE_KEY = STORAGE_KEYS.settings;
 
 const defaults: Settings = {
   calculatorRounding: '2',

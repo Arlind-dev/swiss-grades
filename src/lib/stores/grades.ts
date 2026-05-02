@@ -2,8 +2,9 @@ import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 import type { GradeEntry } from '$lib/types';
 import { newEntry } from '$lib/utils/grading';
+import { STORAGE_KEYS } from '$lib/storage-keys';
 
-const STORAGE_KEY = 'swiss-grades-grades';
+const STORAGE_KEY = STORAGE_KEYS.grades;
 
 function loadInitial(): GradeEntry[] {
   if (!browser) return Array.from({ length: 10 }, newEntry);
