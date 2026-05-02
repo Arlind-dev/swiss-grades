@@ -1,6 +1,7 @@
 services:
   swiss-grades:
     image: ghcr.io/arlind-dev/swiss-grades:latest
+    container_name: swiss-grades
     ports:
       - "8080:80"
     restart: unless-stopped
@@ -9,3 +10,4 @@ services:
 
 networks:
   swiss-grades:
+    name: swiss-grades
