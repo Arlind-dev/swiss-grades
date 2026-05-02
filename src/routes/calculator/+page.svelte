@@ -17,6 +17,31 @@
   let resultText = $state('');
   let resultGrade = $state<number | null>(null);
 
+  let confirmClear = $state(false);
+  let confirmTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function clearAll() {
+    points = '';
+    maxPoints = '';
+    resultText = '';
+    resultGrade = null;
+  }
+
+  function handleClearAll() {
+    if (window.matchMedia('(pointer: coarse)').matches) {
+      if (confirmClear) {
+        confirmClear = false;
+        if (confirmTimer) clearTimeout(confirmTimer);
+        clearAll();
+      } else {
+        confirmClear = true;
+        confirmTimer = setTimeout(() => { confirmClear = false; }, 3000);
+      }
+    } else {
+      clearAll();
+    }
+  }
+
   function calculate() {
     const p = parseFloat(points);
     const max = parseFloat(maxPoints);
@@ -81,7 +106,12 @@
 
   <RoundingSelect bind:value={rounding} />
 
-  <button type="button" onclick={calculate}>{$m.calculator.calculateButton}</button>
+  <div class="actions">
+    <button type="button" onclick={calculate}>{$m.calculator.calculateButton}</button>
+    <button type="button" class="btn-clear" class:confirming={confirmClear} onclick={handleClearAll}>
+      {confirmClear ? $m.calculator.clearConfirm : $m.calculator.clearAll}
+    </button>
+  </div>
 </div>
 
 {#if resultText}
@@ -119,9 +149,27 @@
     border-color: var(--ctp-lavender);
   }
 
-  button {
-    align-self: flex-start;
+  .actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
     margin-top: 4px;
+  }
+
+  @media (pointer: coarse) {
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    .actions button:first-child {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .btn-clear.confirming {
+    background: var(--ctp-red);
+    border-color: var(--ctp-red);
+    color: var(--ctp-base);
   }
 
   .result {
