@@ -1,13 +1,17 @@
 <script lang="ts">
   import { grades } from '$lib/stores/grades';
-  import { gradeColor, computeWeightedSums } from '$lib/utils/grading';
+  import { gradeColor, computeWeightedSums, applyRounding } from '$lib/utils/grading';
   import { numericInput, clampInput } from '$lib/actions';
   import { m } from '$lib/i18n';
-  import { get } from 'svelte/store';
   import { focusRowInput } from '$lib/utils/focus';
   import { browser } from '$app/environment';
+  import { settings } from '$lib/stores/settings';
+  import RoundingSelect from '$lib/components/RoundingSelect.svelte';
 
   const STORAGE_KEY = 'notenrechner-needed';
+
+  let rounding = $state($settings.neededRounding);
+  $effect(() => { settings.update((s) => ({ ...s, neededRounding: rounding })); });
 
   interface FutureExam {
     id: string;
@@ -28,8 +32,8 @@
   let targetAverage = $state<string>(saved?.targetAverage ?? '');
   let futureExams = $state<FutureExam[]>(
     saved?.futureExams?.length
-      ? saved.futureExams.map((e: { name: string; weight: string }) => ({ id: crypto.randomUUID(), name: e.name, weight: e.weight }))
-      : [{ id: crypto.randomUUID(), name: '', weight: '' }]
+      ? saved.futureExams.map((e: { name: string; weight: string }) => ({ id: crypto.randomUUID(), name: e.name, weight: e.weight || '100' }))
+      : [{ id: crypto.randomUUID(), name: '', weight: '100' }]
   );
 
   $effect(() => {
@@ -49,19 +53,62 @@
     alreadyAchieved: boolean;
   }
 
-let results = $state<ExamResult[]>([]);
-  let bestAttainable = $state(0);
-  let errorText = $state('');
-  let noGradesError = $state(false);
+let results = $derived.by((): ExamResult[] => {
+    const target = parseFloat(targetAverage);
+    if (isNaN(target) || target < 1 || target > 6) return [];
+
+    const hasGrades = $grades.some((e) => e.grade !== '' && !isNaN(parseFloat(e.grade)));
+    if (!hasGrades) return [];
+
+    const { weightSum, weightedSum } = computeWeightedSums($grades);
+
+    const futureWeightSum = futureExams.reduce((sum, e) => {
+      const w = parseFloat(e.weight);
+      return sum + (isNaN(w) || w <= 0 ? 100 : w);
+    }, 0);
+
+    const totalWeight = weightSum + futureWeightSum;
+    const needed = weightSum === 0 && futureWeightSum === 0
+      ? target
+      : (target * totalWeight - weightedSum) / futureWeightSum;
+
+    // impossible = even scoring 6.0 in all future exams won't reach the target after rounding
+    const rawBest = totalWeight > 0 ? (weightedSum + 6.0 * futureWeightSum) / totalWeight : 6.0;
+    const impossible = parseFloat(applyRounding(rawBest, rounding)) < target;
+    const alreadyAchieved = needed < 1.0;
+
+    return futureExams.map((exam) => ({
+      name: exam.name || $m.needed.examFallback,
+      needed,
+      impossible,
+      alreadyAchieved,
+    }));
+  });
+
+  let bestAttainable = $derived.by(() => {
+    const hasGrades = $grades.some((e) => e.grade !== '' && !isNaN(parseFloat(e.grade)));
+    if (!hasGrades) return 0;
+    const { weightSum, weightedSum } = computeWeightedSums($grades);
+    const futureWeightSum = futureExams.reduce((sum, e) => {
+      const w = parseFloat(e.weight);
+      return sum + (isNaN(w) || w <= 0 ? 100 : w);
+    }, 0);
+    const totalWeight = weightSum + futureWeightSum;
+    return totalWeight > 0 ? (weightedSum + 6.0 * futureWeightSum) / totalWeight : 6.0;
+  });
+
+  let noGradesError = $derived.by(() => {
+    const target = parseFloat(targetAverage);
+    if (isNaN(target) || target < 1 || target > 6) return false;
+    return !$grades.some((e) => e.grade !== '' && !isNaN(parseFloat(e.grade)));
+  });
+
   let confirmClear = $state(false);
   let confirmTimer: ReturnType<typeof setTimeout> | null = null;
 
   function clearAll() {
     targetAverage = '';
-    futureExams = [{ id: crypto.randomUUID(), name: '', weight: '' }];
-    results = [];
-    errorText = '';
-    noGradesError = false;
+    futureExams = [{ id: crypto.randomUUID(), name: '', weight: '100' }];
     if (browser) {
       try { localStorage.removeItem(STORAGE_KEY); } catch {}
     }
@@ -83,67 +130,13 @@ let results = $state<ExamResult[]>([]);
   }
 
   function addExam() {
-    futureExams = [...futureExams, { id: crypto.randomUUID(), name: '', weight: '' }];
+    futureExams = [...futureExams, { id: crypto.randomUUID(), name: '', weight: '100' }];
   }
 
   function removeExam(id: string) {
     futureExams = futureExams.filter((e) => e.id !== id);
   }
 
-  function calculate() {
-    errorText = '';
-    noGradesError = false;
-    results = [];
-
-    const target = parseFloat(targetAverage);
-    if (isNaN(target) || target < 1 || target > 6) {
-      errorText = get(m).needed.invalidTarget;
-      return;
-    }
-
-    // Require at least one grade in the store
-    const hasGrades = $grades.some((e) => e.grade !== '' && !isNaN(parseFloat(e.grade)));
-    if (!hasGrades) {
-      noGradesError = true;
-      return;
-    }
-
-    // Fill empty weights with '100' so the UI reflects what's used in the calculation
-    futureExams = futureExams.map((e) => ({
-      ...e,
-      weight: e.weight === '' || parseFloat(e.weight) <= 0 ? '100' : e.weight,
-    }));
-
-    // Current weighted sum from the grades store (shared logic with average page)
-    const { weightSum, weightedSum } = computeWeightedSums($grades);
-
-    // Total weight of all future exams
-    const futureWeightSum = futureExams.reduce((sum, e) => {
-      const w = parseFloat(e.weight);
-      return sum + (isNaN(w) || w <= 0 ? 100 : w);
-    }, 0);
-
-    // Solve: (weightedSum + X * futureWeightSum) / (weightSum + futureWeightSum) = target
-    const totalWeight = weightSum + futureWeightSum;
-    const needed = weightSum === 0 && futureWeightSum === 0
-      ? target
-      : (target * totalWeight - weightedSum) / futureWeightSum;
-
-    bestAttainable = totalWeight > 0
-      ? (weightedSum + 6.0 * futureWeightSum) / totalWeight
-      : 6.0;
-
-    results = futureExams.map((exam) => ({
-      name: exam.name || get(m).needed.examFallback,
-      needed,
-      impossible: needed > 6.0,
-      alreadyAchieved: needed < 1.0,
-    }));
-  }
-
-  function handleKey(e: KeyboardEvent) {
-    if (e.key === 'Enter') calculate();
-  }
 
   function onWindowKeydown(e: KeyboardEvent) {
     if (e.ctrlKey && e.key === 'Enter') {
@@ -185,9 +178,10 @@ let results = $state<ExamResult[]>([]);
       bind:value={targetAverage}
       use:numericInput
       use:clampInput={{ min: 1, max: 6, decimals: 2 }}
-      onkeydown={handleKey}
     />
   </label>
+
+  <RoundingSelect bind:value={rounding} />
 
   <div class="future-exams">
     <p class="section-label">{$m.needed.futureExamsLabel}</p>
@@ -232,7 +226,6 @@ let results = $state<ExamResult[]>([]);
   </div>
 
   <div class="actions">
-    <button type="button" class="btn-calculate" onclick={calculate}>{$m.needed.calculateButton}</button>
     <button type="button" class="btn-clear" class:confirming={confirmClear} onclick={handleClearAll}>
       {confirmClear ? $m.needed.clearConfirm : $m.needed.clearAll}
     </button>
@@ -242,10 +235,6 @@ let results = $state<ExamResult[]>([]);
     <kbd>Ctrl</kbd>+<kbd>Del</kbd> {$m.needed.shortcutDelete}
   </p>
 </div>
-
-{#if errorText}
-  <p class="error">{errorText}</p>
-{/if}
 
 {#if noGradesError}
   <p class="error">{$m.needed.noGradesBefore}<a href="/average">{$m.nav.average}</a>{$m.needed.noGradesAfter}</p>
@@ -271,8 +260,8 @@ let results = $state<ExamResult[]>([]);
               {:else if r.alreadyAchieved}
                 <span class="verdict" style:color={gradeColor(6)}>{$m.needed.alreadyAchieved}</span>
               {:else}
-                <span class="grade" style:color={gradeColor(r.needed)}>
-                  {r.needed.toFixed(2)}
+                <span class="grade" style:color={gradeColor(Math.min(r.needed, 6.0))}>
+                  {applyRounding(Math.min(r.needed, 6.0), rounding)}
                 </span>
               {/if}
             </td>
@@ -280,7 +269,7 @@ let results = $state<ExamResult[]>([]);
         {/each}
       </tbody>
     </table>
-    <p class="results-note">{$m.needed.bestAttainablePrefix}{bestAttainable.toFixed(2)}</p>
+    <p class="results-note">{$m.needed.bestAttainablePrefix}{applyRounding(bestAttainable, rounding)}</p>
   </div>
 {/if}
 
@@ -479,15 +468,7 @@ let results = $state<ExamResult[]>([]);
 
   .results {
     margin-top: 16px;
-    max-width: 480px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  @media (max-width: 600px) {
-    .results {
-      max-width: 100%;
-    }
+    text-align: left;
   }
 
   .results-note {

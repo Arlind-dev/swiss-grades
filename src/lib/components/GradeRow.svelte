@@ -81,7 +81,7 @@
       value={entry.grade}
       readonly={hasSubgrades}
       use:numericInput
-      use:clampInput={{ min: 1, max: 6, decimals: 2, oncommit: (v) => !hasSubgrades && emit({ grade: v }) }}
+      use:clampInput={{ min: 1, max: 6, decimals: 2, oncommit: (v) => !hasSubgrades && emit({ grade: v, weight: entry.weight === '' && v !== '' ? '100' : entry.weight }) }}
     />
 
     <!-- Weight input -->
