@@ -1,3 +1,9 @@
+## [1.3.2](https://github.com/Arlind-dev/swiss-grades/compare/v1.3.1...v1.3.2) (2026-05-02)
+
+### Bug Fixes
+
+* use named imports from flowbite-svelte-icons to fix cold start error ([#14](https://github.com/Arlind-dev/swiss-grades/issues/14)) ([703d0e2](https://github.com/Arlind-dev/swiss-grades/commit/703d0e2142813571889af967c5531828ed4425d3))
+
 ## [1.3.1](https://github.com/Arlind-dev/swiss-grades/compare/v1.3.0...v1.3.1) (2026-05-01)
 
 ### Bug Fixes
