@@ -1,12 +1,17 @@
 <script lang="ts">
   import { grades } from '$lib/stores/grades';
-  import { gradeColor, computeWeightedSums } from '$lib/utils/grading';
+  import { gradeColor, computeWeightedSums, applyRounding } from '$lib/utils/grading';
   import { numericInput, clampInput } from '$lib/actions';
   import { m } from '$lib/i18n';
   import { focusRowInput } from '$lib/utils/focus';
   import { browser } from '$app/environment';
+  import { settings } from '$lib/stores/settings';
+  import RoundingSelect from '$lib/components/RoundingSelect.svelte';
 
   const STORAGE_KEY = 'notenrechner-needed';
+
+  let rounding = $state($settings.neededRounding);
+  $effect(() => { settings.update((s) => ({ ...s, neededRounding: rounding })); });
 
   interface FutureExam {
     id: string;
@@ -67,7 +72,9 @@ let results = $derived.by((): ExamResult[] => {
       ? target
       : (target * totalWeight - weightedSum) / futureWeightSum;
 
-    const impossible = needed > 6.0;
+    // impossible = even scoring 6.0 in all future exams won't reach the target after rounding
+    const rawBest = totalWeight > 0 ? (weightedSum + 6.0 * futureWeightSum) / totalWeight : 6.0;
+    const impossible = parseFloat(applyRounding(rawBest, rounding)) < target;
     const alreadyAchieved = needed < 1.0;
 
     return futureExams.map((exam) => ({
@@ -174,6 +181,8 @@ let results = $derived.by((): ExamResult[] => {
     />
   </label>
 
+  <RoundingSelect bind:value={rounding} />
+
   <div class="future-exams">
     <p class="section-label">{$m.needed.futureExamsLabel}</p>
     {#each futureExams as exam (exam.id)}
@@ -252,7 +261,7 @@ let results = $derived.by((): ExamResult[] => {
                 <span class="verdict" style:color={gradeColor(6)}>{$m.needed.alreadyAchieved}</span>
               {:else}
                 <span class="grade" style:color={gradeColor(Math.min(r.needed, 6.0))}>
-                  {Math.min(r.needed, 6.0).toFixed(2)}
+                  {applyRounding(Math.min(r.needed, 6.0), rounding)}
                 </span>
               {/if}
             </td>
@@ -260,7 +269,7 @@ let results = $derived.by((): ExamResult[] => {
         {/each}
       </tbody>
     </table>
-    <p class="results-note">{$m.needed.bestAttainablePrefix}{bestAttainable.toFixed(2)}</p>
+    <p class="results-note">{$m.needed.bestAttainablePrefix}{applyRounding(bestAttainable, rounding)}</p>
   </div>
 {/if}
 

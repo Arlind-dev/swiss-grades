@@ -5,6 +5,7 @@ import type { RoundingKey } from '$lib/types';
 export interface Settings {
   calculatorRounding: RoundingKey;
   averageRounding: RoundingKey;
+  neededRounding: RoundingKey;
   calculatorPoints: string;
   calculatorMaxPoints: string;
 }
@@ -14,6 +15,7 @@ const STORAGE_KEY = 'notenrechner-settings';
 const defaults: Settings = {
   calculatorRounding: '2',
   averageRounding: '2',
+  neededRounding: '2',
   calculatorPoints: '',
   calculatorMaxPoints: ''
 };
