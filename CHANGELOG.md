@@ -1,3 +1,9 @@
+## [1.10.0](https://github.com/Arlind-dev/swiss-grades/compare/v1.9.0...v1.10.0) (2026-05-02)
+
+### Features
+
+* **average:** show grade chip with color on average result ([#37](https://github.com/Arlind-dev/swiss-grades/issues/37)) ([6916fb0](https://github.com/Arlind-dev/swiss-grades/commit/6916fb0f4cf939a2a48992b8ef8264054e15d678))
+
 ## [1.9.0](https://github.com/Arlind-dev/swiss-grades/compare/v1.8.2...v1.9.0) (2026-05-02)
 
 ### Features
