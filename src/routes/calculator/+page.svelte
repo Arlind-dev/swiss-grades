@@ -126,6 +126,13 @@
     flex-direction: column;
     gap: 8px;
     max-width: 340px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 600px) {
+    .form {
+      max-width: 100%;
+    }
   }
 
   label {

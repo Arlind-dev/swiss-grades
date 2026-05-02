@@ -290,6 +290,13 @@ let results = $state<ExamResult[]>([]);
     flex-direction: column;
     gap: 16px;
     max-width: 480px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 600px) {
+    .form {
+      max-width: 100%;
+    }
   }
 
   label {
@@ -475,6 +482,14 @@ let results = $state<ExamResult[]>([]);
   .results {
     margin-top: 16px;
     max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  @media (max-width: 600px) {
+    .results {
+      max-width: 100%;
+    }
   }
 
   .results-note {
