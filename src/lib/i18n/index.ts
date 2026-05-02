@@ -12,7 +12,7 @@ const catalogs: Record<Locale, Messages> = { de, en, fr, it };
 
 function detectLocale(): Locale {
   try {
-    const stored = localStorage.getItem('notenrechner-locale');
+    const stored = localStorage.getItem('swiss-grades-locale');
     if (stored === 'de' || stored === 'en' || stored === 'fr' || stored === 'it') return stored;
     const browser = navigator.language.split('-')[0];
     if (browser === 'de' || browser === 'en' || browser === 'fr' || browser === 'it') return browser;
@@ -26,7 +26,7 @@ const _locale = writable<Locale>(typeof window !== 'undefined' ? detectLocale() 
 export const locale = {
   ..._locale,
   set(value: Locale) {
-    try { localStorage.setItem('notenrechner-locale', value); } catch {}
+    try { localStorage.setItem('swiss-grades-locale', value); } catch {}
     _locale.set(value);
   }
 };

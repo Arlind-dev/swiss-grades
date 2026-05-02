@@ -8,7 +8,7 @@
   import { settings } from '$lib/stores/settings';
   import RoundingSelect from '$lib/components/RoundingSelect.svelte';
 
-  const STORAGE_KEY = 'notenrechner-needed';
+  const STORAGE_KEY = 'swiss-grades-needed';
 
   let rounding = $state($settings.neededRounding);
   $effect(() => { settings.update((s) => ({ ...s, neededRounding: rounding })); });

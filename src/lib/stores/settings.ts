@@ -10,7 +10,7 @@ export interface Settings {
   calculatorMaxPoints: string;
 }
 
-const STORAGE_KEY = 'notenrechner-settings';
+const STORAGE_KEY = 'swiss-grades-settings';
 
 const defaults: Settings = {
   calculatorRounding: '2',
