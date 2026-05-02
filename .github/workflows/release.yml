@@ -22,6 +22,11 @@ jobs:
       issues: write
       pull-requests: write
 
+    outputs:
+      new_release_published: ${{ steps.semantic-release.outputs.new_release_published }}
+      new_release_version: ${{ steps.semantic-release.outputs.new_release_version }}
+      new_release_git_tag: ${{ steps.semantic-release.outputs.new_release_git_tag }}
+
     steps:
       - name: Generate GitHub App token
         id: app-token
@@ -42,6 +47,7 @@ jobs:
           git config user.email "${{ vars.APP_ID }}+arlind-bot[bot]@users.noreply.github.com"
 
       - name: Run semantic-release
+        id: semantic-release
         uses: cycjimmy/semantic-release-action@v6
         with:
           extra_plugins: |
@@ -57,6 +63,94 @@ jobs:
           GIT_COMMITTER_NAME: "arlind-bot[bot]"
           GIT_AUTHOR_EMAIL: "${{ vars.APP_ID }}+arlind-bot[bot]@users.noreply.github.com"
           GIT_COMMITTER_EMAIL: "${{ vars.APP_ID }}+arlind-bot[bot]@users.noreply.github.com"
+
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    permissions:
+      contents: read
+
+    needs: [release]
+    if: needs.release.outputs.new_release_published == 'true'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.release.outputs.new_release_git_tag }}
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build
+        run: cp svelte.config.docker.js svelte.config.js && bun run build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: build
+          path: build/
+
+  docker:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    permissions:
+      contents: read
+      packages: write
+
+    needs: [release, build]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.release.outputs.new_release_git_tag }}
+          sparse-checkout: Dockerfile
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: build
+          path: build/
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{version}},value=${{ needs.release.outputs.new_release_version }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ needs.release.outputs.new_release_version }}
+            type=semver,pattern={{major}},value=${{ needs.release.outputs.new_release_version }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: true
+          platforms: linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/ppc64le,linux/riscv64,linux/s390x
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   cloudflare:
     runs-on: ubuntu-24.04
