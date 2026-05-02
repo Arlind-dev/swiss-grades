@@ -1,3 +1,9 @@
+## [1.6.1](https://github.com/Arlind-dev/swiss-grades/compare/v1.6.0...v1.6.1) (2026-05-02)
+
+### Bug Fixes
+
+* **needed:** align target grade input width and placeholder with grade row ([#27](https://github.com/Arlind-dev/swiss-grades/issues/27)) ([2631ce5](https://github.com/Arlind-dev/swiss-grades/commit/2631ce5f4b5e209d6c88b10a0d513c2b6e6888cc))
+
 ## [1.6.0](https://github.com/Arlind-dev/swiss-grades/compare/v1.5.3...v1.6.0) (2026-05-02)
 
 ### Features
