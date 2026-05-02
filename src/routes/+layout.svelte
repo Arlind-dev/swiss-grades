@@ -3,11 +3,16 @@
   import NavBar from '$lib/components/NavBar.svelte';
   import Footer from '$lib/components/Footer.svelte';
   import { theme } from '$lib/stores/theme';
+  import { locale } from '$lib/i18n';
 
   let { children } = $props();
 
   $effect(() => {
     document.documentElement.dataset.theme = $theme;
+  });
+
+  $effect(() => {
+    document.documentElement.lang = $locale;
   });
 </script>
 

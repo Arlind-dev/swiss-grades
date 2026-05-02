@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de">
+<html lang="de" translate="no">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -7,6 +7,8 @@
       try {
         var t = localStorage.getItem('notenrechner-theme');
         document.documentElement.dataset.theme = (t === 'mocha' || t === 'latte') ? t : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'mocha' : 'latte');
+        var l = localStorage.getItem('notenrechner-locale');
+        if (l === 'de' || l === 'en' || l === 'fr' || l === 'it') document.documentElement.lang = l;
       } catch(e) {}
     </script>
     <link rel="icon" href="%sveltekit.assets%/favicon.svg" type="image/svg+xml" />
