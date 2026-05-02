@@ -1,3 +1,9 @@
+## [1.8.1](https://github.com/Arlind-dev/swiss-grades/compare/v1.8.0...v1.8.1) (2026-05-02)
+
+### Bug Fixes
+
+* **ux:** support Cmd+Enter/Backspace shortcuts on Mac ([#32](https://github.com/Arlind-dev/swiss-grades/issues/32)) ([04dc6f5](https://github.com/Arlind-dev/swiss-grades/commit/04dc6f50e6eae6e2cb533763fa81dc1dd1ccf313))
+
 ## [1.8.0](https://github.com/Arlind-dev/swiss-grades/compare/v1.7.2...v1.8.0) (2026-05-02)
 
 ### Features
