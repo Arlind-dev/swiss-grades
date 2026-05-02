@@ -1,0 +1,11 @@
+services:
+  swiss-grades:
+    image: ghcr.io/arlind-dev/swiss-grades:latest
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    networks:
+      - swiss-grades
+
+networks:
+  swiss-grades:
