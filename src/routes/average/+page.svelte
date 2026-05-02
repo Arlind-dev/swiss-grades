@@ -234,6 +234,7 @@
 
   @media (pointer: coarse) {
     .drag-handle { display: none; }
+    .delta, .delta-placeholder { display: none; }
   }
 
   .actions {
