@@ -25,6 +25,8 @@ export interface Messages {
     pointsLabel: string;
     maxPointsLabel: string;
     calculateButton: string;
+    clearAll: string;
+    clearConfirm: string;
     invalidInput: string;
     pointsOutOfRange: string;
     resultPrefix: string;
@@ -54,6 +56,8 @@ export interface Messages {
     calculateButton: string;
     shortcutAdd: string;
     shortcutDelete: string;
+    clearAll: string;
+    clearConfirm: string;
     invalidTarget: string;
     noGradesBefore: string;
     noGradesAfter: string;

@@ -5,6 +5,9 @@
   import { m } from '$lib/i18n';
   import { get } from 'svelte/store';
   import { focusRowInput } from '$lib/utils/focus';
+  import { browser } from '$app/environment';
+
+  const STORAGE_KEY = 'notenrechner-needed';
 
   interface FutureExam {
     id: string;
@@ -12,8 +15,32 @@
     weight: string;
   }
 
-  let targetAverage = $state('');
-  let futureExams = $state<FutureExam[]>([{ id: crypto.randomUUID(), name: '', weight: '' }]);
+  function loadSaved() {
+    if (!browser) return null;
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch {}
+    return null;
+  }
+
+  const saved = loadSaved();
+  let targetAverage = $state<string>(saved?.targetAverage ?? '');
+  let futureExams = $state<FutureExam[]>(
+    saved?.futureExams?.length
+      ? saved.futureExams.map((e: { name: string; weight: string }) => ({ id: crypto.randomUUID(), name: e.name, weight: e.weight }))
+      : [{ id: crypto.randomUUID(), name: '', weight: '' }]
+  );
+
+  $effect(() => {
+    if (!browser) return;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        targetAverage,
+        futureExams: futureExams.map(({ name, weight }) => ({ name, weight })),
+      }));
+    } catch {}
+  });
 
   interface ExamResult {
     name: string;
@@ -26,6 +53,34 @@ let results = $state<ExamResult[]>([]);
   let bestAttainable = $state(0);
   let errorText = $state('');
   let noGradesError = $state(false);
+  let confirmClear = $state(false);
+  let confirmTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function clearAll() {
+    targetAverage = '';
+    futureExams = [{ id: crypto.randomUUID(), name: '', weight: '' }];
+    results = [];
+    errorText = '';
+    noGradesError = false;
+    if (browser) {
+      try { localStorage.removeItem(STORAGE_KEY); } catch {}
+    }
+  }
+
+  function handleClearAll() {
+    if (window.matchMedia('(pointer: coarse)').matches) {
+      if (confirmClear) {
+        confirmClear = false;
+        if (confirmTimer) clearTimeout(confirmTimer);
+        clearAll();
+      } else {
+        confirmClear = true;
+        confirmTimer = setTimeout(() => { confirmClear = false; }, 3000);
+      }
+    } else {
+      clearAll();
+    }
+  }
 
   function addExam() {
     futureExams = [...futureExams, { id: crypto.randomUUID(), name: '', weight: '' }];
@@ -170,7 +225,12 @@ let results = $state<ExamResult[]>([]);
     <button type="button" class="btn-add" onclick={addExam}>{$m.needed.addExam}</button>
   </div>
 
-  <button type="button" class="btn-calculate" onclick={calculate}>{$m.needed.calculateButton}</button>
+  <div class="actions">
+    <button type="button" class="btn-calculate" onclick={calculate}>{$m.needed.calculateButton}</button>
+    <button type="button" class="btn-clear" class:confirming={confirmClear} onclick={handleClearAll}>
+      {confirmClear ? $m.needed.clearConfirm : $m.needed.clearAll}
+    </button>
+  </div>
   <p class="shortcuts-hint">
     <kbd>Ctrl</kbd>+<kbd>Enter</kbd> {$m.needed.shortcutAdd} &nbsp;|&nbsp;
     <kbd>Ctrl</kbd>+<kbd>Del</kbd> {$m.needed.shortcutDelete}
@@ -357,17 +417,31 @@ let results = $state<ExamResult[]>([]);
     background: none;
   }
 
-  .btn-calculate {
-    align-self: flex-start;
+  .actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
   }
 
   @media (pointer: coarse) {
-    .btn-add,
-    .btn-calculate {
+    .btn-add {
       width: 100%;
       align-self: stretch;
       text-align: center;
     }
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    .actions button:first-child {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .btn-clear.confirming {
+    background: var(--ctp-red);
+    border-color: var(--ctp-red);
+    color: var(--ctp-base);
   }
 
   .shortcuts-hint {
