@@ -265,7 +265,7 @@ let results = $derived.by((): ExamResult[] => {
                 <span class="verdict" style:color={gradeColor(6)}>{$m.needed.alreadyAchieved}</span>
               {:else}
                 <span class="grade" style:color={gradeColor(Math.min(r.needed, 6.0))}>
-                  {applyRounding(Math.min(r.needed, 6.0), rounding)}
+                  {applyRounding(Math.min(r.needed, 6.0), '2')}
                 </span>
               {/if}
             </td>
@@ -273,7 +273,7 @@ let results = $derived.by((): ExamResult[] => {
         {/each}
       </tbody>
     </table>
-    <p class="results-note">{$m.needed.bestAttainablePrefix}{applyRounding(bestAttainable, rounding)}</p>
+    <p class="results-note">{$m.needed.bestAttainablePrefix}{applyRounding(bestAttainable, '2')}</p>
   </div>
 {/if}
 
