@@ -289,14 +289,6 @@ let results = $state<ExamResult[]>([]);
     display: flex;
     flex-direction: column;
     gap: 16px;
-    max-width: 480px;
-    margin: 0 auto;
-  }
-
-  @media (max-width: 600px) {
-    .form {
-      max-width: 100%;
-    }
   }
 
   label {

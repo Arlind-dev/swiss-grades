@@ -129,7 +129,7 @@
     margin: 0 auto;
   }
 
-  @media (max-width: 600px) {
+  @media (max-width: 900px) {
     .form {
       max-width: 100%;
     }
