@@ -25,6 +25,7 @@
   footer {
     display: flex;
     align-items: baseline;
+    justify-content: center;
     flex-wrap: wrap;
     gap: 0.5rem 1rem;
     margin-top: 2rem;
