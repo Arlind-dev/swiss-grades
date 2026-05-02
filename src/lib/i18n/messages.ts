@@ -61,6 +61,7 @@ export interface Messages {
     tableExam: string;
     tableRequired: string;
     impossible: string;
+    bestAttainablePrefix: string;
     alreadyAchieved: string;
     examFallback: string;
   };

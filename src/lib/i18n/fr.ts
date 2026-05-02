@@ -63,6 +63,7 @@ export const fr: Messages = {
     tableExam: 'Examen',
     tableRequired: 'Note requise',
     impossible: 'Impossible (max. 6.0)',
+    bestAttainablePrefix: 'Meilleure note atteignable : ',
     alreadyAchieved: 'Déjà atteint',
     examFallback: 'Examen',
   },
