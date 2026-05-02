@@ -163,7 +163,10 @@
           class:positive={delta > 0.005}
           class:negative={delta < -0.005}
           class:neutral={Math.abs(delta) <= 0.005}
+          aria-label="Delta from average: {delta >= 0 ? '+' : ''}{delta.toFixed(2)}"
         >{delta >= 0 ? '+' : ''}{delta.toFixed(2)}</span>
+      {:else}
+        <span class="delta-placeholder"></span>
       {/if}
     </div>
   {/each}
@@ -280,15 +283,19 @@
     margin-top: 8px;
   }
 
-  .delta {
+  .delta, .delta-placeholder {
     font-size: 0.72rem;
     font-weight: 600;
+    width: 3.5rem;
+    flex-shrink: 0;
+    align-self: center;
+    text-align: center;
+  }
+
+  .delta {
     padding: 2px 6px;
     border-radius: 10px;
     white-space: nowrap;
-    flex-shrink: 0;
-    align-self: flex-start;
-    margin-top: 8px;
   }
 
   .delta.positive {
