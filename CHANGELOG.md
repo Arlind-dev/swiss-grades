@@ -1,3 +1,9 @@
+## [1.10.1](https://github.com/Arlind-dev/swiss-grades/compare/v1.10.0...v1.10.1) (2026-05-02)
+
+### Bug Fixes
+
+* **average:** restore delta indicator markup and styles lost during rebase ([#38](https://github.com/Arlind-dev/swiss-grades/issues/38)) ([90b5dfb](https://github.com/Arlind-dev/swiss-grades/commit/90b5dfb79f50ea9c3aaef1dcc49c0d1ba5828b23))
+
 ## [1.10.0](https://github.com/Arlind-dev/swiss-grades/compare/v1.9.0...v1.10.0) (2026-05-02)
 
 ### Features
