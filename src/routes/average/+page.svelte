@@ -278,7 +278,7 @@
   .result {
     font-size: 1.2rem;
     font-weight: 600;
-    margin-top: 8px;
+    margin-top: 16px;
     display: flex;
     align-items: center;
     gap: 8px;

@@ -35,7 +35,7 @@ export const en: Messages = {
   },
   average: {
     title: 'Grade Average',
-    addGrade: 'Add grade',
+    addGrade: '+ Add grade',
     calculateButton: 'Calculate',
     clearAll: 'Clear all',
     clearConfirm: 'Sure?',
@@ -67,7 +67,7 @@ export const en: Messages = {
     tableExam: 'Exam',
     tableRequired: 'Required grade',
     impossible: 'Not possible (max. 6.0)',
-    bestAttainablePrefix: 'Best attainable: ',
+    bestAttainablePrefix: 'Best attainable (6.0 on all future exams): ',
     alreadyAchieved: 'Already achieved',
     examFallback: 'Exam',
   },
