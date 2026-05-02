@@ -164,6 +164,9 @@
     .actions button:first-child {
       grid-column: 1 / -1;
     }
+    .btn-clear {
+      grid-column: 1 / -1;
+    }
   }
 
   .btn-clear.confirming {
