@@ -1,3 +1,9 @@
+## [1.7.1](https://github.com/Arlind-dev/swiss-grades/compare/v1.7.0...v1.7.1) (2026-05-02)
+
+### Bug Fixes
+
+* **responsive:** various responsiveness fixes ([#29](https://github.com/Arlind-dev/swiss-grades/issues/29)) ([bef178a](https://github.com/Arlind-dev/swiss-grades/commit/bef178a86a56bd641de3b88e29e7f42864314ab1))
+
 ## [1.7.0](https://github.com/Arlind-dev/swiss-grades/compare/v1.6.1...v1.7.0) (2026-05-02)
 
 ### Features
