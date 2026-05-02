@@ -4,8 +4,12 @@
   import Footer from '$lib/components/Footer.svelte';
   import { theme } from '$lib/stores/theme';
   import { locale } from '$lib/i18n';
+  import { onMount } from 'svelte';
 
   let { children } = $props();
+  let mounted = $state(false);
+
+  onMount(() => { mounted = true; });
 
   $effect(() => {
     document.documentElement.dataset.theme = $theme;
@@ -18,7 +22,7 @@
 
 <div class="layout">
   <NavBar />
-  <main>
+  <main class:invisible={!mounted}>
     {@render children()}
   </main>
   <Footer />
@@ -32,11 +36,16 @@
 
   main {
     width: fit-content;
+    margin: 0 auto;
   }
 
-  @media (max-width: 600px) {
+  @media (max-width: 900px) {
     main {
       width: 100%;
     }
+  }
+
+  main.invisible {
+    visibility: hidden;
   }
 </style>
