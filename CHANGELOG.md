@@ -1,3 +1,9 @@
+## [1.9.0](https://github.com/Arlind-dev/swiss-grades/compare/v1.8.2...v1.9.0) (2026-05-02)
+
+### Features
+
+* **average:** show delta indicator per grade row  ([#36](https://github.com/Arlind-dev/swiss-grades/issues/36)) ([147408e](https://github.com/Arlind-dev/swiss-grades/commit/147408e3ce524e4d3c5f72f837da35309213a79b))
+
 ## [1.8.2](https://github.com/Arlind-dev/swiss-grades/compare/v1.8.1...v1.8.2) (2026-05-02)
 
 ### Bug Fixes
