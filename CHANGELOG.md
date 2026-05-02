@@ -1,3 +1,9 @@
+## [1.10.2](https://github.com/Arlind-dev/swiss-grades/compare/v1.10.1...v1.10.2) (2026-05-02)
+
+### Bug Fixes
+
+* **ui:** uniform rounding placement, button styles, and labels across pages ([#39](https://github.com/Arlind-dev/swiss-grades/issues/39)) ([490ca9b](https://github.com/Arlind-dev/swiss-grades/commit/490ca9b318e7e2f909227c70b230705b50404401))
+
 ## [1.10.1](https://github.com/Arlind-dev/swiss-grades/compare/v1.10.0...v1.10.1) (2026-05-02)
 
 ### Bug Fixes
