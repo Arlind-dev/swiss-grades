@@ -2,10 +2,7 @@
   import { page } from '$app/stores';
   import { m, locale, type Locale } from '$lib/i18n';
   import { theme, type Theme } from '$lib/stores/theme';
-  import MoonOutline from 'flowbite-svelte-icons/MoonOutline.svelte';
-  import SunOutline from 'flowbite-svelte-icons/SunOutline.svelte';
-  import BarsOutline from 'flowbite-svelte-icons/BarsOutline.svelte';
-  import CloseOutline from 'flowbite-svelte-icons/CloseOutline.svelte';
+  import { MoonOutline, SunOutline, BarsOutline, CloseOutline } from 'flowbite-svelte-icons';
 
   const locales: { value: Locale; label: string }[] = [
     { value: 'de', label: 'DE' },
