@@ -1,3 +1,9 @@
+## [1.5.0](https://github.com/Arlind-dev/swiss-grades/compare/v1.4.0...v1.5.0) (2026-05-02)
+
+### Features
+
+* persist locale to localStorage and detect browser language ([#21](https://github.com/Arlind-dev/swiss-grades/issues/21)) ([fdbc8fa](https://github.com/Arlind-dev/swiss-grades/commit/fdbc8facd5cefce5c7fc90c6e381a06171b0ef0f))
+
 ## [1.4.0](https://github.com/Arlind-dev/swiss-grades/compare/v1.3.2...v1.4.0) (2026-05-02)
 
 ### Features
