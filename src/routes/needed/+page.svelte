@@ -138,8 +138,11 @@ let results = $derived.by((): ExamResult[] => {
   }
 
 
+  let isMac = $state(false);
+  $effect(() => { if (browser) isMac = /Macintosh|Mac OS X/.test(navigator.userAgent); });
+
   function onWindowKeydown(e: KeyboardEvent) {
-    if (e.ctrlKey && e.key === 'Enter') {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault();
       addExam();
       setTimeout(() => focusRowInput('.future-exams', '.exam-row', futureExams.length - 1), 0);
@@ -147,7 +150,7 @@ let results = $derived.by((): ExamResult[] => {
   }
 
   function onExamKeydown(e: KeyboardEvent, id: string) {
-    if (e.ctrlKey && e.key === 'Delete') {
+    if ((e.ctrlKey && e.key === 'Delete') || (e.metaKey && e.key === 'Backspace')) {
       e.preventDefault();
       if (futureExams.length > 1) {
         const index = futureExams.findIndex((ex) => ex.id === id);
@@ -231,8 +234,8 @@ let results = $derived.by((): ExamResult[] => {
     </button>
   </div>
   <p class="shortcuts-hint">
-    <kbd>Ctrl</kbd>+<kbd>Enter</kbd> {$m.needed.shortcutAdd} &nbsp;|&nbsp;
-    <kbd>Ctrl</kbd>+<kbd>Del</kbd> {$m.needed.shortcutDelete}
+    <kbd>{isMac ? '⌘' : 'Ctrl'}</kbd>+<kbd>Enter</kbd> {$m.needed.shortcutAdd} &nbsp;|&nbsp;
+    <kbd>{isMac ? '⌘' : 'Ctrl'}</kbd>+<kbd>{isMac ? '⌫' : 'Del'}</kbd> {$m.needed.shortcutDelete}
   </p>
 </div>
 
