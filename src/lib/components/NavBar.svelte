@@ -44,6 +44,7 @@
       <a href="/calculator" class:active={$page.url.pathname === '/calculator'}>{$m.nav.calculator}</a>
       <a href="/average"    class:active={$page.url.pathname === '/average'}>{$m.nav.average}</a>
       <a href="/needed"     class:active={$page.url.pathname === '/needed'}>{$m.nav.needed}</a>
+      <a href="/qv"         class:active={$page.url.pathname === '/qv'}>{$m.nav.qv}</a>
     </div>
 
     <div class="controls">
