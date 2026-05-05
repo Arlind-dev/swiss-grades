@@ -77,11 +77,11 @@ function csvLine(fields: string[], delimiter: CsvDelimiter): string {
 function appendEntryRows(
 	rows: string[][],
 	entry: GradeEntry,
-	labels: CsvExportLabels,
-	delimiter: CsvDelimiter,
+	options: Required<Pick<CsvExportOptions, 'labels' | 'delimiter'>>,
 	path: string,
 	parentPath: string
 ): void {
+	const { labels, delimiter } = options;
 	const exportableChildren = entry.subgrades.filter(hasExportableEntry);
 	rows.push([
 		labels.gradeRow,
@@ -94,7 +94,7 @@ function appendEntryRows(
 	]);
 
 	exportableChildren.forEach((child, index) => {
-		appendEntryRows(rows, child, labels, delimiter, `${path}.${index + 1}`, path);
+		appendEntryRows(rows, child, { labels, delimiter }, `${path}.${index + 1}`, path);
 	});
 }
 
@@ -115,7 +115,7 @@ export function formatGradesAsCsv(entries: GradeEntry[], options: CsvExportOptio
 	];
 
 	entries.filter(hasExportableEntry).forEach((entry, index) => {
-		appendEntryRows(rows, entry, labels, delimiter, String(index + 1), '');
+		appendEntryRows(rows, entry, { labels, delimiter }, String(index + 1), '');
 	});
 
 	if (options.averageGrade !== null && options.averageGrade !== undefined) {
