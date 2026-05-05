@@ -10,7 +10,7 @@ A Swiss grade calculator built with SvelteKit.
 - **Grade Average:** calculate a weighted average across multiple subjects with optional sub-grades and drag-to-reorder
 - **Required Grade:** find out what grade you need in future exams to reach a target average
 - Configurable rounding (2 decimal, 1 decimal, 0.5, 0.25)
-- Available in German, English, French, and Italian
+- Available in German, English, French, Italian, Somali, Russian, and Turkish
 - Light / dark theme
 - Fully responsive, mobile-friendly UI
 - Keyboard shortcuts (`Ctrl+Enter` to add, `Ctrl+Delete` to remove)

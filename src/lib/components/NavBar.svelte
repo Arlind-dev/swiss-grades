@@ -9,6 +9,9 @@
     { value: 'en', label: 'EN' },
     { value: 'fr', label: 'FR' },
     { value: 'it', label: 'IT' },
+    { value: 'so', label: 'SO' },
+    { value: 'ru', label: 'RU' },
+    { value: 'tr', label: 'TR' },
   ];
 
   let menuOpen = $state(false);
