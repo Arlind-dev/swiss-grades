@@ -36,6 +36,8 @@ export const tr: Messages = {
   average: {
     title: 'Not Ortalaması',
     addGrade: '+ Not ekle',
+    exportCsv: 'CSV dışa aktar',
+    exportCsvTitle: 'Notları CSV olarak dışa aktar',
     calculateButton: 'Hesapla',
     clearAll: 'Tümünü temizle',
     clearConfirm: 'Emin misiniz?',
@@ -43,6 +45,18 @@ export const tr: Messages = {
     shortcutDelete: 'odaktaki notu sil',
     dragHandleTitle: 'Satırı taşı',
     resultPrefix: 'Not ortalaması: ',
+    csv: {
+      type: 'Tür',
+      level: 'Seviye',
+      path: 'Yol',
+      parentPath: 'Üst yol',
+      name: 'Ad',
+      grade: 'Not',
+      weightPercent: 'Ağırlık (%)',
+      gradeRow: 'Not',
+      averageRow: 'Ortalama',
+      averageName: 'Not ortalaması',
+    },
   },
   needed: {
     title: 'Gerekli Not',

@@ -36,6 +36,8 @@ export const sq: Messages = {
   average: {
     title: 'Mesatarja e Notave',
     addGrade: '+ Shto notë',
+    exportCsv: 'Eksporto CSV',
+    exportCsvTitle: 'Eksporto notat si CSV',
     calculateButton: 'Llogarit',
     clearAll: 'Pastro të gjitha',
     clearConfirm: 'Je i sigurt?',
@@ -43,6 +45,18 @@ export const sq: Messages = {
     shortcutDelete: 'fshi notën e fokusuar',
     dragHandleTitle: 'Zhvendos rreshtin',
     resultPrefix: 'Mesatarja e notave: ',
+    csv: {
+      type: 'Lloji',
+      level: 'Niveli',
+      path: 'Shtegu',
+      parentPath: 'Shtegu prind',
+      name: 'Emri',
+      grade: 'Nota',
+      weightPercent: 'Pesha (%)',
+      gradeRow: 'Nota',
+      averageRow: 'Mesatarja',
+      averageName: 'Mesatarja e notave',
+    },
   },
   needed: {
     title: 'Nota e Nevojshme',

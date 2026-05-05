@@ -8,6 +8,8 @@
   import { m } from '$lib/i18n';
   import { focusRowInput } from '$lib/utils/focus';
   import { browser } from '$app/environment';
+  import { buildCsvFilename, downloadCsv, formatGradesAsCsv, hasExportableGradeEntries } from '$lib/utils/export';
+  import { FileCsvOutline } from 'flowbite-svelte-icons';
 
   let rounding = $state($settings.averageRounding);
   let isMac = $state(false);
@@ -16,6 +18,7 @@
 
   let averageGrade = $derived(computeWeightedAverage($grades));
   let validCount = $derived($grades.filter((e) => !isNaN(parseFloat(e.grade))).length);
+  let hasCsvExportRows = $derived(hasExportableGradeEntries($grades));
 
   // ── Grade list mutations ─────────────────────────────────────────────────
 
@@ -29,6 +32,15 @@
 
   function updateGrade(id: string, updated: GradeEntry) {
     grades.update((g) => g.map((e) => (e.id === id ? updated : e)));
+  }
+
+  function exportCsv() {
+    if (!browser || !hasCsvExportRows) return;
+    const csv = formatGradesAsCsv($grades, {
+      labels: $m.average.csv,
+      averageGrade: averageGrade !== null ? applyRounding(averageGrade, rounding) : null,
+    });
+    downloadCsv(buildCsvFilename(), csv);
   }
 
   // ── Average calculation is fully reactive via $derived above ───────────
@@ -171,6 +183,17 @@
 
 <div class="actions">
   <button type="button" class="btn-add" onclick={addGrade}>{$m.average.addGrade}</button>
+  <button
+    type="button"
+    class="btn-export"
+    onclick={exportCsv}
+    disabled={!hasCsvExportRows}
+    aria-label={$m.average.exportCsvTitle}
+    title={$m.average.exportCsvTitle}
+  >
+    <FileCsvOutline class="button-icon" />
+    <span>{$m.average.exportCsv}</span>
+  </button>
 </div>
 <div class="actions">
   <button type="button" class="btn-clear" class:confirming={confirmClear} onclick={handleClearAll}>
@@ -256,6 +279,34 @@
     background: none;
   }
 
+  .btn-export {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    color: var(--ctp-subtext0);
+    padding: 4px 10px;
+    border-radius: 3px;
+  }
+
+  .btn-export:hover:not(:disabled) {
+    border-color: var(--ctp-green);
+    color: var(--ctp-green);
+    background: none;
+  }
+
+  .btn-export:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+
+  .btn-export :global(.button-icon) {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    pointer-events: none;
+  }
+
   @media (pointer: coarse) {
     .actions {
       display: grid;
@@ -263,6 +314,10 @@
     }
     .actions button:first-child {
       grid-column: 1 / -1;
+    }
+    .btn-export {
+      grid-column: 1 / -1;
+      justify-content: center;
     }
     .btn-clear {
       grid-column: 1 / -1;

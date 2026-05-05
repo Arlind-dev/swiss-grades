@@ -36,6 +36,8 @@ export const fr: Messages = {
   average: {
     title: 'Moyenne des notes',
     addGrade: '+ Ajouter une note',
+    exportCsv: 'Exporter CSV',
+    exportCsvTitle: 'Exporter les notes en CSV',
     calculateButton: 'Calculer',
     clearAll: 'Tout effacer',
     clearConfirm: 'Sûr ?',
@@ -43,6 +45,18 @@ export const fr: Messages = {
     shortcutDelete: 'supprimer la note ciblée',
     dragHandleTitle: 'Déplacer la ligne',
     resultPrefix: 'Moyenne : ',
+    csv: {
+      type: 'Type',
+      level: 'Niveau',
+      path: 'Chemin',
+      parentPath: 'Chemin parent',
+      name: 'Nom',
+      grade: 'Note',
+      weightPercent: 'Pondération (%)',
+      gradeRow: 'Note',
+      averageRow: 'Moyenne',
+      averageName: 'Moyenne',
+    },
   },
   needed: {
     title: 'Note requise',
