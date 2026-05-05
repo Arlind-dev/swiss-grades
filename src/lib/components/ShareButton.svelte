@@ -85,33 +85,13 @@
   }
 </script>
 
-<button type="button" class="share-button" aria-label={$m.share.action} title={$m.share.action} onclick={handleShare}>
-  <ShareNodesOutline class="icon" />
-  <span aria-live="polite">{statusText}</span>
+<button 
+  type="button" 
+  class="btn btn-ghost btn-sm text-ctp-subtext1 gap-2 rounded-lg hover:bg-ctp-surface0 transition-all border border-ctp-surface1 px-4" 
+  aria-label={$m.share.action} 
+  title={$m.share.action} 
+  onclick={handleShare}
+>
+  <ShareNodesOutline class="w-4 h-4" />
+  <span aria-live="polite" class="text-xs font-bold uppercase tracking-wider">{statusText}</span>
 </button>
-
-<style>
-  .share-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin: 0 0 12px;
-    padding: 5px 10px;
-    border-radius: 3px;
-    background: none;
-    color: var(--ctp-subtext0);
-    border-color: var(--ctp-surface2);
-  }
-
-  .share-button:hover {
-    border-color: var(--ctp-lavender);
-    color: var(--ctp-lavender);
-    background: none;
-  }
-
-  .share-button :global(.icon) {
-    width: 17px;
-    height: 17px;
-    flex-shrink: 0;
-  }
-</style>

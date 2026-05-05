@@ -7,6 +7,7 @@ export interface QVDetailComponent {
   label: string;
   shortLabel: string;
   weight: number;
+  roundingNote?: string;
 }
 
 export interface QVComponent {
@@ -14,6 +15,8 @@ export interface QVComponent {
   label: string;
   shortLabel: string;
   weight: number;
+  description?: string;
+  roundingNote?: string;
   fallnote?: boolean;
   minGrade?: number;
   details?: QVDetailComponent[];

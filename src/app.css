@@ -1,3 +1,28 @@
+@import "tailwindcss";
+@plugin "daisyui/index.js";
+
+@theme {
+  --color-ctp-base: var(--ctp-base);
+  --color-ctp-mantle: var(--ctp-mantle);
+  --color-ctp-crust: var(--ctp-crust);
+  --color-ctp-surface0: var(--ctp-surface0);
+  --color-ctp-surface1: var(--ctp-surface1);
+  --color-ctp-surface2: var(--ctp-surface2);
+  --color-ctp-overlay0: var(--ctp-overlay0);
+  --color-ctp-overlay1: var(--ctp-overlay1);
+  --color-ctp-overlay2: var(--ctp-overlay2);
+  --color-ctp-subtext0: var(--ctp-subtext0);
+  --color-ctp-subtext1: var(--ctp-subtext1);
+  --color-ctp-text: var(--ctp-text);
+  --color-ctp-lavender: var(--ctp-lavender);
+  --color-ctp-blue: var(--ctp-blue);
+  --color-ctp-green: var(--ctp-green);
+  --color-ctp-red: var(--ctp-red);
+  --color-ctp-yellow: var(--ctp-yellow);
+  --color-ctp-mauve: var(--ctp-mauve);
+  --color-ctp-peach: var(--ctp-peach);
+}
+
 /* ── Catppuccin Latte (light, default) ─────────────────────────────────── */
 :root,
 [data-theme="latte"] {
@@ -21,6 +46,21 @@
   --ctp-yellow:   #DF8E1D;
   --ctp-mauve:    #8839EF;
   --ctp-peach:    #FE640B;
+
+  /* daisyUI theme overrides */
+  --color-primary: var(--ctp-lavender);
+  --color-secondary: var(--ctp-blue);
+  --color-accent: var(--ctp-mauve);
+  --color-neutral: var(--ctp-surface0);
+  --color-base-100: var(--ctp-base);
+  --color-info: var(--ctp-blue);
+  --color-success: var(--ctp-green);
+  --color-warning: var(--ctp-yellow);
+  --color-error: var(--ctp-red);
+  
+  --radius-selector: 1rem;
+  --radius-field: 0.75rem;
+  --radius-box: 1.5rem;
 }
 
 /* ── Catppuccin Mocha (dark) ────────────────────────────────────────────── */
@@ -45,90 +85,50 @@
   --ctp-yellow:   #F9E2AF;
   --ctp-mauve:    #CBA6F7;
   --ctp-peach:    #FAB387;
+
+  /* daisyUI theme overrides */
+  --color-primary: var(--ctp-lavender);
+  --color-secondary: var(--ctp-blue);
+  --color-accent: var(--ctp-mauve);
+  --color-neutral: var(--ctp-surface0);
+  --color-base-100: var(--ctp-base);
+  --color-info: var(--ctp-blue);
+  --color-success: var(--ctp-green);
+  --color-warning: var(--ctp-yellow);
+  --color-error: var(--ctp-red);
 }
 
-/* ── Reset ──────────────────────────────────────────────────────────────── */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-/* ── Base ───────────────────────────────────────────────────────────────── */
+/* ── Reset & Base ───────────────────────────────────────────────────────── */
 html {
   background: var(--ctp-base);
+  color: var(--ctp-text);
+  scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
-  padding: 20px;
+  padding: 0;
   min-height: 100dvh;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background: var(--ctp-base);
   color: var(--ctp-text);
-  transition: background 0.2s, color 0.2s;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
-@media (max-width: 600px) {
-  body {
-    padding: 12px;
-  }
+/* daisyUI global style tweaks */
+.btn {
+  @apply rounded-xl font-black tracking-tight capitalize border-2;
 }
 
-h1 {
-  margin-top: 0;
-  color: var(--ctp-text);
+.card {
+  @apply rounded-3xl border-2 border-ctp-surface0 shadow-xl;
 }
 
-p {
-  color: var(--ctp-subtext1);
+.input, .select {
+  @apply rounded-xl border-2;
 }
 
-a {
-  color: var(--ctp-blue);
-}
-
-label {
-  display: block;
-  margin-bottom: 8px;
-  color: var(--ctp-subtext1);
-}
-
-/* ── Buttons ────────────────────────────────────────────────────────────── */
-button {
-  cursor: pointer;
-  padding: 6px 12px;
-  font-size: 0.95rem;
-  background: var(--ctp-surface0);
-  color: var(--ctp-text);
-  border: 1px solid var(--ctp-surface2);
-  border-radius: 3px;
-  transition: background 0.15s, border-color 0.15s;
-}
-
-button:hover {
-  background: var(--ctp-surface1);
-  border-color: var(--ctp-overlay0);
-}
-
-/* ── Inputs ─────────────────────────────────────────────────────────────── */
-input[type='text'],
-select {
-  background: var(--ctp-base);
-  color: var(--ctp-text);
-  border: 2px solid var(--ctp-surface2);
-  border-radius: 3px;
-  font-size: 1rem;
-  padding: 5px 8px;
-  outline: none;
-  transition: border-color 0.15s;
-}
-
-input[type='text']:focus,
-select:focus {
-  border-color: var(--ctp-lavender);
-}
-
-input::placeholder {
-  color: var(--ctp-overlay1);
+.badge {
+  @apply rounded-lg font-black border-2;
 }
