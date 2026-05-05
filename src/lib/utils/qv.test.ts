@@ -6,10 +6,37 @@ import {
   computeQVFinalGrade,
   evaluateQV,
 } from './qv';
+import type { QVComponent, QVPreset } from '../qv/types';
 
 const preset = QV_PRESETS[0];
 const ipa = preset.components.find((component) => component.id === 'ipa')!;
 const ik = preset.components.find((component) => component.id === 'ik')!;
+
+const popularPresetIds = [
+  'kaufmann-kauffrau-efz',
+  'detailhandelsfachmann-detailhandelsfachfrau-efz',
+  'fachmann-fachfrau-betreuung-efz',
+  'medizinische-praxisassistentin-praxisassistent-efz',
+  'fachmann-fachfrau-gesundheit-efz',
+  'fachmann-fachfrau-apotheke-efz',
+  'logistiker-logistikerin-efz',
+];
+
+function presetById(id: string): QVPreset {
+  const found = QV_PRESETS.find((entry) => entry.id === id);
+  if (!found) throw new Error(`Missing QV preset ${id}`);
+  return found;
+}
+
+function componentById(preset: QVPreset, id: string): QVComponent {
+  const found = preset.components.find((component) => component.id === id);
+  if (!found) throw new Error(`Missing QV component ${id}`);
+  return found;
+}
+
+function gradesFor(preset: QVPreset, value: number): Record<string, number> {
+  return Object.fromEntries(preset.components.map((component) => [component.id, value]));
+}
 
 describe('QV Informatiker/in EFZ calculations', () => {
   test('regular all 4.0 passes', () => {
@@ -85,4 +112,123 @@ describe('QV Informatiker/in EFZ calculations', () => {
     expect(needed?.impossible).toBe(true);
     expect(needed?.reason).toBe('max-grade');
   });
+});
+
+describe('QV popular EFZ preset calculations', () => {
+  for (const presetId of popularPresetIds) {
+    test(`${presetId} passes with all components at 4.0`, () => {
+      const currentPreset = presetById(presetId);
+      const result = evaluateQV(currentPreset, 'regular', gradesFor(currentPreset, 4));
+
+      expect(result.finalGrade).toBe(4);
+      expect(result.passed).toBe(true);
+    });
+  }
+
+  test('fallnote failures fail even when the weighted total is high', () => {
+    for (const presetId of popularPresetIds) {
+      const currentPreset = presetById(presetId);
+
+      for (const component of currentPreset.components.filter((entry) => entry.fallnote)) {
+        const grades = gradesFor(currentPreset, 6);
+        grades[component.id] = 3.9;
+        const result = evaluateQV(currentPreset, 'regular', grades);
+
+        expect(result.finalGrade).toBeGreaterThanOrEqual(4);
+        expect(result.failedFallnoten.includes(component.id)).toBe(true);
+        expect(result.passed).toBe(false);
+      }
+    }
+  });
+
+  const weightedExamples: [string, Record<string, number>, number][] = [
+    [
+      'kaufmann-kauffrau-efz',
+      { 'kv-praktische-arbeit': 4, 'kv-berufskenntnisse-allgemeinbildung': 5, 'kv-erfahrungsnote': 6 },
+      5.1,
+    ],
+    [
+      'detailhandelsfachmann-detailhandelsfachfrau-efz',
+      {
+        'detailhandel-praktische-arbeit': 4,
+        'detailhandel-berufskenntnisse': 5,
+        'detailhandel-allgemeinbildung': 6,
+        'detailhandel-erfahrungsnote': 5,
+      },
+      4.8,
+    ],
+    [
+      'fachmann-fachfrau-betreuung-efz',
+      { 'fabe-praktische-arbeit': 4, 'fabe-berufskenntnisse': 5, 'fabe-allgemeinbildung': 6, 'fabe-erfahrungsnote': 5 },
+      4.8,
+    ],
+    [
+      'medizinische-praxisassistentin-praxisassistent-efz',
+      { 'mpa-praktische-arbeit': 4, 'mpa-berufskenntnisse': 5, 'mpa-allgemeinbildung': 6, 'mpa-erfahrungsnote': 5 },
+      4.9,
+    ],
+    [
+      'fachmann-fachfrau-gesundheit-efz',
+      { 'fage-praktische-arbeit': 4, 'fage-berufskenntnisse': 5, 'fage-allgemeinbildung': 6, 'fage-erfahrungsnote': 5 },
+      4.9,
+    ],
+    [
+      'fachmann-fachfrau-apotheke-efz',
+      { 'apotheke-praktische-arbeit': 4, 'apotheke-berufskenntnisse': 5, 'apotheke-allgemeinbildung': 6, 'apotheke-erfahrungsnote': 5 },
+      4.8,
+    ],
+    [
+      'logistiker-logistikerin-efz',
+      { 'logistik-praktische-arbeit': 4, 'logistik-berufskenntnisse': 5, 'logistik-allgemeinbildung': 6, 'logistik-erfahrungsnote': 5 },
+      4.8,
+    ],
+  ];
+
+  for (const [presetId, grades, expectedFinalGrade] of weightedExamples) {
+    test(`${presetId} weighted example rounds to the expected final grade`, () => {
+      const result = computeQVFinalGrade(presetById(presetId), 'regular', grades);
+      expect(result?.finalGrade).toBe(expectedFinalGrade);
+    });
+  }
+
+  const detailExamples: [string, string, Record<string, number>, number][] = [
+    ['kaufmann-kauffrau-efz', 'kv-erfahrungsnote', { betrieb: 4, berufsfachschule: 5, uek: 6 }, 5],
+    [
+      'detailhandelsfachmann-detailhandelsfachfrau-efz',
+      'detailhandel-erfahrungsnote',
+      { betrieb: 4, berufskenntnisse: 5, uek: 6 },
+      5,
+    ],
+    [
+      'fachmann-fachfrau-apotheke-efz',
+      'apotheke-erfahrungsnote',
+      { berufskenntnisse: 5, uek: 4 },
+      4.7,
+    ],
+    [
+      'medizinische-praxisassistentin-praxisassistent-efz',
+      'mpa-berufskenntnisse',
+      { organisation: 4, assistenz: 4, labor: 5, bildgebung: 6, therapie: 5 },
+      5,
+    ],
+    [
+      'fachmann-fachfrau-gesundheit-efz',
+      'fage-erfahrungsnote',
+      { praxis: 4.5, berufskenntnisse: 5.5 },
+      5,
+    ],
+    [
+      'logistiker-logistikerin-efz',
+      'logistik-erfahrungsnote',
+      { praxis: 4, berufskenntnisse: 5, uek: 6 },
+      5,
+    ],
+  ];
+
+  for (const [presetId, componentId, detailGrades, expectedGrade] of detailExamples) {
+    test(`${presetId} ${componentId} detail weights calculate correctly`, () => {
+      const component = componentById(presetById(presetId), componentId);
+      expect(computeComponentGrade(component, detailGrades)).toBe(expectedGrade);
+    });
+  }
 });

@@ -95,7 +95,7 @@ export const fr: Messages = {
   },
   qv: {
     title: 'Calculateur QV',
-    description: "Calcule le QV Informatiker/in EFZ selon la BiVo 2021 avec notes éliminatoires, arrondis et cas BM.",
+    description: 'Calcule les notes finales QV pour les apprentissages EFZ populaires avec pondérations, notes éliminatoires et arrondis.',
     overviewFallnotenTitle: 'Réussite',
     overviewFallnotenText: "Le QV est réussi seulement avec IPA au moins 4.0, IK au moins 4.0 et note finale au moins 4.0.",
     overviewWeightsTitle: 'Pondération',

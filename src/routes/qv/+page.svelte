@@ -1,6 +1,6 @@
 <script lang="ts">
   import { qv, resetQV } from '$lib/stores/qv';
-  import { QV_PRESETS, getQVPreset } from '$lib/qv/presets';
+  import { QV_PRESETS, getQVPreset, getQVTrack } from '$lib/qv/presets';
   import type { QVComponent, QVComponentId, QVTrack } from '$lib/qv/types';
   import ShareButton from '$lib/components/ShareButton.svelte';
   import { clampInput, numericInput } from '$lib/actions';
@@ -18,18 +18,25 @@
     ShieldCheckOutline,
     ChartPieOutline,
     AdjustmentsHorizontalOutline,
-    BriefcaseOutline
+    BriefcaseOutline,
+    TerminalOutline,
+    BookOutline,
+    CartOutline,
+    UsersGroupOutline,
+    TruckOutline,
+    HeartOutline,
+    CloseOutline
   } from 'flowbite-svelte-icons';
 
-  const sources = [
-    { label: 'ICT-Berufsbildung', href: 'https://www.ict-berufsbildung.ch/grundbildung/ict-lehren/informatiker-in-efz' },
-    { label: 'SBFI BiVo Art. 19', href: 'https://www.fedlex.admin.ch/eli/cc/2020/886/de#art_19' },
-    { label: 'QV Ausführungsbestimmungen', href: 'https://www.ict-berufsbildung.ch/resources/Informatiker-EFZ_Ausfuehrungsbestimmungen_QV_202406121.pdf' },
-    { label: 'ICT-BZ QV 2026', href: 'https://ict-bz.ch/download/qv-2026-prasentation-infoveranstaltung-applikation-und-plattformentwicklung' },
-    { label: 'BBZBL BiVo 2021', href: 'https://www.bbzbl.ch/wp-content/uploads/2021/07/Qualifikationsverfahren-QV-BiVo-2021.pdf' },
+  const overviewStyles = [
+    { icon: ShieldCheckOutline, color: 'text-ctp-green', bg: 'bg-ctp-green/10' },
+    { icon: ChartPieOutline, color: 'text-ctp-blue', bg: 'bg-ctp-blue/10' },
+    { icon: AdjustmentsHorizontalOutline, color: 'text-ctp-mauve', bg: 'bg-ctp-mauve/10' },
+    { icon: BriefcaseOutline, color: 'text-ctp-peach', bg: 'bg-ctp-peach/10' },
   ];
 
   let preset = $derived(getQVPreset($qv.presetId));
+  let activeTrack = $derived(getQVTrack(preset, $qv.track));
   let componentGrades = $derived.by(() => {
     const grades: Record<string, number | null> = {};
     for (const component of preset.components) {
@@ -43,12 +50,12 @@
   });
   let evaluation = $derived(evaluateQV(preset, $qv.track, componentGrades));
   let needed = $derived(computeNeededGrade(preset, $qv.track, componentGrades));
-  let overviewItems = $derived([
-    { title: $m.qv.overviewFallnotenTitle, text: $m.qv.overviewFallnotenText, icon: ShieldCheckOutline, color: 'text-ctp-green', bg: 'bg-ctp-green/10' },
-    { title: $m.qv.overviewWeightsTitle, text: $m.qv.overviewWeightsText, icon: ChartPieOutline, color: 'text-ctp-blue', bg: 'bg-ctp-blue/10' },
-    { title: $m.qv.overviewRoundingTitle, text: $m.qv.overviewRoundingText, icon: AdjustmentsHorizontalOutline, color: 'text-ctp-mauve', bg: 'bg-ctp-mauve/10' },
-    { title: $m.qv.overviewIpaTitle, text: $m.qv.overviewIpaText, icon: BriefcaseOutline, color: 'text-ctp-peach', bg: 'bg-ctp-peach/10' },
-  ]);
+  let overviewItems = $derived(
+    preset.overviewItems.map((item, index) => ({
+      ...item,
+      ...overviewStyles[index % overviewStyles.length],
+    }))
+  );
 
   let progress = $derived.by(() => {
     const active = evaluation.activeComponents;
@@ -57,9 +64,12 @@
     return (completed / active.length) * 100;
   });
 
+  let showPresetModal = $state(false);
   let showInfo = $state(false);
   let confirmClear = $state(false);
   let confirmTimer: ReturnType<typeof setTimeout> | null = null;
+
+  let activePresetIcon = $derived(getPresetIcon($qv.presetId));
 
   onMount(() => {
     const payload = readSharePayload('qv');
@@ -87,8 +97,29 @@
     );
   }
 
+  function filterQVMap<T>(values: Record<string, T> | undefined, allowedIds: Set<string>): Record<string, T> {
+    return Object.fromEntries(
+      Object.entries(values ?? {}).filter(([componentId]) => allowedIds.has(componentId))
+    ) as Record<string, T>;
+  }
+
   function setPreset(presetId: string) {
-    qv.update((state) => ({ ...state, presetId }));
+    const nextPreset = getQVPreset(presetId);
+    qv.update((state) => {
+      const componentIds = new Set(nextPreset.components.map((component) => component.id));
+      const track = nextPreset.tracks.some((option) => option.id === state.track)
+        ? state.track
+        : nextPreset.tracks[0].id;
+
+      return {
+        ...state,
+        presetId: nextPreset.id,
+        track,
+        componentGrades: filterQVMap(state.componentGrades, componentIds),
+        detailEnabled: filterQVMap(state.detailEnabled, componentIds),
+        detailGrades: filterQVMap(state.detailGrades, componentIds),
+      };
+    });
   }
 
   function setTrack(track: QVTrack) {
@@ -146,6 +177,15 @@
       .join(', ');
   }
 
+  function getPresetIcon(id: string) {
+    if (id.includes('informatiker')) return TerminalOutline;
+    if (id.includes('kaufmann')) return BookOutline;
+    if (id.includes('detailhandel')) return CartOutline;
+    if (id.includes('betreuung')) return UsersGroupOutline;
+    if (id.includes('logistiker')) return TruckOutline;
+    return HeartOutline;
+  }
+
   function handleClearAll() {
     if (window.matchMedia('(pointer: coarse)').matches) {
       if (confirmClear) {
@@ -176,45 +216,40 @@
         <div class="space-y-4 w-full sm:w-auto">
           <div>
             <p class="text-xs font-black uppercase tracking-widest text-ctp-overlay1 mb-2">{$m.qv.presetLabel}</p>
-            <div class="join w-full">
-              {#each QV_PRESETS as item}
-                <button
-                  type="button"
-                  class="btn join-item btn-sm flex-grow sm:flex-grow-0 min-w-[5rem] transition-all"
-                  class:bg-ctp-lavender={$qv.presetId === item.id}
-                  class:text-ctp-base={$qv.presetId === item.id}
-                  class:bg-ctp-base={$qv.presetId !== item.id}
-                  class:text-ctp-text={$qv.presetId !== item.id}
-                  class:border-ctp-surface1={$qv.presetId !== item.id}
-                  onclick={() => setPreset(item.id)}
-                >{item.shortLabel}</button>
-              {/each}
-            </div>
+            <button
+              type="button"
+              class="flex items-center justify-between w-full max-w-xl p-4 bg-ctp-base border-2 border-ctp-surface1 rounded-2xl hover:border-ctp-lavender transition-all text-left group"
+              onclick={() => (showPresetModal = true)}
+            >
+              <div class="flex items-center gap-4">
+                <div class="p-2.5 rounded-xl bg-ctp-mantle border border-ctp-surface0 group-hover:border-ctp-lavender/30 transition-all">
+                  <activePresetIcon class="w-6 h-6 text-ctp-lavender"></activePresetIcon>
+                </div>
+                <div>
+                  <span class="block font-black text-ctp-text leading-tight">{preset.label}</span>
+                  <span class="text-xs font-bold text-ctp-overlay1 tracking-widest uppercase">{preset.fachrichtung}</span>
+                </div>
+              </div>
+              <ChevronDownOutline class="w-5 h-5 text-ctp-overlay1 group-hover:text-ctp-lavender transition-all" />
+            </button>
+            <p class="mt-3 max-w-xl text-sm leading-relaxed text-ctp-subtext1">{preset.description}</p>
           </div>
 
           <div>
             <p class="text-xs font-black uppercase tracking-widest text-ctp-overlay1 mb-2">{$m.qv.trackLabel}</p>
             <div class="join w-full">
-              <button
-                type="button"
-                class="btn join-item btn-sm flex-grow sm:flex-grow-0 min-w-[6rem] transition-all"
-                class:bg-ctp-lavender={$qv.track === 'regular'}
-                class:text-ctp-base={$qv.track === 'regular'}
-                class:bg-ctp-base={$qv.track !== 'regular'}
-                class:text-ctp-text={$qv.track !== 'regular'}
-                class:border-ctp-surface1={$qv.track !== 'regular'}
-                onclick={() => setTrack('regular')}
-              >{$m.qv.regularTrack}</button>
-              <button
-                type="button"
-                class="btn join-item btn-sm flex-grow sm:flex-grow-0 min-w-[6rem] transition-all"
-                class:bg-ctp-lavender={$qv.track === 'bm'}
-                class:text-ctp-base={$qv.track === 'bm'}
-                class:bg-ctp-base={$qv.track !== 'bm'}
-                class:text-ctp-text={$qv.track !== 'bm'}
-                class:border-ctp-surface1={$qv.track !== 'bm'}
-                onclick={() => setTrack('bm')}
-              >{$m.qv.bmTrack}</button>
+              {#each preset.tracks as track}
+                <button
+                  type="button"
+                  class="btn join-item btn-sm flex-grow sm:flex-grow-0 min-w-[6rem] transition-all"
+                  class:bg-ctp-lavender={$qv.track === track.id}
+                  class:text-ctp-base={$qv.track === track.id}
+                  class:bg-ctp-base={$qv.track !== track.id}
+                  class:text-ctp-text={$qv.track !== track.id}
+                  class:border-ctp-surface1={$qv.track !== track.id}
+                  onclick={() => setTrack(track.id)}
+                >{track.label}</button>
+              {/each}
             </div>
           </div>
         </div>
@@ -230,10 +265,10 @@
         })} />
       </div>
 
-      {#if $qv.track === 'bm'}
+      {#if activeTrack.note}
         <div class="alert bg-ctp-surface0/30 border-ctp-surface1 mt-6 rounded-2xl py-3 shadow-inner" transition:fade>
           <InfoCircleOutline class="w-5 h-5 text-ctp-lavender" />
-          <span class="text-sm font-medium text-ctp-subtext1">{$m.qv.bmWeightNote}</span>
+          <span class="text-sm font-medium text-ctp-subtext1">{activeTrack.note}</span>
         </div>
       {/if}
     </div>
@@ -491,7 +526,7 @@
     <div class="card bg-ctp-crust/50 border border-ctp-surface0 p-6 rounded-3xl">
       <p class="text-xs font-bold text-ctp-overlay1 mb-4">{$m.qv.advisory}</p>
       <div class="flex flex-wrap gap-x-6 gap-y-2">
-        {#each sources as source}
+        {#each preset.sources as source}
           <a href={source.href} target="_blank" rel="noreferrer" class="text-xs font-bold text-ctp-blue hover:text-ctp-lavender transition-colors underline decoration-dotted underline-offset-4">
             {source.label}
           </a>
@@ -500,6 +535,44 @@
     </div>
   </div>
 </div>
+
+{#if showPresetModal}
+  <div class="modal modal-open" transition:fade={{ duration: 200 }}>
+    <div class="modal-box max-w-4xl bg-ctp-base border border-ctp-surface0 p-0 overflow-hidden shadow-2xl" transition:scale={{ duration: 200, start: 0.95 }}>
+      <div class="p-6 border-b border-ctp-surface0 flex items-center justify-between bg-ctp-mantle">
+        <h3 class="text-xl font-black text-ctp-text">{$m.qv.presetLabel}</h3>
+        <button type="button" class="btn btn-ghost btn-sm btn-circle" onclick={() => (showPresetModal = false)}>
+          <CloseOutline class="w-5 h-5" />
+        </button>
+      </div>
+      
+      <div class="p-6 max-h-[70vh] overflow-y-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {#each QV_PRESETS as item}
+            {@const ItemIcon = getPresetIcon(item.id)}
+            <button
+              type="button"
+              class="flex flex-col items-start p-5 rounded-2xl border-2 transition-all text-left group/item {$qv.presetId === item.id ? 'border-ctp-lavender bg-ctp-lavender/5' : 'border-ctp-surface0 hover:border-ctp-lavender/50'}"
+              onclick={() => { setPreset(item.id); showPresetModal = false; }}
+            >
+              <div class="flex items-center gap-4 mb-3">
+                <div class="p-3 rounded-xl bg-ctp-mantle border border-ctp-surface0 group-hover/item:border-ctp-lavender/30 transition-all">
+                  <ItemIcon class="w-6 h-6 text-ctp-lavender"></ItemIcon>
+                </div>
+                <div>
+                  <span class="block font-black text-ctp-text leading-tight">{item.shortLabel}</span>
+                  <span class="text-[10px] font-black text-ctp-overlay1 tracking-[0.2em] uppercase">{item.fachrichtung}</span>
+                </div>
+              </div>
+              <p class="text-xs leading-relaxed text-ctp-subtext1 font-medium">{item.description}</p>
+            </button>
+          {/each}
+        </div>
+      </div>
+    </div>
+    <button type="button" class="modal-backdrop bg-ctp-crust/80 backdrop-blur-sm" onclick={() => (showPresetModal = false)}>Close</button>
+  </div>
+{/if}
 
 <style>
 </style>

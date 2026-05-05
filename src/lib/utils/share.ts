@@ -1,6 +1,6 @@
 import { browser } from '$app/environment';
-import { QV_PRESETS } from '$lib/qv/presets';
-import type { QVComponentId, QVTrack } from '$lib/qv/types';
+import { getQVPreset, QV_PRESETS } from '$lib/qv/presets';
+import type { QVPreset, QVTrack } from '$lib/qv/types';
 import type { GradeEntry, RoundingKey } from '$lib/types';
 import { newEntry, recomputeParentGrade } from '$lib/utils/grading';
 
@@ -40,9 +40,9 @@ export type SharePayload =
       page: 'qv';
       presetId: string;
       track: QVTrack;
-      componentGrades: Partial<Record<QVComponentId, string>>;
-      detailEnabled: Partial<Record<QVComponentId, boolean>>;
-      detailGrades: Partial<Record<QVComponentId, Record<string, string>>>;
+      componentGrades: Record<string, string>;
+      detailEnabled: Record<string, boolean>;
+      detailGrades: Record<string, Record<string, string>>;
     };
 
 export const SHARE_PARAM = 'share';
@@ -53,18 +53,6 @@ const MAX_GRADE_DEPTH = 5;
 const MAX_FUTURE_EXAMS = 50;
 const MAX_TEXT_LENGTH = 120;
 const ROUNDING_KEYS: RoundingKey[] = ['0.25', '0.5', '1', '2'];
-const QV_COMPONENT_IDS = new Set<QVComponentId>(
-  QV_PRESETS.flatMap((preset) => preset.components.map((component) => component.id))
-);
-const QV_DETAIL_IDS = new Map<QVComponentId, Set<string>>();
-
-for (const preset of QV_PRESETS) {
-  for (const component of preset.components) {
-    const detailIds = QV_DETAIL_IDS.get(component.id) ?? new Set<string>();
-    for (const detail of component.details ?? []) detailIds.add(detail.id);
-    QV_DETAIL_IDS.set(component.id, detailIds);
-  }
-}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -74,12 +62,8 @@ function isRoundingKey(value: unknown): value is RoundingKey {
   return typeof value === 'string' && ROUNDING_KEYS.includes(value as RoundingKey);
 }
 
-function isQVTrack(value: unknown): value is QVTrack {
-  return value === 'regular' || value === 'bm';
-}
-
-function isQVComponentId(value: string): value is QVComponentId {
-  return QV_COMPONENT_IDS.has(value as QVComponentId);
+function isQVTrack(preset: QVPreset, value: unknown): value is QVTrack {
+  return typeof value === 'string' && preset.tracks.some((track) => track.id === value);
 }
 
 function sanitizeText(value: unknown): string | null {
@@ -137,12 +121,22 @@ function sanitizeFutureExams(value: unknown): { name: string; weight: string }[]
   return exams;
 }
 
-function sanitizeQVComponentGrades(value: unknown): Partial<Record<QVComponentId, string>> | null {
+function getPresetComponentIds(preset: QVPreset): Set<string> {
+  return new Set(preset.components.map((component) => component.id));
+}
+
+function getPresetDetailIds(preset: QVPreset, componentId: string): Set<string> {
+  const component = preset.components.find((entry) => entry.id === componentId);
+  return new Set(component?.details?.map((detail) => detail.id) ?? []);
+}
+
+function sanitizeQVComponentGrades(value: unknown, preset: QVPreset): Record<string, string> | null {
   if (!isRecord(value)) return null;
 
-  const grades: Partial<Record<QVComponentId, string>> = {};
+  const allowedComponentIds = getPresetComponentIds(preset);
+  const grades: Record<string, string> = {};
   for (const [componentId, grade] of Object.entries(value)) {
-    if (!isQVComponentId(componentId)) return null;
+    if (!allowedComponentIds.has(componentId)) return null;
     const sanitizedGrade = sanitizeText(grade);
     if (sanitizedGrade === null) return null;
     grades[componentId] = sanitizedGrade;
@@ -151,26 +145,28 @@ function sanitizeQVComponentGrades(value: unknown): Partial<Record<QVComponentId
   return grades;
 }
 
-function sanitizeQVDetailEnabled(value: unknown): Partial<Record<QVComponentId, boolean>> | null {
+function sanitizeQVDetailEnabled(value: unknown, preset: QVPreset): Record<string, boolean> | null {
   if (!isRecord(value)) return null;
 
-  const detailEnabled: Partial<Record<QVComponentId, boolean>> = {};
+  const allowedComponentIds = getPresetComponentIds(preset);
+  const detailEnabled: Record<string, boolean> = {};
   for (const [componentId, enabled] of Object.entries(value)) {
-    if (!isQVComponentId(componentId) || typeof enabled !== 'boolean') return null;
+    if (!allowedComponentIds.has(componentId) || typeof enabled !== 'boolean') return null;
     detailEnabled[componentId] = enabled;
   }
 
   return detailEnabled;
 }
 
-function sanitizeQVDetailGrades(value: unknown): Partial<Record<QVComponentId, Record<string, string>>> | null {
+function sanitizeQVDetailGrades(value: unknown, preset: QVPreset): Record<string, Record<string, string>> | null {
   if (!isRecord(value)) return null;
 
-  const detailGrades: Partial<Record<QVComponentId, Record<string, string>>> = {};
+  const allowedComponentIds = getPresetComponentIds(preset);
+  const detailGrades: Record<string, Record<string, string>> = {};
   for (const [componentId, componentGrades] of Object.entries(value)) {
-    if (!isQVComponentId(componentId) || !isRecord(componentGrades)) return null;
+    if (!allowedComponentIds.has(componentId) || !isRecord(componentGrades)) return null;
 
-    const allowedDetailIds = QV_DETAIL_IDS.get(componentId) ?? new Set<string>();
+    const allowedDetailIds = getPresetDetailIds(preset, componentId);
     const sanitizedComponentGrades: Record<string, string> = {};
     for (const [detailId, grade] of Object.entries(componentGrades)) {
       if (!allowedDetailIds.has(detailId)) return null;
@@ -188,11 +184,12 @@ function sanitizeQVDetailGrades(value: unknown): Partial<Record<QVComponentId, R
 function sanitizeQVPayload(value: Record<string, unknown>): SharePayload | null {
   const presetId = sanitizeText(value.presetId);
   if (presetId === null || !QV_PRESETS.some((preset) => preset.id === presetId)) return null;
-  if (!isQVTrack(value.track)) return null;
+  const preset = getQVPreset(presetId);
+  if (!isQVTrack(preset, value.track)) return null;
 
-  const componentGrades = sanitizeQVComponentGrades(value.componentGrades);
-  const detailEnabled = sanitizeQVDetailEnabled(value.detailEnabled);
-  const detailGrades = sanitizeQVDetailGrades(value.detailGrades);
+  const componentGrades = sanitizeQVComponentGrades(value.componentGrades, preset);
+  const detailEnabled = sanitizeQVDetailEnabled(value.detailEnabled, preset);
+  const detailGrades = sanitizeQVDetailGrades(value.detailGrades, preset);
   if (!componentGrades || !detailEnabled || !detailGrades) return null;
 
   return {

@@ -95,7 +95,7 @@ export const en: Messages = {
   },
   qv: {
     title: 'QV Calculator',
-    description: 'Calculate the Informatiker/in EFZ QV under BiVo 2021 with fall grades, rounding and the BM special case.',
+    description: 'Calculate QV final grades for popular Swiss EFZ apprenticeships with weights, fall grades and rounding.',
     overviewFallnotenTitle: 'Passing',
     overviewFallnotenText: 'The QV is passed only with IPA at least 4.0, IK at least 4.0 and final grade at least 4.0.',
     overviewWeightsTitle: 'Weights',

@@ -1,6 +1,23 @@
-export type QVTrack = 'regular' | 'bm';
+export type QVTrack = string;
 
-export type QVComponentId = 'ipa' | 'abu' | 'egk' | 'ik';
+export type QVComponentId = string;
+
+export interface QVSource {
+  label: string;
+  href: string;
+}
+
+export interface QVOverviewItem {
+  title: string;
+  text: string;
+}
+
+export interface QVTrackOption {
+  id: QVTrack;
+  label: string;
+  note?: string;
+  excludedComponentIds?: QVComponentId[];
+}
 
 export interface QVDetailComponent {
   id: string;
@@ -28,6 +45,10 @@ export interface QVPreset {
   label: string;
   shortLabel: string;
   fachrichtung: string;
+  description: string;
+  overviewItems: QVOverviewItem[];
+  sources: QVSource[];
+  tracks: QVTrackOption[];
   components: QVComponent[];
 }
 

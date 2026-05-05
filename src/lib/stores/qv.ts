@@ -1,29 +1,67 @@
 import { browser } from '$app/environment';
 import { writable } from 'svelte/store';
 import { STORAGE_KEYS } from '$lib/storage-keys';
-import { QV_PRESETS } from '$lib/qv/presets';
-import type { QVComponentId, QVTrack } from '$lib/qv/types';
+import { getQVPreset, QV_PRESETS } from '$lib/qv/presets';
+import type { QVTrack } from '$lib/qv/types';
 
 export interface QVState {
   presetId: string;
   track: QVTrack;
-  componentGrades: Partial<Record<QVComponentId, string>>;
-  detailEnabled: Partial<Record<QVComponentId, boolean>>;
-  detailGrades: Partial<Record<QVComponentId, Record<string, string>>>;
+  componentGrades: Record<string, string>;
+  detailEnabled: Record<string, boolean>;
+  detailGrades: Record<string, Record<string, string>>;
 }
 
 const STORAGE_KEY = STORAGE_KEYS.qv;
+const defaultPreset = QV_PRESETS[0];
+const defaultTrack = defaultPreset.tracks[0].id;
 
 const defaults: QVState = {
-  presetId: QV_PRESETS[0].id,
-  track: 'regular',
+  presetId: defaultPreset.id,
+  track: defaultTrack,
   componentGrades: {},
   detailEnabled: {},
   detailGrades: {},
 };
 
-function isTrack(value: unknown): value is QVTrack {
-  return value === 'regular' || value === 'bm';
+function sanitizePresetId(value: unknown): string {
+  return typeof value === 'string' && QV_PRESETS.some((preset) => preset.id === value)
+    ? value
+    : defaults.presetId;
+}
+
+function sanitizeTrack(presetId: string, value: unknown): QVTrack {
+  const preset = getQVPreset(presetId);
+  return typeof value === 'string' && preset.tracks.some((track) => track.id === value)
+    ? value
+    : preset.tracks[0].id;
+}
+
+function isStringRecord(value: unknown): value is Record<string, string> {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    Object.values(value).every((entry) => typeof entry === 'string')
+  );
+}
+
+function isBooleanRecord(value: unknown): value is Record<string, boolean> {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    Object.values(value).every((entry) => typeof entry === 'boolean')
+  );
+}
+
+function isNestedStringRecord(value: unknown): value is Record<string, Record<string, string>> {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    Object.values(value).every(isStringRecord)
+  );
 }
 
 function loadInitial(): QVState {
@@ -32,12 +70,13 @@ function loadInitial(): QVState {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return defaults;
     const parsed = JSON.parse(raw) as Partial<QVState>;
+    const presetId = sanitizePresetId(parsed.presetId);
     return {
-      presetId: typeof parsed.presetId === 'string' ? parsed.presetId : defaults.presetId,
-      track: isTrack(parsed.track) ? parsed.track : defaults.track,
-      componentGrades: parsed.componentGrades ?? {},
-      detailEnabled: parsed.detailEnabled ?? {},
-      detailGrades: parsed.detailGrades ?? {},
+      presetId,
+      track: sanitizeTrack(presetId, parsed.track),
+      componentGrades: isStringRecord(parsed.componentGrades) ? parsed.componentGrades : {},
+      detailEnabled: isBooleanRecord(parsed.detailEnabled) ? parsed.detailEnabled : {},
+      detailGrades: isNestedStringRecord(parsed.detailGrades) ? parsed.detailGrades : {},
     };
   } catch {
     return defaults;

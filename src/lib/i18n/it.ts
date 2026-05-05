@@ -95,7 +95,7 @@ export const it: Messages = {
   },
   qv: {
     title: 'Calcolatore QV',
-    description: 'Calcola il QV Informatiker/in EFZ secondo BiVo 2021 con voti eliminatori, arrotondamenti e caso BM.',
+    description: 'Calcola le note finali QV per apprendistati AFC popolari con ponderazioni, voti eliminatori e arrotondamenti.',
     overviewFallnotenTitle: 'Superamento',
     overviewFallnotenText: 'Il QV è superato solo con IPA almeno 4.0, IK almeno 4.0 e voto finale almeno 4.0.',
     overviewWeightsTitle: 'Pesi',

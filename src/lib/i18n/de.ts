@@ -95,7 +95,7 @@ export const de: Messages = {
   },
   qv: {
     title: 'QV Rechner',
-    description: 'Berechne das QV Informatiker/in EFZ nach BiVo 2021 mit Fallnoten, Rundungen und BM-Sonderfall.',
+    description: 'Berechne QV-Abschlussnoten für beliebte EFZ-Lehren mit Gewichtungen, Fallnoten und Rundungen.',
     overviewFallnotenTitle: 'Bestehen',
     overviewFallnotenText: 'Bestanden ist das QV nur mit IPA mindestens 4.0, IK mindestens 4.0 und Gesamtnote mindestens 4.0.',
     overviewWeightsTitle: 'Gewichtung',
