@@ -1,3 +1,9 @@
+## [1.13.0](https://github.com/Arlind-dev/swiss-grades/compare/v1.12.0...v1.13.0) (2026-05-05)
+
+### Features
+
+* **average:** add CSV export ([#44](https://github.com/Arlind-dev/swiss-grades/issues/44)) ([12157fb](https://github.com/Arlind-dev/swiss-grades/commit/12157fb8169b21000ae673a3463e5db65c73d77c))
+
 ## [1.12.0](https://github.com/Arlind-dev/swiss-grades/compare/v1.11.0...v1.12.0) (2026-05-05)
 
 ### Features
