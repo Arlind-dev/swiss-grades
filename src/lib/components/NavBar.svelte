@@ -9,6 +9,7 @@
     { value: 'en', label: 'EN' },
     { value: 'fr', label: 'FR' },
     { value: 'it', label: 'IT' },
+    { value: 'sq', label: 'SQ' },
     { value: 'so', label: 'SO' },
     { value: 'ru', label: 'RU' },
     { value: 'tr', label: 'TR' },
