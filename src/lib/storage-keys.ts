@@ -4,6 +4,7 @@ export const STORAGE_KEYS = {
   grades:   'swiss-grades-grades',
   settings: 'swiss-grades-settings',
   needed:   'swiss-grades-needed',
+  qv:       'swiss-grades-qv',
 } as const;
 
 export const KNOWN_STORAGE_KEYS: Set<string> = new Set(Object.values(STORAGE_KEYS));

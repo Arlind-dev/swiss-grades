@@ -3,6 +3,7 @@ export interface Messages {
     calculator: string;
     average: string;
     needed: string;
+    qv: string;
   };
   gradeRow: {
     placeholderName: string;
@@ -68,5 +69,37 @@ export interface Messages {
     bestAttainablePrefix: string;
     alreadyAchieved: string;
     examFallback: string;
+  };
+  qv: {
+    title: string;
+    description: string;
+    presetLabel: string;
+    trackLabel: string;
+    regularTrack: string;
+    bmTrack: string;
+    bmWeightNote: string;
+    componentHeader: string;
+    gradeHeader: string;
+    weightHeader: string;
+    statusHeader: string;
+    showDetails: string;
+    hideDetails: string;
+    fallnotePending: string;
+    fallnotePass: string;
+    fallnoteFail: string;
+    noFallnote: string;
+    finalGrade: string;
+    missingFields: string;
+    pass: string;
+    fail: string;
+    pending: string;
+    failedFallnotenPrefix: string;
+    neededGradePrefix: string;
+    neededGradeSuffix: string;
+    neededKnownFallnoteImpossible: string;
+    neededMaxImpossible: string;
+    clearAll: string;
+    clearConfirm: string;
+    advisory: string;
   };
 }
