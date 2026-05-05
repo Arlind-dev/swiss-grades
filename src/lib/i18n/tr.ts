@@ -20,6 +20,13 @@ export const tr: Messages = {
     oneDecimal: '1 ondalık',
     twoDecimal: '2 ondalık',
   },
+  share: {
+    action: 'Paylaş',
+    copied: 'Kopyalandı',
+    failed: 'Kopyalanamadı',
+    tooLarge: 'Paylaşmak için çok fazla veri var',
+    copyPrompt: 'Bu bağlantıyı kopyalayın:',
+  },
   calculator: {
     title: 'Not Hesaplayıcı',
     formulaLabel: 'Not =',

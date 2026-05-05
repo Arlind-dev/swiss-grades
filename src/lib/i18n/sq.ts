@@ -20,6 +20,13 @@ export const sq: Messages = {
     oneDecimal: '1 dhjetore',
     twoDecimal: '2 dhjetore',
   },
+  share: {
+    action: 'Ndaj',
+    copied: 'U kopjua',
+    failed: 'Nuk u kopjua',
+    tooLarge: 'Shumë të dhëna për t’u ndarë',
+    copyPrompt: 'Kopjo këtë lidhje:',
+  },
   calculator: {
     title: 'Llogaritësi i Notave',
     formulaLabel: 'Nota =',

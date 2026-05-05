@@ -20,6 +20,13 @@ export const fr: Messages = {
     oneDecimal: '1 décimale',
     twoDecimal: '2 décimales',
   },
+  share: {
+    action: 'Partager',
+    copied: 'Copié',
+    failed: 'Copie impossible',
+    tooLarge: 'Trop de données à partager',
+    copyPrompt: 'Copiez ce lien :',
+  },
   calculator: {
     title: 'Calculateur de notes',
     formulaLabel: 'Note =',

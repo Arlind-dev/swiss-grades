@@ -1,13 +1,26 @@
 <script lang="ts">
   import { numericInput } from '$lib/actions';
   import RoundingSelect from '$lib/components/RoundingSelect.svelte';
+  import ShareButton from '$lib/components/ShareButton.svelte';
   import { calculateGradeFromPoints, applyRounding, gradeColor } from '$lib/utils/grading';
   import { settings } from '$lib/stores/settings';
   import { m } from '$lib/i18n';
+  import { onMount } from 'svelte';
+  import { clearShareParam, createShareUrl, readSharePayload } from '$lib/utils/share';
 
   let points = $state($settings.calculatorPoints);
   let maxPoints = $state($settings.calculatorMaxPoints);
   let rounding = $state($settings.calculatorRounding);
+
+  onMount(() => {
+    const payload = readSharePayload('calculator');
+    if (payload?.page !== 'calculator') return;
+
+    points = payload.points;
+    maxPoints = payload.maxPoints;
+    rounding = payload.rounding;
+    clearShareParam();
+  });
 
   $effect(() => { settings.update((s) => ({ ...s, calculatorPoints: points })); });
   $effect(() => { settings.update((s) => ({ ...s, calculatorMaxPoints: maxPoints })); });
@@ -68,6 +81,14 @@
 </div>
 
 <RoundingSelect bind:value={rounding} />
+
+<ShareButton getUrl={() => createShareUrl({
+  v: 1,
+  page: 'calculator',
+  points,
+  maxPoints,
+  rounding
+})} />
 
 <div class="form">
   <label>

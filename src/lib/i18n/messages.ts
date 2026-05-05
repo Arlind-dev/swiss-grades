@@ -20,6 +20,13 @@ export interface Messages {
     oneDecimal: string;
     twoDecimal: string;
   };
+  share: {
+    action: string;
+    copied: string;
+    failed: string;
+    tooLarge: string;
+    copyPrompt: string;
+  };
   calculator: {
     title: string;
     formulaLabel: string;

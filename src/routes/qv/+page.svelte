@@ -2,10 +2,13 @@
   import { qv, resetQV } from '$lib/stores/qv';
   import { QV_PRESETS, getQVPreset } from '$lib/qv/presets';
   import type { QVComponent, QVComponentId, QVTrack } from '$lib/qv/types';
+  import ShareButton from '$lib/components/ShareButton.svelte';
   import { clampInput, numericInput } from '$lib/actions';
   import { gradeColor } from '$lib/utils/grading';
   import { computeComponentGrade, computeNeededGrade, evaluateQV } from '$lib/utils/qv';
   import { m } from '$lib/i18n';
+  import { onMount } from 'svelte';
+  import { clearShareParam, createShareUrl, readSharePayload } from '$lib/utils/share';
 
   const sources = [
     { label: 'ICT-Berufsbildung', href: 'https://www.ict-berufsbildung.ch/grundbildung/ict-lehren/informatiker-in-efz' },
@@ -30,6 +33,20 @@
 
   let confirmClear = $state(false);
   let confirmTimer: ReturnType<typeof setTimeout> | null = null;
+
+  onMount(() => {
+    const payload = readSharePayload('qv');
+    if (payload?.page !== 'qv') return;
+
+    qv.set({
+      presetId: payload.presetId,
+      track: payload.track,
+      componentGrades: payload.componentGrades,
+      detailEnabled: payload.detailEnabled,
+      detailGrades: payload.detailGrades,
+    });
+    clearShareParam();
+  });
 
   function parseGrade(value: string | undefined): number | null {
     const parsed = parseFloat(value ?? '');
@@ -123,6 +140,16 @@
 <div class="qv-page">
   <h1>{$m.qv.title}</h1>
   <p class="intro">{$m.qv.description}</p>
+
+  <ShareButton getUrl={() => createShareUrl({
+    v: 1,
+    page: 'qv',
+    presetId: $qv.presetId,
+    track: $qv.track,
+    componentGrades: $qv.componentGrades,
+    detailEnabled: $qv.detailEnabled,
+    detailGrades: $qv.detailGrades,
+  })} />
 
   <section class="controls" aria-label={$m.qv.presetLabel}>
     <p class="section-label">{$m.qv.presetLabel}</p>
