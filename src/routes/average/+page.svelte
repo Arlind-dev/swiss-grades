@@ -10,9 +10,10 @@
   import { focusRowInput } from '$lib/utils/focus';
   import { browser } from '$app/environment';
   import { buildCsvFilename, downloadCsv, formatGradesAsCsv, hasExportableGradeEntries } from '$lib/utils/export';
-  import { FileCsvOutline } from 'flowbite-svelte-icons';
+  import { FileCsvOutline, PlusOutline, TrashBinOutline } from 'flowbite-svelte-icons';
   import { onMount } from 'svelte';
   import { clearShareParam, createShareUrl, hydrateGrades, readSharePayload, serializeGrades } from '$lib/utils/share';
+  import { scale } from 'svelte/transition';
 
   let rounding = $state($settings.averageRounding);
   let isMac = $state(false);
@@ -144,276 +145,130 @@
 <svelte:head><title>{$m.average.title}</title></svelte:head>
 <svelte:window onkeydown={onWindowKeydown} />
 
-<h1>{$m.average.title}</h1>
+<div class="flex flex-col gap-8">
+  <div class="text-center">
+    <h1 class="text-4xl font-black tracking-tight text-ctp-text">{$m.average.title}</h1>
+  </div>
 
-<RoundingSelect bind:value={rounding} />
-
-<ShareButton getUrl={() => createShareUrl({
-  v: 1,
-  page: 'average',
-  grades: serializeGrades($grades),
-  rounding
-})} />
-
-<div class="grade-list" id="grade-list" role="list">
-  {#each $grades as entry, i (entry.id)}
-    {@const gradeNum = parseFloat(entry.grade)}
-    {@const delta = !isNaN(gradeNum) && averageGrade !== null && validCount >= 2 ? gradeNum - averageGrade : null}
-      <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-      <div
-        class="grade-item"
-        role="listitem"
-        class:drag-over={dragOverIndex === i && dragSrcIndex !== i}
-        draggable={draggableIndex === i}
-        onkeydown={(e) => onRowKeydown(e, entry.id)}
-        ondragstart={() => onDragStart(i)}
-      ondragover={(e) => { e.preventDefault(); onDragOver(i); }}
-      ondragleave={() => onDragLeave(i)}
-      ondrop={(e) => { e.preventDefault(); onDrop(i); }}
-      ondragend={onDragEnd}
-    >      <!-- svelte-ignore a11y_no_static_element_interactions -->      <span
-        class="drag-handle"
-        title={$m.average.dragHandleTitle}
-        onmousedown={() => onHandleMouseDown(i)}
-      >⠿</span>
-
-      <div class="row-container">
-        <GradeRow
-          {entry}
-          removable={$grades.length > 1}
-          onchange={(updated) => updateGrade(entry.id, updated)}
-          onremove={() => removeGrade(entry.id)}
-        />
+  <div class="card bg-ctp-mantle shadow-xl border border-ctp-surface0">
+    <div class="card-body p-6 sm:p-8">
+      <div class="flex justify-between items-center gap-4 mb-8">
+        <RoundingSelect bind:value={rounding} />
+        <div class="flex gap-2">
+          <button
+            type="button"
+            class="btn btn-ghost btn-circle btn-sm text-ctp-subtext1 hover:bg-ctp-surface0"
+            onclick={exportCsv}
+            disabled={!hasCsvExportRows}
+            aria-label={$m.average.exportCsvTitle}
+            title={$m.average.exportCsvTitle}
+          >
+            <FileCsvOutline class="w-5 h-5" />
+          </button>
+          <ShareButton getUrl={() => createShareUrl({
+            v: 1,
+            page: 'average',
+            grades: serializeGrades($grades),
+            rounding
+          })} />
+        </div>
       </div>
-      {#if delta !== null}
-        <span
-          class="delta"
-          class:positive={delta > 0.005}
-          class:negative={delta < -0.005}
-          class:neutral={Math.abs(delta) <= 0.005}
-          aria-label="Delta from average: {delta >= 0 ? '+' : ''}{delta.toFixed(2)}"
-        >{delta >= 0 ? '+' : '−'}{Math.abs(delta).toFixed(2)}</span>
-      {:else}
-        <span class="delta-placeholder"></span>
-      {/if}
+
+      <div class="flex flex-col gap-3 mb-8" id="grade-list" role="list">
+        {#each $grades as entry, i (entry.id)}
+          {@const gradeNum = parseFloat(entry.grade)}
+          {@const delta = !isNaN(gradeNum) && averageGrade !== null && validCount >= 2 ? gradeNum - averageGrade : null}
+            <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+            <div
+              class="flex items-center gap-3 p-3 rounded-2xl bg-ctp-base border border-ctp-surface0 transition-all hover:border-ctp-surface1 group"
+              role="listitem"
+              class:border-ctp-lavender={dragOverIndex === i && dragSrcIndex !== i}
+              class:bg-ctp-surface0={dragOverIndex === i && dragSrcIndex !== i}
+              draggable={draggableIndex === i}
+              onkeydown={(e) => onRowKeydown(e, entry.id)}
+              ondragstart={() => onDragStart(i)}
+              ondragover={(e) => { e.preventDefault(); onDragOver(i); }}
+              ondragleave={() => onDragLeave(i)}
+              ondrop={(e) => { e.preventDefault(); onDrop(i); }}
+              ondragend={onDragEnd}
+            >
+              <!-- svelte-ignore a11y_no_static_element_interactions -->
+              <span
+                class="cursor-grab active:cursor-grabbing p-1 text-ctp-surface2 hover:text-ctp-subtext0 transition-colors hidden sm:block"
+                title={$m.average.dragHandleTitle}
+                onmousedown={() => onHandleMouseDown(i)}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/></svg>
+              </span>
+
+              <div class="flex-grow min-w-0">
+                <GradeRow
+                  {entry}
+                  removable={$grades.length > 1}
+                  onchange={(updated) => updateGrade(entry.id, updated)}
+                  onremove={() => removeGrade(entry.id)}
+                />
+              </div>
+              
+              {#if delta !== null}
+                <div 
+                  class="hidden sm:flex items-center justify-center min-w-[4rem] px-2 py-1 rounded-full text-xs font-black tracking-tight"
+                  class:bg-ctp-green={delta > 0.005}
+                  class:bg-ctp-red={delta < -0.005}
+                  class:bg-ctp-surface1={Math.abs(delta) <= 0.005}
+                  class:text-ctp-overlay1={Math.abs(delta) <= 0.005}
+                  class:text-ctp-base={Math.abs(delta) > 0.005}
+                >
+                  {delta >= 0 ? '+' : '−'}{Math.abs(delta).toFixed(2)}
+                </div>
+              {/if}
+            </div>
+        {/each}
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6 border-t border-ctp-surface0">
+        <button type="button" class="btn btn-outline border-ctp-lavender text-ctp-lavender hover:bg-ctp-lavender hover:text-ctp-base" onclick={addGrade}>
+          <PlusOutline class="w-5 h-5" />
+          {$m.average.addGrade}
+        </button>
+        <button 
+          type="button" 
+          class="btn btn-ghost transition-all" 
+          class:btn-error={confirmClear}
+          class:bg-ctp-red={confirmClear}
+          class:text-ctp-base={confirmClear}
+          class:hover:bg-ctp-surface1={!confirmClear}
+          onclick={handleClearAll}
+        >
+          <TrashBinOutline class="w-5 h-5" />
+          {confirmClear ? $m.average.clearConfirm : $m.average.clearAll}
+        </button>
+      </div>
+      
+      <p class="text-center text-xs font-medium text-ctp-overlay1 mt-6 opacity-60 hidden sm:block">
+        <kbd class="kbd kbd-xs bg-ctp-surface0 border-ctp-surface1">{isMac ? '⌘' : 'Ctrl'}</kbd>+<kbd class="kbd kbd-xs bg-ctp-surface0 border-ctp-surface1">Enter</kbd> {$m.average.shortcutAdd} 
+        <span class="mx-2 opacity-30">|</span>
+        <kbd class="kbd kbd-xs bg-ctp-surface0 border-ctp-surface1">{isMac ? '⌘' : 'Ctrl'}</kbd>+<kbd class="kbd kbd-xs bg-ctp-surface0 border-ctp-surface1">{isMac ? '⌫' : 'Del'}</kbd> {$m.average.shortcutDelete}
+      </p>
     </div>
-  {/each}
+  </div>
+
+  {#if averageGrade !== null}
+    <div class="card bg-ctp-mantle shadow-2xl border-2 border-ctp-surface0 overflow-hidden" transition:scale>
+      <div class="p-8 text-center space-y-2">
+        <span class="text-xs font-black uppercase tracking-[0.2em] text-ctp-subtext1">{$m.average.resultPrefix}</span>
+        <div 
+          class="text-8xl font-black tracking-tighter"
+          style:color={gradeColor(averageGrade)}
+          style:text-shadow="0 0 40px {gradeColor(averageGrade)}40"
+        >
+          {applyRounding(averageGrade, rounding)}
+        </div>
+      </div>
+      <div 
+        class="h-2 w-full"
+        style:background={gradeColor(averageGrade)}
+      ></div>
+    </div>
+  {/if}
 </div>
-
-<div class="actions">
-  <button type="button" class="btn-add" onclick={addGrade}>{$m.average.addGrade}</button>
-  <button
-    type="button"
-    class="btn-export"
-    onclick={exportCsv}
-    disabled={!hasCsvExportRows}
-    aria-label={$m.average.exportCsvTitle}
-    title={$m.average.exportCsvTitle}
-  >
-    <FileCsvOutline class="button-icon" />
-    <span>{$m.average.exportCsv}</span>
-  </button>
-</div>
-<div class="actions">
-  <button type="button" class="btn-clear" class:confirming={confirmClear} onclick={handleClearAll}>
-    {confirmClear ? $m.average.clearConfirm : $m.average.clearAll}
-  </button>
-</div>
-<p class="shortcuts-hint">
-  <kbd>{isMac ? '⌘' : 'Ctrl'}</kbd>+<kbd>Enter</kbd> {$m.average.shortcutAdd} &nbsp;|&nbsp;
-  <kbd>{isMac ? '⌘' : 'Ctrl'}</kbd>+<kbd>{isMac ? '⌫' : 'Del'}</kbd> {$m.average.shortcutDelete}
-</p>
-
-{#if averageGrade !== null}
-  <p class="result">
-    {$m.average.resultPrefix}<span class="grade-chip" style:--chip-color={gradeColor(averageGrade)}>{applyRounding(averageGrade, rounding)}</span>
-  </p>
-{/if}
-
-<style>
-  .grade-list {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin-bottom: 12px;
-  }
-
-  .grade-item {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    gap: 2px;
-    border-radius: 4px;
-    transition: outline 0.1s;
-  }
-
-  .row-container {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .grade-item.drag-over {
-    outline: 2px dashed var(--ctp-overlay1);
-    outline-offset: 1px;
-  }
-
-  .drag-handle {
-    cursor: grab;
-    padding: 8px 6px;
-    color: var(--ctp-surface2);
-    font-size: 1.2rem;
-    user-select: none;
-    flex-shrink: 0;
-    line-height: 1;
-  }
-
-  .drag-handle:active {
-    cursor: grabbing;
-  }
-
-  @media (pointer: coarse) {
-    .drag-handle { display: none; }
-    .delta, .delta-placeholder { display: none; }
-  }
-
-  .actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 12px;
-    align-items: flex-start;
-  }
-
-  .btn-add {
-    background: none;
-    border: 1px dashed var(--ctp-overlay1);
-    color: var(--ctp-subtext0);
-    padding: 4px 10px;
-    border-radius: 3px;
-  }
-
-  .btn-add:hover {
-    border-color: var(--ctp-lavender);
-    color: var(--ctp-lavender);
-    background: none;
-  }
-
-  .btn-export {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: none;
-    color: var(--ctp-subtext0);
-    padding: 4px 10px;
-    border-radius: 3px;
-  }
-
-  .btn-export:hover:not(:disabled) {
-    border-color: var(--ctp-green);
-    color: var(--ctp-green);
-    background: none;
-  }
-
-  .btn-export:disabled {
-    cursor: not-allowed;
-    opacity: 0.45;
-  }
-
-  .btn-export :global(.button-icon) {
-    width: 16px;
-    height: 16px;
-    flex-shrink: 0;
-    pointer-events: none;
-  }
-
-  @media (pointer: coarse) {
-    .actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-    }
-    .actions button:first-child {
-      grid-column: 1 / -1;
-    }
-    .btn-export {
-      grid-column: 1 / -1;
-      justify-content: center;
-    }
-    .btn-clear {
-      grid-column: 1 / -1;
-    }
-  }
-
-  .btn-clear.confirming {
-    background: var(--ctp-red);
-    border-color: var(--ctp-red);
-    color: var(--ctp-base);
-  }
-
-  .result {
-    font-size: 1.2rem;
-    font-weight: 600;
-    margin-top: 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .grade-chip {
-    display: inline-block;
-    padding: 2px 10px;
-    border-radius: 12px;
-    font-weight: 700;
-    color: var(--chip-color);
-    background: color-mix(in srgb, var(--chip-color) 15%, transparent);
-    border: 1px solid color-mix(in srgb, var(--chip-color) 35%, transparent);
-  }
-
-  .delta, .delta-placeholder {
-    font-size: 0.72rem;
-    font-weight: 600;
-    width: 2.8rem;
-    flex-shrink: 0;
-    align-self: flex-start;
-    margin-top: 7px;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .delta {
-    padding: 2px 6px;
-    border-radius: 10px;
-    white-space: nowrap;
-    color: var(--delta-color);
-    background: color-mix(in srgb, var(--delta-color) 15%, transparent);
-    border: 1px solid color-mix(in srgb, var(--delta-color) 35%, transparent);
-  }
-
-
-  .delta.positive { --delta-color: var(--ctp-green); }
-  .delta.negative { --delta-color: var(--ctp-red); }
-  .delta.neutral  { --delta-color: var(--ctp-overlay1); }
-
-  .shortcuts-hint {
-    font-size: 0.8rem;
-    color: var(--ctp-overlay1);
-    margin: 4px 0 12px;
-  }
-
-  @media (pointer: coarse) {
-    .shortcuts-hint { display: none; }
-    .delta, .delta-placeholder { display: none; }
-  }
-
-  kbd {
-    display: inline-block;
-    padding: 1px 5px;
-    font-size: 0.75rem;
-    font-family: monospace;
-    border: 1px solid var(--ctp-surface2);
-    border-radius: 3px;
-    background: var(--ctp-surface0);
-    color: var(--ctp-subtext1);
-  }
-</style>

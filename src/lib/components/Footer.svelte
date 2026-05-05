@@ -5,76 +5,28 @@
   const year = new Date().getFullYear();
 </script>
 
-<footer>
-  <span>© {year} Arlind Sulejmani</span>
-  <span class="sep">|</span>
-  <a
-    href="https://github.com/Arlind-dev/swiss-grades"
-    target="_blank"
-    rel="noopener noreferrer"
-    class="meta"
-  >
-    {version}
-    <span class="commit">({commit})</span>
-    <span class="sep">·</span>
-    <span class="date">{buildDate}</span>
-  </a>
+<footer class="mt-16 pb-12 pt-8 border-t border-ctp-surface0">
+  <div class="container mx-auto max-w-3xl px-4 flex flex-col items-center gap-4 text-center">
+    <div class="text-sm font-bold text-ctp-subtext1">
+      © {year} Arlind Sulejmani
+    </div>
+    
+    <div class="flex flex-wrap justify-center items-center gap-x-4 gap-y-2 text-xs font-medium text-ctp-overlay1">
+      <a
+        href="https://github.com/Arlind-dev/swiss-grades"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="hover:text-ctp-lavender transition-colors underline decoration-dotted underline-offset-4"
+      >
+        GitHub
+      </a>
+      <span class="w-1 h-1 rounded-full bg-ctp-surface1 hidden sm:block"></span>
+      <div class="flex items-center gap-2">
+        <span class="badge bg-ctp-surface0 border-none text-ctp-subtext1 text-[10px] font-black tracking-widest">{version}</span>
+        <span class="opacity-50">({commit})</span>
+      </div>
+      <span class="w-1 h-1 rounded-full bg-ctp-surface1 hidden sm:block"></span>
+      <div class="opacity-50">{buildDate}</div>
+    </div>
+  </div>
 </footer>
-
-<style>
-  footer {
-    display: flex;
-    align-items: baseline;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 0.5rem 1rem;
-    margin-top: 2rem;
-    padding-top: 0.75rem;
-    border-top: 2px solid var(--ctp-surface1);
-    color: var(--ctp-overlay1);
-    font-size: 1rem;
-  }
-
-  @media (max-width: 900px) {
-    footer {
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      gap: 0.25rem;
-    }
-
-    .sep {
-      display: none;
-    }
-  }
-
-  .meta {
-    color: inherit;
-    text-decoration: none;
-    border-bottom: 1px solid transparent;
-    transition: border-color 120ms ease, color 120ms ease;
-  }
-
-  .meta:hover {
-    color: var(--ctp-text);
-    border-color: currentColor;
-  }
-
-  .meta:focus-visible {
-    outline: 2px solid var(--ctp-lavender);
-    outline-offset: 2px;
-    border-color: transparent;
-  }
-
-  .commit {
-    opacity: 0.7;
-  }
-
-  .sep {
-    opacity: 0.4;
-  }
-
-  .date {
-    opacity: 0.7;
-  }
-</style>

@@ -6,6 +6,7 @@
   import { settings } from '$lib/stores/settings';
   import { m } from '$lib/i18n';
   import { onMount } from 'svelte';
+  import { scale } from 'svelte/transition';
   import { clearShareParam, createShareUrl, readSharePayload } from '$lib/utils/share';
 
   let points = $state($settings.calculatorPoints);
@@ -68,188 +69,104 @@
 
 <svelte:head><title>{$m.calculator.title}</title></svelte:head>
 
-<h1>{$m.calculator.title}</h1>
-
-<div class="formula">
-  <span class="frac-label">{$m.calculator.formulaLabel}</span>
-  <span class="frac">
-    <span class="num">{$m.calculator.formulaNumerator}</span>
-    <span class="line"></span>
-    <span class="den">{$m.calculator.formulaDenominator}</span>
-  </span>
-  <span class="frac-rest">+ 1</span>
-</div>
-
-<RoundingSelect bind:value={rounding} />
-
-<ShareButton getUrl={() => createShareUrl({
-  v: 1,
-  page: 'calculator',
-  points,
-  maxPoints,
-  rounding
-})} />
-
-<div class="form">
-  <label>
-    {$m.calculator.pointsLabel}
-    <input
-      type="text"
-      inputmode="decimal"
-      bind:value={points}
-      use:numericInput
-    />
-  </label>
-
-  <label>
-    {$m.calculator.maxPointsLabel}
-    <input
-      type="text"
-      inputmode="decimal"
-      bind:value={maxPoints}
-      use:numericInput
-    />
-  </label>
-
-  <div class="actions">
-    <button type="button" class="btn-clear" class:confirming={confirmClear} onclick={handleClearAll}>
-      {confirmClear ? $m.calculator.clearConfirm : $m.calculator.clearAll}
-    </button>
+<div class="flex flex-col gap-8">
+  <div class="text-center space-y-4">
+    <h1 class="text-4xl font-black tracking-tight text-ctp-text">{$m.calculator.title}</h1>
+    
+    <div class="inline-flex items-center gap-4 px-6 py-3 bg-ctp-mantle border border-ctp-surface0 rounded-2xl shadow-sm text-ctp-subtext1">
+      <span class="font-bold">{$m.calculator.formulaLabel}</span>
+      <div class="flex flex-col items-center">
+        <span class="text-xs uppercase tracking-widest opacity-70">{$m.calculator.formulaNumerator}</span>
+        <div class="h-px w-full bg-ctp-surface2 my-1"></div>
+        <span class="text-xs uppercase tracking-widest opacity-70">{$m.calculator.formulaDenominator}</span>
+      </div>
+      <span class="font-bold">+ 1</span>
+    </div>
   </div>
+
+  <div class="card bg-ctp-mantle shadow-xl border border-ctp-surface0">
+    <div class="card-body p-6 sm:p-8">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <RoundingSelect bind:value={rounding} />
+        <ShareButton getUrl={() => createShareUrl({
+          v: 1,
+          page: 'calculator',
+          points,
+          maxPoints,
+          rounding
+        })} />
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div class="form-control w-full">
+          <label class="label pt-0" for="points">
+            <span class="label-text font-bold text-ctp-subtext1">{$m.calculator.pointsLabel}</span>
+          </label>
+          <input
+            id="points"
+            type="text"
+            inputmode="decimal"
+            bind:value={points}
+            use:numericInput
+            placeholder="0"
+            class="input input-bordered w-full bg-ctp-base border-ctp-surface1 focus:border-ctp-lavender focus:outline-none transition-all text-lg font-bold"
+          />
+        </div>
+
+        <div class="form-control w-full">
+          <label class="label pt-0" for="max-points">
+            <span class="label-text font-bold text-ctp-subtext1">{$m.calculator.maxPointsLabel}</span>
+          </label>
+          <input
+            id="max-points"
+            type="text"
+            inputmode="decimal"
+            bind:value={maxPoints}
+            use:numericInput
+            placeholder="100"
+            class="input input-bordered w-full bg-ctp-base border-ctp-surface1 focus:border-ctp-lavender focus:outline-none transition-all text-lg font-bold"
+          />
+        </div>
+      </div>
+
+      {#if pointsError}
+        <div class="alert alert-error bg-ctp-red/10 border-ctp-red text-ctp-red mt-6 py-2">
+          <span class="text-sm font-bold">{pointsError}</span>
+        </div>
+      {/if}
+
+      <div class="card-actions justify-center mt-8 pt-6 border-t border-ctp-surface0">
+        <button 
+          type="button" 
+          class="btn btn-ghost w-full sm:w-auto px-12 transition-all" 
+          class:btn-error={confirmClear}
+          class:bg-ctp-red={confirmClear}
+          class:text-ctp-base={confirmClear}
+          class:hover:bg-ctp-surface1={!confirmClear}
+          onclick={handleClearAll}
+        >
+          {confirmClear ? $m.calculator.clearConfirm : $m.calculator.clearAll}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  {#if resultGrade !== null}
+    <div class="card bg-ctp-mantle shadow-2xl border-2 border-ctp-surface0 overflow-hidden" transition:scale>
+      <div class="p-8 text-center space-y-2">
+        <span class="text-xs font-black uppercase tracking-[0.2em] text-ctp-subtext1">{$m.calculator.resultPrefix}</span>
+        <div 
+          class="text-8xl font-black tracking-tighter"
+          style:color={gradeColor(resultGrade)}
+          style:text-shadow="0 0 40px {gradeColor(resultGrade)}40"
+        >
+          {applyRounding(resultGrade, rounding)}
+        </div>
+      </div>
+      <div 
+        class="h-2 w-full"
+        style:background={gradeColor(resultGrade)}
+      ></div>
+    </div>
+  {/if}
 </div>
-
-{#if pointsError}
-  <p class="error">{pointsError}</p>
-{/if}
-
-{#if resultGrade !== null}
-  <p class="result">
-    {$m.calculator.resultPrefix}<span class="grade-chip" style:--chip-color={gradeColor(resultGrade)}>{applyRounding(resultGrade, rounding)}</span>
-  </p>
-{/if}
-
-<style>
-  .form {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    max-width: 340px;
-    margin: 0 auto;
-  }
-
-  @media (max-width: 900px) {
-    .form {
-      max-width: 100%;
-    }
-  }
-
-  label {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    font-weight: 500;
-  }
-
-  input[type='text'] {
-    font-size: 1.05rem;
-    padding: 5px 8px;
-    border: 2px solid var(--ctp-surface2);
-    border-radius: 3px;
-    outline: none;
-    background: var(--ctp-base);
-    color: var(--ctp-text);
-  }
-
-  input[type='text']:focus {
-    border-color: var(--ctp-lavender);
-  }
-
-  .actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-top: 4px;
-  }
-
-  @media (pointer: coarse) {
-    .actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-    }
-    .actions button:first-child {
-      grid-column: 1 / -1;
-    }
-    .btn-clear {
-      grid-column: 1 / -1;
-    }
-  }
-
-  .btn-clear.confirming {
-    background: var(--ctp-red);
-    border-color: var(--ctp-red);
-    color: var(--ctp-base);
-  }
-
-  .error {
-    color: var(--ctp-red);
-    margin-top: 8px;
-  }
-
-  .result {
-    margin-top: 16px;
-    font-size: 1.2rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .grade-chip {
-    display: inline-block;
-    padding: 2px 10px;
-    border-radius: 12px;
-    font-weight: 700;
-    color: var(--chip-color);
-    background: color-mix(in srgb, var(--chip-color) 15%, transparent);
-    border: 1px solid color-mix(in srgb, var(--chip-color) 35%, transparent);
-  }
-
-  .formula {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 20px;
-    font-size: 1rem;
-    color: var(--ctp-subtext1);
-  }
-
-  .frac-label {
-    white-space: nowrap;
-  }
-
-  .frac {
-    display: inline-flex;
-    flex-direction: column;
-    align-items: stretch;
-    text-align: center;
-  }
-
-  .num {
-    padding: 0 6px 5px;
-    white-space: nowrap;
-  }
-
-  .line {
-    border-top: 1.5px solid var(--ctp-subtext1);
-    line-height: 0;
-  }
-
-  .den {
-    padding: 2px 6px 0;
-    white-space: nowrap;
-  }
-
-  .frac-rest {
-    white-space: nowrap;
-  }
-</style>

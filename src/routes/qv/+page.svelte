@@ -1,38 +1,75 @@
 <script lang="ts">
   import { qv, resetQV } from '$lib/stores/qv';
-  import { QV_PRESETS, getQVPreset } from '$lib/qv/presets';
+  import { QV_PRESETS, getQVPreset, getQVTrack } from '$lib/qv/presets';
   import type { QVComponent, QVComponentId, QVTrack } from '$lib/qv/types';
   import ShareButton from '$lib/components/ShareButton.svelte';
   import { clampInput, numericInput } from '$lib/actions';
   import { gradeColor } from '$lib/utils/grading';
-  import { computeComponentGrade, computeNeededGrade, evaluateQV } from '$lib/utils/qv';
+  import { computeComponentGrade, computeNeededGrade, evaluateQV, isValidGrade } from '$lib/utils/qv';
   import { m } from '$lib/i18n';
   import { onMount } from 'svelte';
   import { clearShareParam, createShareUrl, readSharePayload } from '$lib/utils/share';
+  import { slide, fade, scale } from 'svelte/transition';
+  import { 
+    InfoCircleOutline, 
+    TrashBinOutline, 
+    ChevronDownOutline, 
+    ChevronUpOutline,
+    ShieldCheckOutline,
+    ChartPieOutline,
+    AdjustmentsHorizontalOutline,
+    BriefcaseOutline,
+    TerminalOutline,
+    BookOutline,
+    CartOutline,
+    UsersGroupOutline,
+    TruckOutline,
+    HeartOutline,
+    CloseOutline
+  } from 'flowbite-svelte-icons';
 
-  const sources = [
-    { label: 'ICT-Berufsbildung', href: 'https://www.ict-berufsbildung.ch/grundbildung/ict-lehren/informatiker-in-efz' },
-    { label: 'QV Ausführungsbestimmungen', href: 'https://www.ict-berufsbildung.ch/resources/Informatiker-EFZ_Ausfuehrungsbestimmungen_QV_202406121.pdf' },
-    { label: 'ICT-BZ QV 2026', href: 'https://ict-bz.ch/download/qv-2026-prasentation-infoveranstaltung-applikation-und-plattformentwicklung' },
-    { label: 'BBZBL BiVo 2021', href: 'https://www.bbzbl.ch/wp-content/uploads/2021/07/Qualifikationsverfahren-QV-BiVo-2021.pdf' },
+  const overviewStyles = [
+    { icon: ShieldCheckOutline, color: 'text-ctp-green', bg: 'bg-ctp-green/10' },
+    { icon: ChartPieOutline, color: 'text-ctp-blue', bg: 'bg-ctp-blue/10' },
+    { icon: AdjustmentsHorizontalOutline, color: 'text-ctp-mauve', bg: 'bg-ctp-mauve/10' },
+    { icon: BriefcaseOutline, color: 'text-ctp-peach', bg: 'bg-ctp-peach/10' },
   ];
 
   let preset = $derived(getQVPreset($qv.presetId));
+  let activeTrack = $derived(getQVTrack(preset, $qv.track));
   let componentGrades = $derived.by(() => {
-    const grades: Partial<Record<QVComponentId, number | null>> = {};
+    const grades: Record<string, number | null> = {};
     for (const component of preset.components) {
-      const detailGrade = $qv.detailEnabled[component.id]
-        ? computeComponentGrade(component, parseDetailGrades(component.id))
-        : null;
-      grades[component.id] = detailGrade ?? parseGrade($qv.componentGrades[component.id]);
+      if ($qv.detailEnabled[component.id]) {
+        grades[component.id] = computeComponentGrade(component, parseDetailGrades(component.id));
+      } else {
+        grades[component.id] = parseGrade($qv.componentGrades[component.id]);
+      }
     }
     return grades;
   });
   let evaluation = $derived(evaluateQV(preset, $qv.track, componentGrades));
   let needed = $derived(computeNeededGrade(preset, $qv.track, componentGrades));
+  let overviewItems = $derived(
+    preset.overviewItems.map((item, index) => ({
+      ...item,
+      ...overviewStyles[index % overviewStyles.length],
+    }))
+  );
 
+  let progress = $derived.by(() => {
+    const active = evaluation.activeComponents;
+    if (active.length === 0) return 0;
+    const completed = active.filter((c) => isValidGrade(componentGrades[c.id])).length;
+    return (completed / active.length) * 100;
+  });
+
+  let showPresetModal = $state(false);
+  let showInfo = $state(false);
   let confirmClear = $state(false);
   let confirmTimer: ReturnType<typeof setTimeout> | null = null;
+
+  let activePresetIcon = $derived(getPresetIcon($qv.presetId));
 
   onMount(() => {
     const payload = readSharePayload('qv');
@@ -60,8 +97,29 @@
     );
   }
 
+  function filterQVMap<T>(values: Record<string, T> | undefined, allowedIds: Set<string>): Record<string, T> {
+    return Object.fromEntries(
+      Object.entries(values ?? {}).filter(([componentId]) => allowedIds.has(componentId))
+    ) as Record<string, T>;
+  }
+
   function setPreset(presetId: string) {
-    qv.update((state) => ({ ...state, presetId }));
+    const nextPreset = getQVPreset(presetId);
+    qv.update((state) => {
+      const componentIds = new Set(nextPreset.components.map((component) => component.id));
+      const track = nextPreset.tracks.some((option) => option.id === state.track)
+        ? state.track
+        : nextPreset.tracks[0].id;
+
+      return {
+        ...state,
+        presetId: nextPreset.id,
+        track,
+        componentGrades: filterQVMap(state.componentGrades, componentIds),
+        detailEnabled: filterQVMap(state.detailEnabled, componentIds),
+        detailGrades: filterQVMap(state.detailGrades, componentIds),
+      };
+    });
   }
 
   function setTrack(track: QVTrack) {
@@ -119,6 +177,15 @@
       .join(', ');
   }
 
+  function getPresetIcon(id: string) {
+    if (id.includes('informatiker')) return TerminalOutline;
+    if (id.includes('kaufmann')) return BookOutline;
+    if (id.includes('detailhandel')) return CartOutline;
+    if (id.includes('betreuung')) return UsersGroupOutline;
+    if (id.includes('logistiker')) return TruckOutline;
+    return HeartOutline;
+  }
+
   function handleClearAll() {
     if (window.matchMedia('(pointer: coarse)').matches) {
       if (confirmClear) {
@@ -137,470 +204,375 @@
 
 <svelte:head><title>{$m.qv.title}</title></svelte:head>
 
-<div class="qv-page">
-  <h1>{$m.qv.title}</h1>
-  <p class="intro">{$m.qv.description}</p>
+<div class="flex flex-col gap-8">
+  <div class="text-center space-y-4">
+    <h1 class="text-4xl font-black tracking-tight text-ctp-text">{$m.qv.title}</h1>
+    <p class="text-ctp-subtext1 max-w-lg mx-auto">{$m.qv.description}</p>
+  </div>
 
-  <ShareButton getUrl={() => createShareUrl({
-    v: 1,
-    page: 'qv',
-    presetId: $qv.presetId,
-    track: $qv.track,
-    componentGrades: $qv.componentGrades,
-    detailEnabled: $qv.detailEnabled,
-    detailGrades: $qv.detailGrades,
-  })} />
+  <div class="card bg-ctp-mantle shadow-xl border border-ctp-surface0 overflow-visible">
+    <div class="card-body p-6 sm:p-8">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+        <div class="space-y-4 w-full sm:w-auto">
+          <div>
+            <p class="text-xs font-black uppercase tracking-widest text-ctp-overlay1 mb-2">{$m.qv.presetLabel}</p>
+            <button
+              type="button"
+              class="flex items-center justify-between w-full max-w-xl p-4 bg-ctp-base border-2 border-ctp-surface1 rounded-2xl hover:border-ctp-lavender transition-all text-left group"
+              onclick={() => (showPresetModal = true)}
+            >
+              <div class="flex items-center gap-4">
+                <div class="p-2.5 rounded-xl bg-ctp-mantle border border-ctp-surface0 group-hover:border-ctp-lavender/30 transition-all">
+                  <activePresetIcon class="w-6 h-6 text-ctp-lavender"></activePresetIcon>
+                </div>
+                <div>
+                  <span class="block font-black text-ctp-text leading-tight">{preset.label}</span>
+                  <span class="text-xs font-bold text-ctp-overlay1 tracking-widest uppercase">{preset.fachrichtung}</span>
+                </div>
+              </div>
+              <ChevronDownOutline class="w-5 h-5 text-ctp-overlay1 group-hover:text-ctp-lavender transition-all" />
+            </button>
+            <p class="mt-3 max-w-xl text-sm leading-relaxed text-ctp-subtext1">{preset.description}</p>
+          </div>
 
-  <section class="controls" aria-label={$m.qv.presetLabel}>
-    <p class="section-label">{$m.qv.presetLabel}</p>
-    <div class="segmented">
-      {#each QV_PRESETS as item}
-        <button
-          type="button"
-          class:active={$qv.presetId === item.id}
-          aria-pressed={$qv.presetId === item.id}
-          onclick={() => setPreset(item.id)}
-        >{item.shortLabel}</button>
-      {/each}
+          <div>
+            <p class="text-xs font-black uppercase tracking-widest text-ctp-overlay1 mb-2">{$m.qv.trackLabel}</p>
+            <div class="join w-full">
+              {#each preset.tracks as track}
+                <button
+                  type="button"
+                  class="btn join-item btn-sm flex-grow sm:flex-grow-0 min-w-[6rem] transition-all"
+                  class:bg-ctp-lavender={$qv.track === track.id}
+                  class:text-ctp-base={$qv.track === track.id}
+                  class:bg-ctp-base={$qv.track !== track.id}
+                  class:text-ctp-text={$qv.track !== track.id}
+                  class:border-ctp-surface1={$qv.track !== track.id}
+                  onclick={() => setTrack(track.id)}
+                >{track.label}</button>
+              {/each}
+            </div>
+          </div>
+        </div>
+
+        <ShareButton getUrl={() => createShareUrl({
+          v: 1,
+          page: 'qv',
+          presetId: $qv.presetId,
+          track: $qv.track,
+          componentGrades: $qv.componentGrades,
+          detailEnabled: $qv.detailEnabled,
+          detailGrades: $qv.detailGrades,
+        })} />
+      </div>
+
+      {#if activeTrack.note}
+        <div class="alert bg-ctp-surface0/30 border-ctp-surface1 mt-6 rounded-2xl py-3 shadow-inner" transition:fade>
+          <InfoCircleOutline class="w-5 h-5 text-ctp-lavender" />
+          <span class="text-sm font-medium text-ctp-subtext1">{activeTrack.note}</span>
+        </div>
+      {/if}
     </div>
-  </section>
+  </div>
 
-  <section class="controls" aria-label={$m.qv.trackLabel}>
-    <p class="section-label">{$m.qv.trackLabel}</p>
-    <div class="segmented">
+  <div class="flex flex-col gap-4">
+    <div class="flex justify-between items-center">
       <button
         type="button"
-        class:active={$qv.track === 'regular'}
-        aria-pressed={$qv.track === 'regular'}
-        onclick={() => setTrack('regular')}
-      >{$m.qv.regularTrack}</button>
-      <button
-        type="button"
-        class:active={$qv.track === 'bm'}
-        aria-pressed={$qv.track === 'bm'}
-        onclick={() => setTrack('bm')}
-      >{$m.qv.bmTrack}</button>
+        class="btn btn-ghost btn-xs text-ctp-subtext1 hover:bg-ctp-surface0 hover:text-ctp-text gap-2 rounded-lg"
+        onclick={() => (showInfo = !showInfo)}
+      >
+        <InfoCircleOutline class="w-4 h-4" />
+        <span class="text-[10px] font-black uppercase tracking-widest">
+          {showInfo ? $m.qv.hideDetails : $m.qv.showDetails}
+        </span>
+      </button>
+
+      <div class="flex items-center gap-3">
+        <div class="hidden sm:block text-[10px] font-black uppercase tracking-widest text-ctp-overlay1">
+          {Math.round(progress)}% {$m.qv.pending}
+        </div>
+        <progress 
+          class="progress progress-primary w-32 sm:w-48 bg-ctp-surface0" 
+          value={progress} 
+          max="100"
+        ></progress>
+      </div>
     </div>
-  </section>
 
-  {#if $qv.track === 'bm'}
-    <p class="mode-note">{$m.qv.bmWeightNote}</p>
-  {/if}
+    {#if showInfo}
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" transition:slide>
+        {#each overviewItems as item}
+          <div class="rounded-2xl border border-ctp-surface0 bg-ctp-mantle p-5 shadow-lg transition-all hover:border-ctp-surface1 hover:shadow-xl flex flex-col gap-4">
+            <div class="flex items-center gap-3">
+              <div class="p-2.5 rounded-xl {item.bg} border border-ctp-surface0/50 flex-shrink-0">
+                <item.icon class="w-5 h-5 {item.color}" />
+              </div>
+              <h2 class="text-xs font-black uppercase tracking-widest text-ctp-overlay1 leading-tight">{item.title}</h2>
+            </div>
+            <p class="text-sm leading-relaxed text-ctp-subtext1 font-medium">{item.text}</p>
+          </div>
+        {/each}
+      </div>
+    {/if}
+  </div>
 
-  <section class="components" aria-label={preset.label}>
-    <div class="component-header" aria-hidden="true">
+  <div class="flex flex-col gap-4">
+    <div class="sticky top-16 z-10 bg-ctp-base/90 backdrop-blur-md py-4 hidden sm:grid grid-cols-[minmax(0,1fr)_8rem_6rem_8rem_6rem] gap-4 px-8 text-xs font-black uppercase tracking-widest text-ctp-overlay1 border-b border-ctp-surface0/50">
       <span>{$m.qv.componentHeader}</span>
-      <span>{$m.qv.gradeHeader}</span>
-      <span>{$m.qv.weightHeader}</span>
-      <span>{$m.qv.statusHeader}</span>
+      <span class="text-center">{$m.qv.gradeHeader}</span>
+      <span class="text-center">{$m.qv.weightHeader}</span>
+      <span class="text-center">{$m.qv.statusHeader}</span>
+      <span></span>
     </div>
 
     {#each evaluation.activeComponents as component (component.id)}
       {@const grade = componentGrades[component.id]}
       {@const hasGrade = typeof grade === 'number' && grade >= 1 && grade <= 6}
       {@const failedFallnote = component.fallnote && hasGrade && grade < (component.minGrade ?? 4)}
-      <div class="component-block">
-        <div class="component-row">
-          <div class="component-name">
-            <strong>{component.label}</strong>
-            <span>{component.shortLabel}</span>
-          </div>
-          <input
-            type="text"
-            class="input-grade"
-            class:readonly={$qv.detailEnabled[component.id]}
-            inputmode="decimal"
-            placeholder={$m.gradeRow.placeholderGradeShort}
-            value={componentInputValue(component)}
-            readonly={$qv.detailEnabled[component.id]}
-            use:numericInput
-            use:clampInput={{ min: 1, max: 6, decimals: 2, oncommit: (value) => !$qv.detailEnabled[component.id] && setComponentGrade(component.id, value) }}
-          />
-          <span class="weight">{displayWeight(component)}%</span>
-          <span
-            class="status"
-            class:ok={component.fallnote && hasGrade && !failedFallnote}
-            class:fail={failedFallnote}
-            class:neutral={!component.fallnote || !hasGrade}
-          >
-            {#if component.fallnote}
-              {#if !hasGrade}
-                {$m.qv.fallnotePending}
-              {:else if failedFallnote}
-                {$m.qv.fallnoteFail}
-              {:else}
-                {$m.qv.fallnotePass}
-              {/if}
-            {:else}
-              {$m.qv.noFallnote}
+      
+      <div class="card bg-ctp-mantle border border-ctp-surface0 shadow-lg overflow-hidden group hover:border-ctp-surface1 transition-all">
+        <div class="p-4 sm:p-6 flex flex-col sm:grid sm:grid-cols-[minmax(0,1fr)_8rem_6rem_8rem_6rem] items-center gap-4">
+          <div class="w-full sm:w-auto text-center sm:text-left">
+            <strong class="text-lg block font-black text-ctp-text">{component.label}</strong>
+            <span class="text-xs font-bold text-ctp-overlay1 tracking-widest uppercase">{component.shortLabel}</span>
+            {#if component.description}
+              <p class="mt-2 max-w-2xl text-sm leading-relaxed text-ctp-subtext1">{component.description}</p>
             {/if}
-          </span>
+            {#if component.roundingNote}
+              <p class="mt-1 text-xs font-bold text-ctp-overlay1">{component.roundingNote}</p>
+            {/if}
+          </div>
 
-          {#if component.details?.length}
-            <button
-              type="button"
-              class="btn-detail"
-              onclick={() => setDetailEnabled(component.id, !$qv.detailEnabled[component.id])}
+          <div class="w-32 sm:w-auto">
+            <input
+              type="text"
+              class="input input-bordered input-md w-full bg-ctp-base border-ctp-surface1 focus:border-ctp-lavender focus:outline-none transition-all text-center font-black text-xl"
+              class:bg-ctp-surface0={ $qv.detailEnabled[component.id] }
+              class:opacity-50={ $qv.detailEnabled[component.id] }
+              inputmode="decimal"
+              placeholder="—"
+              value={componentInputValue(component)}
+              readonly={$qv.detailEnabled[component.id]}
+              use:numericInput
+              use:clampInput={{ min: 1, max: 6, decimals: 2, oncommit: (value) => !$qv.detailEnabled[component.id] && setComponentGrade(component.id, value) }}
+            />
+          </div>
+
+          <div class="text-center">
+            <span class="badge bg-ctp-base border-ctp-surface1 text-ctp-subtext0 font-black px-4 py-3">{displayWeight(component)}%</span>
+          </div>
+
+          <div class="text-center w-full sm:w-auto">
+            <span
+              class="badge border-none font-black uppercase tracking-tighter text-xs px-4 py-3 w-full sm:w-28"
+              class:bg-ctp-green={component.fallnote && hasGrade && !failedFallnote}
+              class:bg-ctp-red={failedFallnote}
+              class:text-ctp-base={component.fallnote && hasGrade}
+              class:bg-ctp-surface0={!component.fallnote || !hasGrade}
+              class:text-ctp-overlay1={!component.fallnote || !hasGrade}
             >
-              {$qv.detailEnabled[component.id] ? $m.qv.hideDetails : $m.qv.showDetails}
-            </button>
-          {:else}
-            <span class="detail-placeholder"></span>
-          {/if}
+              {#if component.fallnote}
+                {#if !hasGrade}
+                  {$m.qv.fallnotePending}
+                {:else if failedFallnote}
+                  {$m.qv.fallnoteFail}
+                {:else}
+                  {$m.qv.fallnotePass}
+                {/if}
+              {:else}
+                {$m.qv.noFallnote}
+              {/if}
+            </span>
+          </div>
+
+          <div class="flex justify-center w-full min-w-0 sm:w-auto">
+            {#if component.details?.length}
+              <button
+                type="button"
+                class="btn btn-ghost btn-xs h-auto min-h-8 w-full max-w-24 gap-1 px-2 py-1 whitespace-normal normal-case text-ctp-subtext1 hover:bg-ctp-surface0 hover:text-ctp-text"
+                aria-expanded={$qv.detailEnabled[component.id]}
+                onclick={() => setDetailEnabled(component.id, !$qv.detailEnabled[component.id])}
+              >
+                <span class="min-w-0 text-center text-[10px] font-black uppercase leading-none tracking-normal break-words">
+                  {$qv.detailEnabled[component.id] ? $m.qv.hideDetails : $m.qv.showDetails}
+                </span>
+                {#if $qv.detailEnabled[component.id]}
+                  <ChevronUpOutline class="h-4 w-4 shrink-0" />
+                {:else}
+                  <ChevronDownOutline class="h-4 w-4 shrink-0" />
+                {/if}
+              </button>
+            {/if}
+          </div>
         </div>
 
         {#if $qv.detailEnabled[component.id] && component.details?.length}
-          <div class="details">
+          <div class="bg-ctp-base/40 border-t border-ctp-surface0 px-6 py-6 space-y-4" transition:slide>
             {#each component.details as detail (detail.id)}
-              <label class="detail-row">
-                <span>{detail.label}</span>
-                <input
-                  type="text"
-                  inputmode="decimal"
-                  placeholder={$m.gradeRow.placeholderGradeShort}
-                  value={detailInputValue(component.id, detail.id)}
-                  use:numericInput
-                  use:clampInput={{ min: 1, max: 6, decimals: 2, oncommit: (value) => setDetailGrade(component.id, detail.id, value) }}
-                />
-                <span>{detail.weight}%</span>
-              </label>
+              <div class="flex flex-col sm:grid sm:grid-cols-[1fr_8rem_6rem] items-center gap-4">
+                <div class="w-full sm:w-auto text-center sm:text-left">
+                  <span class="text-sm font-bold text-ctp-subtext1">{detail.label}</span>
+                  {#if detail.roundingNote}
+                    <p class="mt-1 text-xs font-bold text-ctp-overlay1">{detail.roundingNote}</p>
+                  {/if}
+                </div>
+                <div class="w-24 sm:w-auto">
+                  <input
+                    type="text"
+                    class="input input-bordered input-sm w-full bg-ctp-base border-ctp-surface1 focus:border-ctp-lavender focus:outline-none transition-all text-center font-black"
+                    inputmode="decimal"
+                    placeholder="—"
+                    value={detailInputValue(component.id, detail.id)}
+                    use:numericInput
+                    use:clampInput={{ min: 1, max: 6, decimals: 2, oncommit: (value) => setDetailGrade(component.id, detail.id, value) }}
+                  />
+                </div>
+                <span class="text-xs font-black text-ctp-overlay1 tracking-widest uppercase">{detail.weight}%</span>
+              </div>
             {/each}
           </div>
         {/if}
       </div>
     {/each}
-  </section>
+  </div>
 
-  <section class="result-panel" aria-live="polite">
-    <div class="result-line">
-      <span>{$m.qv.finalGrade}</span>
+  <div class="space-y-6">
+    <div class="card bg-ctp-mantle shadow-2xl border-2 border-ctp-surface0 overflow-hidden" transition:scale>
+      <div class="p-8 sm:p-12 flex flex-col items-center gap-6">
+        <div class="text-center space-y-2">
+          <span class="text-xs font-black uppercase tracking-[0.3em] text-ctp-subtext1">{$m.qv.finalGrade}</span>
+          {#if evaluation.finalGrade !== null}
+            <div 
+              class="text-9xl font-black tracking-tighter"
+              style:color={gradeColor(evaluation.finalGrade)}
+              style:text-shadow="0 0 50px {gradeColor(evaluation.finalGrade)}40"
+            >
+              {evaluation.finalGrade.toFixed(1)}
+            </div>
+            {#if evaluation.rawFinalGrade !== null}
+              <p class="text-sm font-bold text-ctp-overlay1">
+                {$m.qv.rawFinalGrade}: {evaluation.rawFinalGrade.toFixed(2)} · {$m.qv.roundedFinalGrade}
+              </p>
+            {/if}
+          {:else}
+            <div class="badge bg-ctp-surface0 border-none text-ctp-overlay1 font-black px-6 py-4 uppercase tracking-widest">
+              {$m.qv.missingFields}
+            </div>
+          {/if}
+        </div>
+
+        <div
+          class="px-8 py-3 rounded-full font-black text-xl uppercase tracking-widest shadow-lg"
+          class:bg-ctp-green={evaluation.passed === true}
+          class:bg-ctp-red={evaluation.passed === false}
+          class:text-ctp-base={evaluation.passed !== null}
+          class:bg-ctp-surface1={evaluation.passed === null}
+          class:text-ctp-subtext1={evaluation.passed === null}
+        >
+          {#if evaluation.passed === true}
+            {$m.qv.pass}
+          {:else if evaluation.passed === false}
+            {$m.qv.fail}
+          {:else}
+            {$m.qv.pending}
+          {/if}
+        </div>
+
+        {#if evaluation.failedFallnoten.length > 0}
+          <div class="alert alert-error bg-ctp-red/10 border-ctp-red text-ctp-red rounded-2xl max-w-lg">
+            <span class="text-sm font-bold text-center w-full">
+              {$m.qv.failedFallnotenPrefix} <strong>{componentNames(evaluation.failedFallnoten)}</strong>
+            </span>
+          </div>
+        {/if}
+
+        {#if needed && !needed.impossible && needed.grade !== null}
+          <div class="flex flex-col items-center gap-2 p-6 rounded-3xl bg-ctp-base border border-ctp-surface0 shadow-inner w-full max-w-md" transition:fade>
+            <span class="text-xs font-black uppercase tracking-widest text-ctp-overlay1">{$m.qv.neededGradePrefix}</span>
+            <div class="flex items-center gap-3">
+              <span class="text-5xl font-black tabular-nums" style:color={gradeColor(needed.grade)}>{needed.grade.toFixed(1)}</span>
+              <span class="text-xs font-bold text-ctp-subtext1 uppercase tracking-tighter leading-tight">{$m.qv.neededGradeSuffix}</span>
+            </div>
+            <span class="text-[10px] font-black text-ctp-overlay1 uppercase tracking-widest opacity-50">({componentNames(needed.missingComponentIds)})</span>
+          </div>
+        {:else if needed?.impossible}
+           <div class="alert alert-error bg-ctp-red/10 border-ctp-red text-ctp-red rounded-2xl max-w-lg">
+            <span class="text-sm font-bold text-center w-full">
+              {needed.reason === 'known-fallnote' ? $m.qv.neededKnownFallnoteImpossible : $m.qv.neededMaxImpossible}
+            </span>
+          </div>
+        {/if}
+      </div>
       {#if evaluation.finalGrade !== null}
-        <span class="grade-chip" style:--chip-color={gradeColor(evaluation.finalGrade)}>
-          {evaluation.finalGrade.toFixed(1)}
-        </span>
-      {:else}
-        <span class="placeholder">{$m.qv.missingFields}</span>
+        <div class="h-3 w-full" style:background={gradeColor(evaluation.finalGrade)}></div>
       {/if}
     </div>
 
-    <p
-      class="verdict"
-      class:pass={evaluation.passed === true}
-      class:fail={evaluation.passed === false}
-      class:pending={evaluation.passed === null}
-    >
-      {#if evaluation.passed === true}
-        {$m.qv.pass}
-      {:else if evaluation.passed === false}
-        {$m.qv.fail}
-      {:else}
-        {$m.qv.pending}
-      {/if}
-    </p>
+    <div class="flex justify-center pt-4">
+      <button 
+        type="button" 
+        class="btn btn-ghost px-12 transition-all rounded-2xl" 
+        class:btn-error={confirmClear}
+        class:bg-ctp-red={confirmClear}
+        class:text-ctp-base={confirmClear}
+        class:hover:bg-ctp-surface1={!confirmClear}
+        onclick={handleClearAll}
+      >
+        <TrashBinOutline class="w-5 h-5" />
+        {confirmClear ? $m.qv.clearConfirm : $m.qv.clearAll}
+      </button>
+    </div>
 
-    {#if evaluation.failedFallnoten.length > 0}
-      <p class="issue">{$m.qv.failedFallnotenPrefix}{componentNames(evaluation.failedFallnoten)}</p>
-    {/if}
-
-    {#if needed}
-      {#if needed.impossible}
-        <p class="issue">
-          {needed.reason === 'known-fallnote' ? $m.qv.neededKnownFallnoteImpossible : $m.qv.neededMaxImpossible}
-        </p>
-      {:else if needed.grade !== null}
-        <p class="needed">
-          {$m.qv.neededGradePrefix}
-          <span class="grade-chip" style:--chip-color={gradeColor(needed.grade)}>{needed.grade.toFixed(1)}</span>
-          {$m.qv.neededGradeSuffix}
-          <span class="muted">({componentNames(needed.missingComponentIds)})</span>
-        </p>
-      {/if}
-    {/if}
-  </section>
-
-  <div class="actions">
-    <button type="button" class="btn-clear" class:confirming={confirmClear} onclick={handleClearAll}>
-      {confirmClear ? $m.qv.clearConfirm : $m.qv.clearAll}
-    </button>
+    <div class="card bg-ctp-crust/50 border border-ctp-surface0 p-6 rounded-3xl">
+      <p class="text-xs font-bold text-ctp-overlay1 mb-4">{$m.qv.advisory}</p>
+      <div class="flex flex-wrap gap-x-6 gap-y-2">
+        {#each preset.sources as source}
+          <a href={source.href} target="_blank" rel="noreferrer" class="text-xs font-bold text-ctp-blue hover:text-ctp-lavender transition-colors underline decoration-dotted underline-offset-4">
+            {source.label}
+          </a>
+        {/each}
+      </div>
+    </div>
   </div>
-
-  <p class="source-note">
-    {$m.qv.advisory}
-    {#each sources as source, index}
-      <a href={source.href} target="_blank" rel="noreferrer">{source.label}</a>{index < sources.length - 1 ? ', ' : '.'}
-    {/each}
-  </p>
 </div>
 
+{#if showPresetModal}
+  <div class="modal modal-open" transition:fade={{ duration: 200 }}>
+    <div class="modal-box max-w-4xl bg-ctp-base border border-ctp-surface0 p-0 overflow-hidden shadow-2xl" transition:scale={{ duration: 200, start: 0.95 }}>
+      <div class="p-6 border-b border-ctp-surface0 flex items-center justify-between bg-ctp-mantle">
+        <h3 class="text-xl font-black text-ctp-text">{$m.qv.presetLabel}</h3>
+        <button type="button" class="btn btn-ghost btn-sm btn-circle" onclick={() => (showPresetModal = false)}>
+          <CloseOutline class="w-5 h-5" />
+        </button>
+      </div>
+      
+      <div class="p-6 max-h-[70vh] overflow-y-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {#each QV_PRESETS as item}
+            {@const ItemIcon = getPresetIcon(item.id)}
+            <button
+              type="button"
+              class="flex flex-col items-start p-5 rounded-2xl border-2 transition-all text-left group/item {$qv.presetId === item.id ? 'border-ctp-lavender bg-ctp-lavender/5' : 'border-ctp-surface0 hover:border-ctp-lavender/50'}"
+              onclick={() => { setPreset(item.id); showPresetModal = false; }}
+            >
+              <div class="flex items-center gap-4 mb-3">
+                <div class="p-3 rounded-xl bg-ctp-mantle border border-ctp-surface0 group-hover/item:border-ctp-lavender/30 transition-all">
+                  <ItemIcon class="w-6 h-6 text-ctp-lavender"></ItemIcon>
+                </div>
+                <div>
+                  <span class="block font-black text-ctp-text leading-tight">{item.shortLabel}</span>
+                  <span class="text-[10px] font-black text-ctp-overlay1 tracking-[0.2em] uppercase">{item.fachrichtung}</span>
+                </div>
+              </div>
+              <p class="text-xs leading-relaxed text-ctp-subtext1 font-medium">{item.description}</p>
+            </button>
+          {/each}
+        </div>
+      </div>
+    </div>
+    <button type="button" class="modal-backdrop bg-ctp-crust/80 backdrop-blur-sm" onclick={() => (showPresetModal = false)}>Close</button>
+  </div>
+{/if}
+
 <style>
-  .qv-page {
-    max-width: 900px;
-  }
-
-  .intro,
-  .mode-note,
-  .source-note {
-    max-width: 760px;
-  }
-
-  .controls {
-    margin-bottom: 14px;
-  }
-
-  .section-label {
-    font-weight: 600;
-    color: var(--ctp-subtext1);
-    margin: 0 0 6px;
-  }
-
-  .segmented {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-  }
-
-  .segmented button {
-    background: none;
-    border-color: var(--ctp-surface2);
-    color: var(--ctp-subtext1);
-  }
-
-  .segmented button.active {
-    background: var(--ctp-lavender);
-    border-color: var(--ctp-lavender);
-    color: var(--ctp-base);
-  }
-
-  .mode-note {
-    color: var(--ctp-subtext0);
-    font-size: 0.9rem;
-    margin: 0 0 12px;
-  }
-
-  .components {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .component-header,
-  .component-row {
-    display: grid;
-    grid-template-columns: minmax(220px, 1fr) 100px 80px 140px auto;
-    gap: 8px;
-    align-items: center;
-  }
-
-  .component-header {
-    padding: 0 4px;
-    color: var(--ctp-overlay1);
-    font-size: 0.8rem;
-    font-weight: 600;
-  }
-
-  .component-block {
-    border-top: 1px solid var(--ctp-surface0);
-    padding-top: 6px;
-  }
-
-  .component-name {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-  }
-
-  .component-name strong {
-    color: var(--ctp-text);
-    font-size: 0.98rem;
-  }
-
-  .component-name span,
-  .muted {
-    color: var(--ctp-overlay1);
-    font-size: 0.8rem;
-  }
-
-  .input-grade,
-  .detail-row input {
-    width: 100%;
-  }
-
-  .input-grade.readonly {
-    background: var(--ctp-surface0);
-    color: var(--ctp-overlay1);
-    cursor: not-allowed;
-  }
-
-  .weight {
-    color: var(--ctp-subtext0);
-    font-weight: 600;
-    text-align: right;
-  }
-
-  .status {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--status-color);
-    background: color-mix(in srgb, var(--status-color) 12%, transparent);
-    border: 1px solid color-mix(in srgb, var(--status-color) 30%, transparent);
-    border-radius: 10px;
-    padding: 2px 8px;
-    text-align: center;
-  }
-
-  .status.ok { --status-color: var(--ctp-green); }
-  .status.fail { --status-color: var(--ctp-red); }
-  .status.neutral { --status-color: var(--ctp-overlay1); }
-
-  .btn-detail {
-    background: none;
-    color: var(--ctp-subtext0);
-    white-space: nowrap;
-  }
-
-  .detail-placeholder {
-    width: 1px;
-  }
-
-  .details {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin: 6px 0 2px 22px;
-    padding-left: 10px;
-    border-left: 2px solid var(--ctp-surface1);
-  }
-
-  .detail-row {
-    display: grid;
-    grid-template-columns: minmax(180px, 1fr) 100px 52px;
-    gap: 8px;
-    align-items: center;
-    margin: 0;
-  }
-
-  .detail-row span:first-child {
-    color: var(--ctp-subtext1);
-  }
-
-  .detail-row span:last-child {
-    color: var(--ctp-subtext0);
-    font-weight: 600;
-    text-align: right;
-  }
-
-  .result-panel {
-    margin-top: 18px;
-    border-top: 2px solid var(--ctp-surface1);
-    padding-top: 14px;
-  }
-
-  .result-line {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 1.15rem;
-    font-weight: 700;
-  }
-
-  .grade-chip {
-    display: inline-block;
-    padding: 2px 10px;
-    border-radius: 12px;
-    font-weight: 700;
-    color: var(--chip-color);
-    background: color-mix(in srgb, var(--chip-color) 15%, transparent);
-    border: 1px solid color-mix(in srgb, var(--chip-color) 35%, transparent);
-  }
-
-  .placeholder {
-    color: var(--ctp-overlay1);
-    font-size: 0.95rem;
-    font-weight: 500;
-  }
-
-  .verdict {
-    font-size: 1rem;
-    font-weight: 700;
-    margin: 8px 0;
-  }
-
-  .verdict.pass { color: var(--ctp-green); }
-  .verdict.fail { color: var(--ctp-red); }
-  .verdict.pending { color: var(--ctp-subtext0); }
-
-  .issue {
-    color: var(--ctp-red);
-    margin: 6px 0;
-  }
-
-  .needed {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px;
-    margin: 6px 0;
-  }
-
-  .actions {
-    margin-top: 14px;
-  }
-
-  .btn-clear.confirming {
-    background: var(--ctp-red);
-    border-color: var(--ctp-red);
-    color: var(--ctp-base);
-  }
-
-  .source-note {
-    color: var(--ctp-overlay1);
-    font-size: 0.8rem;
-    margin-top: 16px;
-  }
-
-  @media (max-width: 760px) {
-    .component-header {
-      display: none;
-    }
-
-    .component-row {
-      grid-template-columns: 1fr 86px 64px;
-    }
-
-    .status {
-      grid-column: 1 / -1;
-      justify-self: start;
-    }
-
-    .btn-detail,
-    .detail-placeholder {
-      grid-column: 1 / -1;
-      justify-self: start;
-    }
-  }
-
-  @media (max-width: 520px) {
-    .component-row {
-      grid-template-columns: 1fr 82px;
-    }
-
-    .weight {
-      grid-column: 1 / -1;
-      text-align: left;
-    }
-
-    .details {
-      margin-left: 0;
-    }
-
-    .detail-row {
-      grid-template-columns: 1fr 82px;
-    }
-
-    .detail-row span:last-child {
-      grid-column: 1 / -1;
-      text-align: left;
-    }
-  }
 </style>

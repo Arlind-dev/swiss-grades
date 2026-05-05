@@ -85,6 +85,14 @@ export interface Messages {
   qv: {
     title: string;
     description: string;
+    overviewFallnotenTitle: string;
+    overviewFallnotenText: string;
+    overviewWeightsTitle: string;
+    overviewWeightsText: string;
+    overviewRoundingTitle: string;
+    overviewRoundingText: string;
+    overviewIpaTitle: string;
+    overviewIpaText: string;
     presetLabel: string;
     trackLabel: string;
     regularTrack: string;
@@ -101,6 +109,8 @@ export interface Messages {
     fallnoteFail: string;
     noFallnote: string;
     finalGrade: string;
+    rawFinalGrade: string;
+    roundedFinalGrade: string;
     missingFields: string;
     pass: string;
     fail: string;

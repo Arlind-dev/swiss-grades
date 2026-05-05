@@ -1,4 +1,5 @@
 import { sveltekit } from '@sveltejs/kit/vite';
+import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 import { execSync } from 'child_process';
 import fs from 'fs';
@@ -13,7 +14,7 @@ try {
 const buildDate = new Date().toISOString().slice(0, 10);
 
 export default defineConfig({
-	plugins: [sveltekit()],
+	plugins: [tailwindcss(), sveltekit()],
 	optimizeDeps: {
 		exclude: ['flowbite-svelte-icons']
 	},

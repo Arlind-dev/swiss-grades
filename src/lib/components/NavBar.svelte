@@ -1,275 +1,239 @@
 <script lang="ts">
   import { page } from '$app/stores';
+  import { tick } from 'svelte';
   import { m, locale, type Locale } from '$lib/i18n';
-  import { theme, type Theme } from '$lib/stores/theme';
-  import { MoonOutline, SunOutline, BarsOutline, CloseOutline } from 'flowbite-svelte-icons';
+  import { theme } from '$lib/stores/theme';
+  import {
+    BarsOutline,
+    CheckOutline,
+    ChevronDownOutline,
+    MoonOutline,
+    SunOutline,
+  } from 'flowbite-svelte-icons';
 
-  const locales: { value: Locale; label: string }[] = [
-    { value: 'de', label: 'DE' },
-    { value: 'en', label: 'EN' },
-    { value: 'fr', label: 'FR' },
-    { value: 'it', label: 'IT' },
-    { value: 'sq', label: 'SQ' },
-    { value: 'so', label: 'SO' },
-    { value: 'ru', label: 'RU' },
-    { value: 'tr', label: 'TR' },
+  const locales: { value: Locale; code: string; name: string; flag: string }[] = [
+    { value: 'de', code: 'DE', name: 'Deutsch', flag: '🇩🇪' },
+    { value: 'en', code: 'EN', name: 'English', flag: '🇬🇧' },
+    { value: 'fr', code: 'FR', name: 'Français', flag: '🇫🇷' },
+    { value: 'it', code: 'IT', name: 'Italiano', flag: '🇮🇹' },
+    { value: 'sq', code: 'SQ', name: 'Shqip', flag: '🇦🇱' },
+    { value: 'so', code: 'SO', name: 'Soomaali', flag: '🇸🇴' },
+    { value: 'ru', code: 'RU', name: 'Русский', flag: '🇷🇺' },
+    { value: 'tr', code: 'TR', name: 'Türkçe', flag: '🇹🇷' },
   ];
 
-  let menuOpen = $state(false);
   let localeOpen = $state(false);
+  let localeButton: HTMLButtonElement | undefined;
+  const selectedLocale = $derived(locales.find((loc) => loc.value === $locale) ?? locales[0]);
 
   function toggleTheme() {
     theme.update((t) => (t === 'latte' ? 'mocha' : 'latte'));
   }
 
+  function closeLocaleMenu({ focusTrigger = false } = {}) {
+    localeOpen = false;
+    if (focusTrigger) localeButton?.focus();
+  }
+
+  async function openLocaleMenu() {
+    localeOpen = true;
+    await tick();
+    document.querySelector<HTMLButtonElement>('[data-active-locale="true"]')?.focus();
+  }
+
+  function toggleLocaleMenu() {
+    if (localeOpen) {
+      closeLocaleMenu();
+      return;
+    }
+    void openLocaleMenu();
+  }
+
+  function selectLocale(value: Locale) {
+    locale.set(value);
+    closeLocaleMenu();
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+  }
+
+  function handleLocaleToggleKeydown(event: KeyboardEvent) {
+    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+    event.preventDefault();
+    void openLocaleMenu();
+  }
+
+  function moveLocaleFocus(direction: 1 | -1) {
+    const options = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-locale-option]'));
+    if (!options.length) return;
+
+    const currentIndex = options.indexOf(document.activeElement as HTMLButtonElement);
+    const nextIndex = currentIndex === -1
+      ? 0
+      : (currentIndex + direction + options.length) % options.length;
+
+    options[nextIndex]?.focus();
+  }
+
+  function handleLocaleMenuKeydown(event: KeyboardEvent) {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeLocaleMenu({ focusTrigger: true });
+    }
+
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      moveLocaleFocus(event.key === 'ArrowDown' ? 1 : -1);
+    }
+
+    if (event.key === 'Home' || event.key === 'End') {
+      event.preventDefault();
+      const options = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-locale-option]'));
+      options[event.key === 'Home' ? 0 : options.length - 1]?.focus();
+    }
+  }
+
+  function handleWindowClick(event: MouseEvent) {
+    if (!localeOpen) return;
+    if (event.target instanceof Element && event.target.closest('[data-locale-menu]')) return;
+    closeLocaleMenu();
+  }
+
+  function handleWindowKeydown(event: KeyboardEvent) {
+    if (event.key === 'Escape' && localeOpen) {
+      closeLocaleMenu({ focusTrigger: true });
+    }
+  }
+
   $effect(() => {
     $page.url.pathname;
-    menuOpen = false;
     localeOpen = false;
   });
 </script>
 
-<nav>
-  <div class="bar">
-    <button
-      type="button"
-      class="hamburger"
-      aria-label="Toggle menu"
-      onclick={() => (menuOpen = !menuOpen)}
-    >
-      {#if menuOpen}<CloseOutline class="icon" />{:else}<BarsOutline class="icon" />{/if}
-    </button>
+<svelte:window onclick={handleWindowClick} onkeydown={handleWindowKeydown} />
 
-    <div class="links" class:open={menuOpen}>
-      <a href="/calculator" class:active={$page.url.pathname === '/calculator'}>{$m.nav.calculator}</a>
-      <a href="/average"    class:active={$page.url.pathname === '/average'}>{$m.nav.average}</a>
-      <a href="/needed"     class:active={$page.url.pathname === '/needed'}>{$m.nav.needed}</a>
-      <a href="/qv"         class:active={$page.url.pathname === '/qv'}>{$m.nav.qv}</a>
+<nav class="sticky top-0 z-40 w-full border-b border-ctp-surface0 bg-ctp-base/80 backdrop-blur-md">
+  <div class="container mx-auto flex h-20 max-w-5xl items-center justify-between px-4">
+    <div class="flex items-center gap-2">
+      <label for="nav-drawer" class="btn btn-ghost btn-circle sm:hidden">
+        <BarsOutline class="h-5 w-5" />
+      </label>
+      <a href="/" class="text-xl font-black italic tracking-tighter text-ctp-lavender">Swiss Grades</a>
     </div>
 
-    <div class="controls">
+    <div class="hidden flex-1 justify-center sm:flex">
+      <ul class="flex gap-1">
+        <li>
+          <a href="/calculator" 
+             class="px-4 py-2 rounded-xl transition-all font-bold text-sm"
+             class:bg-ctp-surface0={ $page.url.pathname === '/calculator' }
+             class:text-ctp-lavender={ $page.url.pathname === '/calculator' }
+             class:hover:bg-ctp-surface0={ $page.url.pathname !== '/calculator' }>
+            {$m.nav.calculator}
+          </a>
+        </li>
+        <li>
+          <a href="/average" 
+             class="px-4 py-2 rounded-xl transition-all font-bold text-sm"
+             class:bg-ctp-surface0={ $page.url.pathname === '/average' }
+             class:text-ctp-lavender={ $page.url.pathname === '/average' }
+             class:hover:bg-ctp-surface0={ $page.url.pathname !== '/average' }>
+            {$m.nav.average}
+          </a>
+        </li>
+        <li>
+          <a href="/needed" 
+             class="px-4 py-2 rounded-xl transition-all font-bold text-sm"
+             class:bg-ctp-surface0={ $page.url.pathname === '/needed' }
+             class:text-ctp-lavender={ $page.url.pathname === '/needed' }
+             class:hover:bg-ctp-surface0={ $page.url.pathname !== '/needed' }>
+            {$m.nav.needed}
+          </a>
+        </li>
+        <li>
+          <a href="/qv" 
+             class="px-4 py-2 rounded-xl transition-all font-bold text-sm"
+             class:bg-ctp-surface0={ $page.url.pathname === '/qv' }
+             class:text-ctp-lavender={ $page.url.pathname === '/qv' }
+             class:hover:bg-ctp-surface0={ $page.url.pathname !== '/qv' }>
+            {$m.nav.qv}
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="flex items-center gap-1">
       <button
         type="button"
-        class="theme-toggle"
+        class="btn btn-ghost btn-circle btn-sm text-ctp-subtext1 hover:bg-ctp-surface0"
         aria-label={$theme === 'latte' ? 'Switch to dark mode' : 'Switch to light mode'}
         title={$theme === 'latte' ? 'Switch to dark mode' : 'Switch to light mode'}
         onclick={toggleTheme}
-      >{#if $theme === 'latte'}<MoonOutline class="icon" />{:else}<SunOutline class="icon" />{/if}</button>
-      <div class="locale-switcher">
+      >
+        {#if $theme === 'latte'}<MoonOutline class="h-5 w-5" />{:else}<SunOutline class="h-5 w-5" />{/if}
+      </button>
+
+      <div class="dropdown dropdown-end" class:dropdown-open={localeOpen} data-locale-menu>
         <button
+          bind:this={localeButton}
           type="button"
-          class="locale-toggle"
-          onclick={() => (localeOpen = !localeOpen)}
-          aria-label="Select language"
-        >{$locale.toUpperCase()}</button>
+          class="btn btn-ghost btn-sm h-10 min-h-10 gap-2 rounded-lg border border-transparent px-2.5 text-ctp-subtext1 hover:border-ctp-surface0 hover:bg-ctp-surface0 sm:px-3"
+          aria-haspopup="menu"
+          aria-expanded={localeOpen}
+          aria-label={`Select language, current language ${selectedLocale.name}`}
+          onclick={toggleLocaleMenu}
+          onkeydown={handleLocaleToggleKeydown}
+        >
+          <span class="text-lg leading-none" aria-hidden="true">{selectedLocale.flag}</span>
+          <span class="text-xs font-black uppercase tracking-widest">{selectedLocale.code}</span>
+          <span class="hidden text-sm font-bold tracking-normal md:inline">{selectedLocale.name}</span>
+          <ChevronDownOutline
+            class={`h-3.5 w-3.5 transition-transform ${localeOpen ? 'rotate-180' : ''}`}
+          />
+        </button>
         {#if localeOpen}
-          <div class="locale-dropdown">
-            {#each locales as loc}
+        <ul
+          class="dropdown-content z-50 mt-3 w-60 rounded-lg border border-ctp-surface0 bg-ctp-mantle p-2 shadow-xl"
+          role="menu"
+          aria-label="Language"
+          onkeydown={handleLocaleMenuKeydown}
+        >
+          {#each locales as loc}
+            <li>
               <button
                 type="button"
-                class:active={$locale === loc.value}
-                onclick={() => { locale.set(loc.value); localeOpen = false; }}
-              >{loc.label}</button>
-            {/each}
-          </div>
+                class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-all focus:outline-none"
+                role="menuitemradio"
+                aria-checked={$locale === loc.value}
+                data-locale-option
+                data-active-locale={$locale === loc.value}
+                class:bg-ctp-lavender={$locale === loc.value}
+                class:text-ctp-base={$locale === loc.value}
+                class:hover:bg-ctp-lavender={$locale === loc.value}
+                class:focus:bg-ctp-lavender={$locale === loc.value}
+                class:text-ctp-subtext1={$locale !== loc.value}
+                class:hover:bg-ctp-surface0={$locale !== loc.value}
+                class:hover:text-ctp-text={$locale !== loc.value}
+                class:focus:bg-ctp-surface0={$locale !== loc.value}
+                class:focus:text-ctp-text={$locale !== loc.value}
+                onclick={() => selectLocale(loc.value)}
+              >
+                <span class="text-xl leading-none" aria-hidden="true">{loc.flag}</span>
+                <span class="min-w-0 flex-1">
+                  <span class="block truncate text-sm font-black leading-5">{loc.name}</span>
+                  <span class="block text-[0.65rem] font-black uppercase tracking-widest opacity-70">{loc.code}</span>
+                </span>
+                <CheckOutline
+                  class={`h-4 w-4 shrink-0 ${$locale === loc.value ? 'opacity-100' : 'opacity-0'}`}
+                  aria-hidden="true"
+                />
+              </button>
+            </li>
+          {/each}
+        </ul>
         {/if}
       </div>
     </div>
   </div>
 </nav>
-
-<style>
-  nav {
-    margin-bottom: 24px;
-    border-bottom: 2px solid var(--ctp-surface1);
-    padding-bottom: 8px;
-  }
-
-  .bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-  }
-
-  /* ── Desktop links ── */
-  .links {
-    display: flex;
-    gap: 4px;
-    flex: 1;
-  }
-
-  a {
-    padding: 6px 14px;
-    text-decoration: none;
-    color: var(--ctp-subtext1);
-    border-radius: 6px;
-    font-weight: 500;
-    transition: background 0.15s, color 0.15s;
-    white-space: nowrap;
-  }
-
-  a:hover {
-    background: var(--ctp-surface0);
-    color: var(--ctp-text);
-  }
-
-  a.active {
-    background: var(--ctp-lavender);
-    color: var(--ctp-base);
-  }
-
-  /* ── Controls ── */
-  .controls {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  /* shared size for all control buttons */
-  .hamburger,
-  .theme-toggle {
-    padding: 6px 12px;
-    font-size: 0.95rem;
-    font-weight: 500;
-    border: 1px solid var(--ctp-surface2);
-    border-radius: 4px;
-    line-height: 1;
-    height: 34px;
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .hamburger {
-    display: none;
-    background: none;
-    color: var(--ctp-subtext0);
-  }
-
-  .hamburger:hover {
-    border-color: var(--ctp-lavender);
-    color: var(--ctp-lavender);
-    background: none;
-  }
-
-  .hamburger :global(.icon),
-  .theme-toggle :global(.icon) {
-    width: 18px;
-    height: 18px;
-    pointer-events: none;
-  }
-
-  .theme-toggle {
-    background: none;
-    color: var(--ctp-subtext0);
-  }
-
-  .theme-toggle:hover {
-    border-color: var(--ctp-lavender);
-    color: var(--ctp-lavender);
-    background: none;
-  }
-
-  .locale-switcher {
-    position: relative;
-  }
-
-  .locale-toggle {
-    padding: 6px 12px;
-    font-size: 0.95rem;
-    font-weight: 500;
-    border: 1px solid var(--ctp-surface2);
-    border-radius: 4px;
-    line-height: 1;
-    height: 34px;
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    letter-spacing: 0.03em;
-    background: none;
-    color: var(--ctp-overlay1);
-  }
-
-  .locale-toggle:hover {
-    border-color: var(--ctp-overlay2);
-    color: var(--ctp-text);
-    background: none;
-  }
-
-  .locale-dropdown {
-    position: absolute;
-    top: calc(100% + 4px);
-    right: 0;
-    background: var(--ctp-mantle);
-    border: 1px solid var(--ctp-surface1);
-    border-radius: 6px;
-    padding: 4px;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    z-index: 200;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    min-width: 60px;
-  }
-
-  .locale-dropdown button {
-    padding: 6px 12px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    letter-spacing: 0.03em;
-    border: none;
-    border-radius: 4px;
-    background: none;
-    color: var(--ctp-subtext1);
-    text-align: center;
-  }
-
-  .locale-dropdown button:hover {
-    background: var(--ctp-surface0);
-    color: var(--ctp-text);
-  }
-
-  .locale-dropdown button.active {
-    background: var(--ctp-lavender);
-    color: var(--ctp-base);
-  }
-
-  /* ── Mobile ── */
-  @media (max-width: 600px) {
-    .hamburger {
-      display: flex;
-    }
-
-    .links {
-      display: none;
-      position: absolute;
-      top: calc(100% + 2px);
-      left: 0;
-      right: 0;
-      flex-direction: column;
-      gap: 2px;
-      background: var(--ctp-mantle);
-      border: 1px solid var(--ctp-surface1);
-      border-radius: 6px;
-      padding: 6px;
-      z-index: 100;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    .links.open {
-      display: flex;
-    }
-
-    a {
-      padding: 10px 14px;
-      border-radius: 4px;
-    }
-
-    nav {
-      position: relative;
-    }
-  }
-</style>

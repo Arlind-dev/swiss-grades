@@ -4,6 +4,7 @@
   import { recomputeParentGrade, newEntry } from '$lib/utils/grading';
   import { numericInput, clampInput } from '$lib/actions';
   import { m } from '$lib/i18n';
+  import { PlusOutline, TrashBinOutline } from 'flowbite-svelte-icons';
 
   let { entry, onchange, onremove, depth = 0, removable = true }: {
     entry: GradeEntry;
@@ -55,58 +56,80 @@
   let gradeFailing = $derived(gradeValid && gradeNum < 4.0);
 </script>
 
-<div
-  class="row-wrapper"
-  class:grade-pass={gradePassing}
-  class:grade-borderline={gradeBorderline}
-  class:grade-fail={gradeFailing}
->
-  <div class="row-outer" style:padding-left="{indent + 4}px">
-    <!-- Name input -->
-    <input
-      type="text"
-      class="input-name"
-      placeholder={$m.gradeRow.placeholderName}
-      value={entry.name}
-      oninput={(e) => emit({ name: e.currentTarget.value })}
-    />
+<div class="flex flex-col w-full">
+  <div 
+    class="flex items-center gap-2 sm:gap-4 group/row"
+    style:padding-left="{depth > 0 ? 12 : 0}px"
+  >
+    <div class="flex-grow flex items-center gap-2 sm:gap-4">
+      <!-- Name -->
+      <div class="flex-grow min-w-0 hidden sm:block">
+        <input
+          type="text"
+          class="input input-ghost input-sm w-full bg-transparent focus:bg-ctp-surface0 border-none focus:outline-none px-2 font-medium text-ctp-text placeholder:text-ctp-overlay0 transition-all rounded-lg"
+          placeholder={$m.gradeRow.placeholderName}
+          value={entry.name}
+          oninput={(e) => emit({ name: e.currentTarget.value })}
+        />
+      </div>
 
-    <!-- Grade input (readonly when parent of subgrades) -->
-    <input
-      type="text"
-      class="input-grade"
-      class:readonly={hasSubgrades}
-      inputmode="decimal"
-      placeholder={small ? $m.gradeRow.placeholderGradeShort : $m.gradeRow.placeholderGrade}
-      value={entry.grade}
-      readonly={hasSubgrades}
-      use:numericInput
-      use:clampInput={{ min: 1, max: 6, decimals: 2, oncommit: (v) => !hasSubgrades && emit({ grade: v, weight: entry.weight === '' && v !== '' ? '100' : entry.weight }) }}
-    />
+      <!-- Grade -->
+      <div class="w-20 sm:w-28 flex-shrink-0">
+        <input
+          type="text"
+          class="input input-bordered input-sm w-full bg-ctp-mantle border-ctp-surface1 focus:border-ctp-lavender focus:outline-none transition-all text-center font-black rounded-lg"
+          class:bg-ctp-surface0={hasSubgrades}
+          class:opacity-50={hasSubgrades}
+          class:border-ctp-green={gradePassing}
+          class:border-ctp-yellow={gradeBorderline}
+          class:border-ctp-red={gradeFailing}
+          inputmode="decimal"
+          placeholder={small ? $m.gradeRow.placeholderGradeShort : $m.gradeRow.placeholderGrade}
+          value={entry.grade}
+          readonly={hasSubgrades}
+          use:numericInput
+          use:clampInput={{ min: 1, max: 6, decimals: 2, oncommit: (v) => !hasSubgrades && emit({ grade: v, weight: entry.weight === '' && v !== '' ? '100' : entry.weight }) }}
+        />
+      </div>
 
-    <!-- Weight input -->
-    <div class="input-weight-wrapper">
-      <input
-        type="text"
-        class="input-weight"
-        inputmode="decimal"
-        placeholder={small ? $m.gradeRow.placeholderWeightShort : $m.gradeRow.placeholderWeight}
-        value={entry.weight}
-        use:numericInput
-        use:clampInput={{ min: 0, max: 100, oncommit: (v) => emit({ weight: v }) }}
-      />
-      {#if entry.weight}
-        <span class="weight-suffix">%</span>
-      {/if}
+      <!-- Weight -->
+      <div class="w-16 sm:w-24 flex-shrink-0 flex items-center gap-1 bg-ctp-mantle px-2 py-1 rounded-lg border border-ctp-surface1 focus-within:border-ctp-lavender transition-all">
+        <input
+          type="text"
+          class="bg-transparent border-none focus:outline-none w-full text-right font-bold text-ctp-text text-sm"
+          inputmode="decimal"
+          placeholder={small ? $m.gradeRow.placeholderWeightShort : $m.gradeRow.placeholderWeight}
+          value={entry.weight}
+          use:numericInput
+          use:clampInput={{ min: 0, max: 100, oncommit: (v) => emit({ weight: v }) }}
+        />
+        <span class="text-[10px] font-black text-ctp-overlay1">%</span>
+      </div>
     </div>
 
-    <button type="button" onclick={addSubgrade}>{$m.gradeRow.addSubgrade}</button>
-    <button type="button" class="btn-remove" onclick={onremove} disabled={!removable}>✕</button>
+    <!-- Actions -->
+    <div class="flex items-center gap-1 opacity-100 sm:opacity-0 group-hover/row:opacity-100 transition-opacity">
+      <button 
+        type="button" 
+        class="btn btn-ghost btn-circle btn-xs text-ctp-lavender hover:bg-ctp-lavender/10"
+        onclick={addSubgrade}
+        title={$m.gradeRow.addSubgrade}
+      >
+        <PlusOutline class="w-4 h-4" />
+      </button>
+      <button 
+        type="button" 
+        class="btn btn-ghost btn-circle btn-xs text-ctp-overlay1 hover:text-ctp-red hover:bg-ctp-red/10"
+        onclick={onremove}
+        disabled={!removable}
+      >
+        <TrashBinOutline class="w-3.5 h-3.5" />
+      </button>
+    </div>
   </div>
 
-  <!-- Subgrades tree (recursive) — expands below, not to the right -->
   {#if hasSubgrades}
-    <div class="tree-panel" style:--tree-line-left="{treeLineLeft}px">
+    <div class="mt-2 ml-4 border-l-2 border-ctp-surface1 pl-2 space-y-2 py-1">
       {#each entry.subgrades as sub, i (sub.id)}
         <GradeRow
           entry={sub}
@@ -118,151 +141,3 @@
     </div>
   {/if}
 </div>
-
-<style>
-  .row-wrapper {
-    display: flex;
-    flex-direction: column;
-    border-radius: 4px;
-    transition: background 0.15s;
-  }
-
-  .row-wrapper.grade-pass > .row-outer {
-    background: color-mix(in srgb, var(--ctp-green) 12%, transparent);
-    border-radius: 4px;
-  }
-
-  .row-wrapper.grade-borderline > .row-outer {
-    background: color-mix(in srgb, var(--ctp-yellow) 12%, transparent);
-    border-radius: 4px;
-  }
-
-  .row-wrapper.grade-fail > .row-outer {
-    background: color-mix(in srgb, var(--ctp-red) 12%, transparent);
-    border-radius: 4px;
-  }
-
-  .row-outer {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 4px;
-    flex-wrap: wrap;
-    padding: 2px 4px; /* left is overridden by inline style */
-  }
-
-  /* ── Inputs ── */
-  input[type='text'] {
-    font-size: 1.05rem;
-    padding: 5px 8px;
-    border: 2px solid var(--ctp-surface2);
-    border-radius: 3px;
-    outline: none;
-    background: var(--ctp-base);
-    color: var(--ctp-text);
-    transition: border-color 0.15s;
-  }
-
-  input[type='text']:focus {
-    border-color: var(--ctp-lavender);
-  }
-
-  .input-name   { flex: 1 1 210px; min-width: 80px; max-width: 290px; }
-  .input-grade  { width: 175px; flex-shrink: 0; }
-
-  .input-weight-wrapper {
-    display: flex;
-    align-items: center;
-    border: 2px solid var(--ctp-surface2);
-    border-radius: 3px;
-    width: 155px;
-    flex-shrink: 0;
-    transition: border-color 0.15s;
-    background: var(--ctp-base);
-  }
-
-  @media (max-width: 600px) {
-    .row-outer {
-      gap: 3px;
-    }
-    .input-name  { display: none; }
-    .input-grade { width: 80px; }
-    .input-weight-wrapper { width: 110px; }
-  }
-
-  .input-weight-wrapper:focus-within {
-    border-color: var(--ctp-lavender);
-  }
-
-  .input-weight {
-    border: none !important;
-    outline: none !important;
-    width: 100%;
-    padding: 5px 4px 5px 8px;
-    font-size: 1.05rem;
-    background: transparent;
-    color: var(--ctp-text);
-    min-width: 0;
-  }
-
-  .weight-suffix {
-    padding-right: 8px;
-    color: var(--ctp-overlay1);
-    font-size: 1.05rem;
-    user-select: none;
-    flex-shrink: 0;
-  }
-
-  .row-wrapper.grade-pass .input-grade { border-color: var(--ctp-green); }
-  .row-wrapper.grade-borderline .input-grade { border-color: var(--ctp-yellow); }
-  .row-wrapper.grade-fail .input-grade { border-color: var(--ctp-red); }
-
-  .input-grade.readonly {
-    background: var(--ctp-surface0);
-    color: var(--ctp-overlay1);
-    cursor: not-allowed;
-  }
-
-  /* ── Tree panel: full-width, depth tracked via prop ── */
-  .tree-panel {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin-top: 4px;
-  }
-
-  .tree-panel::before {
-    content: '';
-    position: absolute;
-    left: var(--tree-line-left);
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: var(--ctp-surface1);
-    border-radius: 1px;
-    z-index: 1;
-    pointer-events: none;
-  }
-
-  /* ── Buttons ── */
-  .btn-remove {
-    background: none;
-    border: 1px solid var(--ctp-surface2);
-    color: var(--ctp-overlay1);
-    padding: 4px 7px;
-    border-radius: 3px;
-    line-height: 1;
-  }
-
-  .btn-remove:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-  }
-
-  .btn-remove:hover {
-    border-color: var(--ctp-red);
-    color: var(--ctp-red);
-    background: none;
-  }
-</style>

@@ -1,6 +1,5 @@
 import type {
   QVComponent,
-  QVComponentId,
   QVEvaluation,
   QVGradeMap,
   QVNeededGrade,
@@ -25,7 +24,13 @@ export function isValidGrade(value: number | null | undefined): value is number 
 }
 
 export function getActiveComponents(preset: QVPreset, track: QVTrack): QVComponent[] {
-  return preset.components.filter((component) => !component.excludedInTracks?.includes(track));
+  const trackOption = preset.tracks.find((option) => option.id === track) ?? preset.tracks[0];
+  const excludedComponentIds = new Set(trackOption?.excludedComponentIds ?? []);
+
+  return preset.components.filter((component) => (
+    !excludedComponentIds.has(component.id)
+    && !component.excludedInTracks?.includes(track)
+  ));
 }
 
 export function computeComponentGrade(
