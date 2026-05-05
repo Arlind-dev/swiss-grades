@@ -1,3 +1,9 @@
+## [1.11.0](https://github.com/Arlind-dev/swiss-grades/compare/v1.10.2...v1.11.0) (2026-05-05)
+
+### Features
+
+* **i18n:** add Albanian, Somali, Russian and Turkish translations ([#41](https://github.com/Arlind-dev/swiss-grades/issues/41)) ([c1aa993](https://github.com/Arlind-dev/swiss-grades/commit/c1aa993fcfda8cbacdc9afd63f9c284b3e818c08))
+
 ## [1.10.2](https://github.com/Arlind-dev/swiss-grades/compare/v1.10.1...v1.10.2) (2026-05-02)
 
 ### Bug Fixes
