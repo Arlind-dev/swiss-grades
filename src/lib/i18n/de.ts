@@ -37,6 +37,8 @@ export const de: Messages = {
   average: {
     title: 'Notenschnitt',
     addGrade: '+ Note hinzufügen',
+    exportCsv: 'CSV exportieren',
+    exportCsvTitle: 'Noten als CSV exportieren',
     calculateButton: 'Berechnen',
     clearAll: 'Alle löschen',
     clearConfirm: 'Sicher?',
@@ -44,6 +46,18 @@ export const de: Messages = {
     shortcutDelete: 'fokussierte Note löschen',
     dragHandleTitle: 'Zeile verschieben',
     resultPrefix: 'Notenschnitt: ',
+    csv: {
+      type: 'Typ',
+      level: 'Ebene',
+      path: 'Pfad',
+      parentPath: 'Übergeordneter Pfad',
+      name: 'Name',
+      grade: 'Note',
+      weightPercent: 'Gewichtung (%)',
+      gradeRow: 'Note',
+      averageRow: 'Durchschnitt',
+      averageName: 'Notenschnitt',
+    },
   },
   needed: {
     title: 'Benötigte Note',

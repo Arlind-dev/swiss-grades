@@ -1,3 +1,5 @@
+import type { CsvExportLabels } from '$lib/utils/export';
+
 export interface Messages {
   nav: {
     calculator: string;
@@ -35,6 +37,8 @@ export interface Messages {
   average: {
     title: string;
     addGrade: string;
+    exportCsv: string;
+    exportCsvTitle: string;
     calculateButton: string;
     clearAll: string;
     clearConfirm: string;
@@ -42,6 +46,7 @@ export interface Messages {
     shortcutDelete: string;
     dragHandleTitle: string;
     resultPrefix: string;
+    csv: CsvExportLabels;
   };
   needed: {
     title: string;

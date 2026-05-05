@@ -37,6 +37,8 @@ export const so: Messages = {
   average: {
     title: 'Celceliska Darajooyinka',
     addGrade: '+ Ku dar darajo',
+    exportCsv: 'Dhoofi CSV',
+    exportCsvTitle: 'Dhoofi darajooyinka CSV ahaan',
     calculateButton: 'Xisaabi',
     clearAll: 'Tirtir dhammaan',
     clearConfirm: 'Ma hubtaa?',
@@ -44,6 +46,18 @@ export const so: Messages = {
     shortcutDelete: 'tirtir darajada la doortay',
     dragHandleTitle: 'Dhaqaaji safka',
     resultPrefix: 'Celceliska darajada: ',
+    csv: {
+      type: 'Nooc',
+      level: 'Heer',
+      path: 'Jid',
+      parentPath: 'Jidka waalidka',
+      name: 'Magac',
+      grade: 'Darajo',
+      weightPercent: 'Miisaan (%)',
+      gradeRow: 'Darajo',
+      averageRow: 'Celcelis',
+      averageName: 'Celceliska darajada',
+    },
   },
   needed: {
     title: 'Darajada Loo Baahan Yahay',

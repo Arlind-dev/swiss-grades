@@ -37,6 +37,8 @@ export const it: Messages = {
   average: {
     title: 'Media voti',
     addGrade: '+ Aggiungi voto',
+    exportCsv: 'Esporta CSV',
+    exportCsvTitle: 'Esporta voti come CSV',
     calculateButton: 'Calcola',
     clearAll: 'Cancella tutto',
     clearConfirm: 'Sicuro?',
@@ -44,6 +46,18 @@ export const it: Messages = {
     shortcutDelete: 'elimina voto selezionato',
     dragHandleTitle: 'Sposta riga',
     resultPrefix: 'Media voti: ',
+    csv: {
+      type: 'Tipo',
+      level: 'Livello',
+      path: 'Percorso',
+      parentPath: 'Percorso padre',
+      name: 'Nome',
+      grade: 'Voto',
+      weightPercent: 'Peso (%)',
+      gradeRow: 'Voto',
+      averageRow: 'Media',
+      averageName: 'Media voti',
+    },
   },
   needed: {
     title: 'Voto necessario',

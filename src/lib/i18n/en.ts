@@ -37,6 +37,8 @@ export const en: Messages = {
   average: {
     title: 'Grade Average',
     addGrade: '+ Add grade',
+    exportCsv: 'Export CSV',
+    exportCsvTitle: 'Export grades as CSV',
     calculateButton: 'Calculate',
     clearAll: 'Clear all',
     clearConfirm: 'Sure?',
@@ -44,6 +46,18 @@ export const en: Messages = {
     shortcutDelete: 'delete focused grade',
     dragHandleTitle: 'Move row',
     resultPrefix: 'Grade average: ',
+    csv: {
+      type: 'Type',
+      level: 'Level',
+      path: 'Path',
+      parentPath: 'Parent path',
+      name: 'Name',
+      grade: 'Grade',
+      weightPercent: 'Weight (%)',
+      gradeRow: 'Grade',
+      averageRow: 'Average',
+      averageName: 'Grade average',
+    },
   },
   needed: {
     title: 'Required Grade',

@@ -37,6 +37,8 @@ export const ru: Messages = {
   average: {
     title: 'Средний балл',
     addGrade: '+ Добавить оценку',
+    exportCsv: 'Экспорт CSV',
+    exportCsvTitle: 'Экспортировать оценки в CSV',
     calculateButton: 'Рассчитать',
     clearAll: 'Очистить всё',
     clearConfirm: 'Уверены?',
@@ -44,6 +46,18 @@ export const ru: Messages = {
     shortcutDelete: 'удалить выбранную оценку',
     dragHandleTitle: 'Переместить строку',
     resultPrefix: 'Средний балл: ',
+    csv: {
+      type: 'Тип',
+      level: 'Уровень',
+      path: 'Путь',
+      parentPath: 'Родительский путь',
+      name: 'Название',
+      grade: 'Оценка',
+      weightPercent: 'Вес (%)',
+      gradeRow: 'Оценка',
+      averageRow: 'Среднее',
+      averageName: 'Средний балл',
+    },
   },
   needed: {
     title: 'Требуемая оценка',
