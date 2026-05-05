@@ -20,6 +20,13 @@ export const ru: Messages = {
     oneDecimal: '1 десятичный знак',
     twoDecimal: '2 десятичных знака',
   },
+  share: {
+    action: 'Поделиться',
+    copied: 'Скопировано',
+    failed: 'Не удалось скопировать',
+    tooLarge: 'Слишком много данных для ссылки',
+    copyPrompt: 'Скопируйте эту ссылку:',
+  },
   calculator: {
     title: 'Калькулятор оценок',
     formulaLabel: 'Оценка =',

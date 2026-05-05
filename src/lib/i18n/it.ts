@@ -20,6 +20,13 @@ export const it: Messages = {
     oneDecimal: '1 decimale',
     twoDecimal: '2 decimali',
   },
+  share: {
+    action: 'Condividi',
+    copied: 'Copiato',
+    failed: 'Copia non riuscita',
+    tooLarge: 'Troppi dati da condividere',
+    copyPrompt: 'Copia questo link:',
+  },
   calculator: {
     title: 'Calcolatore voti',
     formulaLabel: 'Voto =',

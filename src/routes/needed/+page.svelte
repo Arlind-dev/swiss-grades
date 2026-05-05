@@ -7,7 +7,10 @@
   import { browser } from '$app/environment';
   import { settings } from '$lib/stores/settings';
   import RoundingSelect from '$lib/components/RoundingSelect.svelte';
+  import ShareButton from '$lib/components/ShareButton.svelte';
   import { STORAGE_KEYS } from '$lib/storage-keys';
+  import { onMount } from 'svelte';
+  import { clearShareParam, createShareUrl, hydrateGrades, readSharePayload, serializeGrades } from '$lib/utils/share';
 
   const STORAGE_KEY = STORAGE_KEYS.needed;
 
@@ -36,6 +39,19 @@
       ? saved.futureExams.map((e: { name: string; weight: string }) => ({ id: crypto.randomUUID(), name: e.name, weight: e.weight || '100' }))
       : [{ id: crypto.randomUUID(), name: '', weight: '100' }]
   );
+
+  onMount(() => {
+    const payload = readSharePayload('needed');
+    if (payload?.page !== 'needed') return;
+
+    grades.set(hydrateGrades(payload.grades));
+    targetAverage = payload.targetAverage;
+    futureExams = payload.futureExams.length
+      ? payload.futureExams.map((exam) => ({ id: crypto.randomUUID(), name: exam.name, weight: exam.weight || '100' }))
+      : [{ id: crypto.randomUUID(), name: '', weight: '100' }];
+    rounding = payload.rounding;
+    clearShareParam();
+  });
 
   $effect(() => {
     if (!browser) return;
@@ -168,6 +184,15 @@ let results = $derived.by((): ExamResult[] => {
 <h1>{$m.needed.title}</h1>
 
 <RoundingSelect bind:value={rounding} />
+
+<ShareButton getUrl={() => createShareUrl({
+  v: 1,
+  page: 'needed',
+  grades: serializeGrades($grades),
+  targetAverage,
+  futureExams: futureExams.map(({ name, weight }) => ({ name, weight })),
+  rounding
+})} />
 
 <p>{$m.needed.description}</p>
 <p class="hint">

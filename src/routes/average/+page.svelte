@@ -4,17 +4,29 @@
   import { applyRounding, computeWeightedAverage, newEntry, gradeColor } from '$lib/utils/grading';
   import type { GradeEntry } from '$lib/types';
   import RoundingSelect from '$lib/components/RoundingSelect.svelte';
+  import ShareButton from '$lib/components/ShareButton.svelte';
   import GradeRow from '$lib/components/GradeRow.svelte';
   import { m } from '$lib/i18n';
   import { focusRowInput } from '$lib/utils/focus';
   import { browser } from '$app/environment';
   import { buildCsvFilename, downloadCsv, formatGradesAsCsv, hasExportableGradeEntries } from '$lib/utils/export';
   import { FileCsvOutline } from 'flowbite-svelte-icons';
+  import { onMount } from 'svelte';
+  import { clearShareParam, createShareUrl, hydrateGrades, readSharePayload, serializeGrades } from '$lib/utils/share';
 
   let rounding = $state($settings.averageRounding);
   let isMac = $state(false);
   $effect(() => { if (browser) isMac = /Macintosh|Mac OS X/.test(navigator.userAgent); });
   $effect(() => { settings.update((s) => ({ ...s, averageRounding: rounding })); });
+
+  onMount(() => {
+    const payload = readSharePayload('average');
+    if (payload?.page !== 'average') return;
+
+    grades.set(hydrateGrades(payload.grades));
+    rounding = payload.rounding;
+    clearShareParam();
+  });
 
   let averageGrade = $derived(computeWeightedAverage($grades));
   let validCount = $derived($grades.filter((e) => !isNaN(parseFloat(e.grade))).length);
@@ -135,6 +147,13 @@
 <h1>{$m.average.title}</h1>
 
 <RoundingSelect bind:value={rounding} />
+
+<ShareButton getUrl={() => createShareUrl({
+  v: 1,
+  page: 'average',
+  grades: serializeGrades($grades),
+  rounding
+})} />
 
 <div class="grade-list" id="grade-list" role="list">
   {#each $grades as entry, i (entry.id)}

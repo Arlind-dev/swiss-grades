@@ -20,6 +20,13 @@ export const en: Messages = {
     oneDecimal: '1 decimal',
     twoDecimal: '2 decimal',
   },
+  share: {
+    action: 'Share',
+    copied: 'Copied',
+    failed: 'Could not copy',
+    tooLarge: 'Too much data to share',
+    copyPrompt: 'Copy this link:',
+  },
   calculator: {
     title: 'Grade Calculator',
     formulaLabel: 'Grade =',

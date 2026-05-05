@@ -20,6 +20,13 @@ export const so: Messages = {
     oneDecimal: '1 lambar tobanle',
     twoDecimal: '2 lambar tobanle',
   },
+  share: {
+    action: 'Wadaag',
+    copied: 'Waa la koobiyey',
+    failed: 'Lama koobi karin',
+    tooLarge: 'Xog aad u badan in la wadaago',
+    copyPrompt: 'Koobi xiriirkan:',
+  },
   calculator: {
     title: 'Xisaabiyaha Darajada',
     formulaLabel: 'Darajo =',
