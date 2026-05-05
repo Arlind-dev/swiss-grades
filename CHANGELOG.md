@@ -1,3 +1,9 @@
+## [1.14.0](https://github.com/Arlind-dev/swiss-grades/compare/v1.13.0...v1.14.0) (2026-05-05)
+
+### Features
+
+* add shareable calculator links ([#43](https://github.com/Arlind-dev/swiss-grades/issues/43)) ([c1bb703](https://github.com/Arlind-dev/swiss-grades/commit/c1bb7039617c1b39d7ed69f35fadafd4b9a001c3))
+
 ## [1.13.0](https://github.com/Arlind-dev/swiss-grades/compare/v1.12.0...v1.13.0) (2026-05-05)
 
 ### Features
