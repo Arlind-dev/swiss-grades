@@ -1,3 +1,9 @@
+## [1.12.0](https://github.com/Arlind-dev/swiss-grades/compare/v1.11.0...v1.12.0) (2026-05-05)
+
+### Features
+
+* add Informatiker EFZ QV presets ([#42](https://github.com/Arlind-dev/swiss-grades/issues/42)) ([ddc48fa](https://github.com/Arlind-dev/swiss-grades/commit/ddc48fadb8c6a3506648f60cdef60d56695072e2))
+
 ## [1.11.0](https://github.com/Arlind-dev/swiss-grades/compare/v1.10.2...v1.11.0) (2026-05-05)
 
 ### Features
