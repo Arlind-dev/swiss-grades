@@ -77,7 +77,7 @@
       </div>
 
       <!-- Grade -->
-      <div class="w-20 sm:w-28 flex-shrink-0">
+      <div class="w-20 sm:w-48 flex-shrink-0">
         <input
           type="text"
           class="input input-bordered input-sm w-full bg-ctp-mantle border-ctp-surface1 focus:border-ctp-lavender focus:outline-none transition-all text-center font-black rounded-lg"
@@ -96,7 +96,7 @@
       </div>
 
       <!-- Weight -->
-      <div class="w-16 sm:w-24 flex-shrink-0 flex items-center gap-1 bg-ctp-mantle px-2 py-1 rounded-lg border border-ctp-surface1 focus-within:border-ctp-lavender transition-all">
+      <div class="w-28 sm:w-44 flex-shrink-0 flex items-center gap-1 bg-ctp-mantle px-2 py-1 rounded-lg border border-ctp-surface1 focus-within:border-ctp-lavender transition-all">
         <input
           type="text"
           class="bg-transparent border-none focus:outline-none w-full text-right font-bold text-ctp-text text-sm"
