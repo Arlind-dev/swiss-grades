@@ -69,7 +69,7 @@
       <div class="flex-grow min-w-0 hidden sm:block">
         <input
           type="text"
-          class="input input-ghost input-sm w-full bg-transparent focus:bg-ctp-surface0 border-none focus:outline-none px-2 font-medium text-ctp-text placeholder:text-ctp-overlay0 transition-all rounded-lg"
+          class="input input-bordered input-sm w-full bg-ctp-mantle border-ctp-surface1 focus:border-ctp-lavender focus:outline-none px-2 font-medium text-ctp-text placeholder:text-ctp-overlay0 transition-all rounded-lg"
           placeholder={$m.gradeRow.placeholderName}
           value={entry.name}
           oninput={(e) => emit({ name: e.currentTarget.value })}
