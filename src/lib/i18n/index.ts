@@ -3,20 +3,16 @@ import { de } from './de';
 import { en } from './en';
 import { fr } from './fr';
 import { it } from './it';
-import { sq } from './sq';
-import { so } from './so';
-import { ru } from './ru';
-import { tr } from './tr';
 import type { Messages } from './messages';
 import { STORAGE_KEYS } from '$lib/storage-keys';
 
-export type Locale = 'de' | 'en' | 'fr' | 'it' | 'sq' | 'so' | 'ru' | 'tr';
+export type Locale = 'de' | 'en' | 'fr' | 'it';
 export type { Messages };
 
-const catalogs: Record<Locale, Messages> = { de, en, fr, it, sq, so, ru, tr };
+const catalogs: Record<Locale, Messages> = { de, en, fr, it };
 
 function isLocale(value: string | null | undefined): value is Locale {
-  return value === 'de' || value === 'en' || value === 'fr' || value === 'it' || value === 'sq' || value === 'so' || value === 'ru' || value === 'tr';
+  return value === 'de' || value === 'en' || value === 'fr' || value === 'it';
 }
 
 function detectLocale(): Locale {

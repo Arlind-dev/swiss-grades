@@ -11,15 +11,11 @@
     SunOutline,
   } from 'flowbite-svelte-icons';
 
-  const locales: { value: Locale; code: string; name: string; flag: string }[] = [
-    { value: 'de', code: 'DE', name: 'Deutsch', flag: '🇩🇪' },
-    { value: 'en', code: 'EN', name: 'English', flag: '🇬🇧' },
-    { value: 'fr', code: 'FR', name: 'Français', flag: '🇫🇷' },
-    { value: 'it', code: 'IT', name: 'Italiano', flag: '🇮🇹' },
-    { value: 'sq', code: 'SQ', name: 'Shqip', flag: '🇦🇱' },
-    { value: 'so', code: 'SO', name: 'Soomaali', flag: '🇸🇴' },
-    { value: 'ru', code: 'RU', name: 'Русский', flag: '🇷🇺' },
-    { value: 'tr', code: 'TR', name: 'Türkçe', flag: '🇹🇷' },
+  const locales: { value: Locale; name: string }[] = [
+    { value: 'de', name: 'Deutsch' },
+    { value: 'en', name: 'English' },
+    { value: 'fr', name: 'Français' },
+    { value: 'it', name: 'Italiano' },
   ];
 
   let localeOpen = $state(false);
@@ -185,9 +181,7 @@
           onclick={toggleLocaleMenu}
           onkeydown={handleLocaleToggleKeydown}
         >
-          <span class="text-lg leading-none" aria-hidden="true">{selectedLocale.flag}</span>
-          <span class="text-xs font-black uppercase tracking-widest">{selectedLocale.code}</span>
-          <span class="hidden text-sm font-bold tracking-normal md:inline">{selectedLocale.name}</span>
+          <span class="text-sm font-bold tracking-normal">{selectedLocale.name}</span>
           <ChevronDownOutline
             class={`h-3.5 w-3.5 transition-transform ${localeOpen ? 'rotate-180' : ''}`}
           />
@@ -219,10 +213,8 @@
                 class:focus:text-ctp-text={$locale !== loc.value}
                 onclick={() => selectLocale(loc.value)}
               >
-                <span class="text-xl leading-none" aria-hidden="true">{loc.flag}</span>
                 <span class="min-w-0 flex-1">
                   <span class="block truncate text-sm font-black leading-5">{loc.name}</span>
-                  <span class="block text-[0.65rem] font-black uppercase tracking-widest opacity-70">{loc.code}</span>
                 </span>
                 <CheckOutline
                   class={`h-4 w-4 shrink-0 ${$locale === loc.value ? 'opacity-100' : 'opacity-0'}`}
