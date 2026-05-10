@@ -18,7 +18,10 @@
     onchange({ ...entry, ...changes });
   }
 
+  const MAX_DEPTH = 7;
+
   function addSubgrade() {
+    if (depth >= MAX_DEPTH) return;
     const subgrades = [...entry.subgrades, newEntry()];
     const grade = recomputeParentGrade(subgrades);
     emit({ subgrades, grade });
@@ -109,9 +112,10 @@
 
     <!-- Actions -->
     <div class="flex items-center gap-1 opacity-100 sm:opacity-0 group-hover/row:opacity-100 transition-opacity">
-      <button 
-        type="button" 
+      <button
+        type="button"
         class="btn btn-ghost btn-circle btn-xs text-ctp-lavender hover:bg-ctp-lavender/10"
+        class:invisible={depth >= MAX_DEPTH}
         onclick={addSubgrade}
         title={$m.gradeRow.addSubgrade}
       >
