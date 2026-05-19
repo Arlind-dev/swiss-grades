@@ -5,6 +5,7 @@ import {
   computeNeededGrade,
   computeQVFinalGrade,
   evaluateQV,
+  getComponentDetails,
 } from './qv';
 import type { QVComponent, QVPreset } from '../qv/types';
 
@@ -100,12 +101,36 @@ describe('QV Informatiker/in EFZ calculations', () => {
     expect(result).toBe(4.7);
   });
 
-  test('eGK exposes eight equally weighted semester detail fields', () => {
-    expect(egk.details?.length).toBe(8);
-    expect(egk.details?.every((detail) => detail.weight === 12.5)).toBe(true);
+  test('eGK exposes official semester and simplified subject detail modes', () => {
+    expect(egk.defaultDetailModeId).toBe('official-semester-grades');
+    expect(egk.detailModes?.map((mode) => mode.id)).toEqual([
+      'official-semester-grades',
+      'subject-finals',
+    ]);
   });
 
-  test('eGK detail calculation averages eight semester notes and rounds to 0.5', () => {
+  test('official eGK mode exposes eight equally weighted semester detail fields', () => {
+    const details = getComponentDetails(egk, 'official-semester-grades');
+
+    expect(details.length).toBe(8);
+    expect(details.every((detail) => detail.weight === 12.5)).toBe(true);
+  });
+
+  test('official eGK mode averages eight semester notes and rounds to 0.5', () => {
+    const result = computeComponentGrade(egk, {
+      'semester-1': 4,
+      'semester-2': 4,
+      'semester-3': 4,
+      'semester-4': 4,
+      'semester-5': 4.5,
+      'semester-6': 4.5,
+      'semester-7': 4.5,
+      'semester-8': 4.5,
+    }, 'official-semester-grades');
+    expect(result).toBe(4.5);
+  });
+
+  test('official eGK mode is the fallback when no mode is stored', () => {
     const result = computeComponentGrade(egk, {
       'semester-1': 4,
       'semester-2': 4,
@@ -119,7 +144,7 @@ describe('QV Informatiker/in EFZ calculations', () => {
     expect(result).toBe(4.5);
   });
 
-  test('eGK detail calculation waits for all eight semester notes', () => {
+  test('official eGK mode waits for all eight semester notes', () => {
     const result = computeComponentGrade(egk, {
       'semester-1': 4,
       'semester-2': 4,
@@ -128,7 +153,32 @@ describe('QV Informatiker/in EFZ calculations', () => {
       'semester-5': 4.5,
       'semester-6': 4.5,
       'semester-7': 4.5,
-    });
+    }, 'official-semester-grades');
+    expect(result).toBeNull();
+  });
+
+  test('simplified eGK subject mode exposes Mathematics and English with lesson weights', () => {
+    const details = getComponentDetails(egk, 'subject-finals');
+
+    expect(details.map((detail) => detail.id)).toEqual(['math', 'english']);
+    expect(details.find((detail) => detail.id === 'math')?.weight).toBe(37.5);
+    expect(details.find((detail) => detail.id === 'english')?.weight).toBe(62.5);
+  });
+
+  test('simplified eGK subject mode weights Mathematics and English and rounds to 0.5', () => {
+    const result = computeComponentGrade(egk, {
+      math: 4,
+      english: 6,
+    }, 'subject-finals');
+
+    expect(result).toBe(5.5);
+  });
+
+  test('simplified eGK subject mode waits for both subject grades', () => {
+    const result = computeComponentGrade(egk, {
+      math: 4,
+    }, 'subject-finals');
+
     expect(result).toBeNull();
   });
 
@@ -216,6 +266,18 @@ describe('QV Informatiker/in EFZ calculations', () => {
 });
 
 describe('QV popular EFZ preset calculations', () => {
+  test('popular non-Informatiker presets do not expose a separate eGK component', () => {
+    for (const presetId of popularPresetIds) {
+      const currentPreset = presetById(presetId);
+      const egkComponents = currentPreset.components.filter((component) => (
+        component.id.toLowerCase().includes('egk')
+        || component.shortLabel.toLowerCase() === 'egk'
+      ));
+
+      expect(egkComponents).toEqual([]);
+    }
+  });
+
   for (const presetId of popularPresetIds) {
     test(`${presetId} passes with all components at 4.0`, () => {
       const currentPreset = presetById(presetId);
