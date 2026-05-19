@@ -1,3 +1,9 @@
+## [1.15.0](https://github.com/Arlind-dev/swiss-grades/compare/v1.14.0...v1.15.0) (2026-05-19)
+
+### Features
+
+* **qv:** add ABU detail grade modes ([#48](https://github.com/Arlind-dev/swiss-grades/issues/48)) ([823d64f](https://github.com/Arlind-dev/swiss-grades/commit/823d64ff1c7d416e936d617ddf13a0e390313bee)), closes [#47](https://github.com/Arlind-dev/swiss-grades/issues/47)
+
 ## [1.14.0](https://github.com/Arlind-dev/swiss-grades/compare/v1.13.0...v1.14.0) (2026-05-05)
 
 ### Features
