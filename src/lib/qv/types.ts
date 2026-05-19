@@ -2,6 +2,8 @@ export type QVTrack = string;
 
 export type QVComponentId = string;
 
+export type QVRoundingStep = 0.1 | 0.5 | 1;
+
 export interface QVSource {
   label: string;
   href: string;
@@ -27,6 +29,15 @@ export interface QVDetailComponent {
   roundingNote?: string;
 }
 
+export interface QVComponentMode {
+  id: string;
+  label: string;
+  description?: string;
+  details?: QVDetailComponent[];
+  resultRounding?: QVRoundingStep;
+  excluded?: boolean;
+}
+
 export interface QVComponent {
   id: QVComponentId;
   label: string;
@@ -37,6 +48,9 @@ export interface QVComponent {
   fallnote?: boolean;
   minGrade?: number;
   details?: QVDetailComponent[];
+  detailModes?: QVComponentMode[];
+  defaultDetailModeId?: string;
+  detailResultRounding?: QVRoundingStep;
   excludedInTracks?: QVTrack[];
 }
 

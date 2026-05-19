@@ -43,6 +43,7 @@ export type SharePayload =
       componentGrades: Record<string, string>;
       detailEnabled: Record<string, boolean>;
       detailGrades: Record<string, Record<string, string>>;
+      componentModes?: Record<string, string>;
     };
 
 export const SHARE_PARAM = 'share';
@@ -127,7 +128,10 @@ function getPresetComponentIds(preset: QVPreset): Set<string> {
 
 function getPresetDetailIds(preset: QVPreset, componentId: string): Set<string> {
   const component = preset.components.find((entry) => entry.id === componentId);
-  return new Set(component?.details?.map((detail) => detail.id) ?? []);
+  return new Set([
+    ...(component?.details?.map((detail) => detail.id) ?? []),
+    ...(component?.detailModes?.flatMap((mode) => mode.details?.map((detail) => detail.id) ?? []) ?? []),
+  ]);
 }
 
 function sanitizeQVComponentGrades(value: unknown, preset: QVPreset): Record<string, string> | null {
@@ -181,6 +185,23 @@ function sanitizeQVDetailGrades(value: unknown, preset: QVPreset): Record<string
   return detailGrades;
 }
 
+function sanitizeQVComponentModes(value: unknown, preset: QVPreset): Record<string, string> | null {
+  if (value === undefined) return {};
+  if (!isRecord(value)) return null;
+
+  const allowedComponentIds = getPresetComponentIds(preset);
+  const componentModes: Record<string, string> = {};
+  for (const [componentId, modeId] of Object.entries(value)) {
+    if (!allowedComponentIds.has(componentId) || typeof modeId !== 'string') return null;
+
+    const component = preset.components.find((entry) => entry.id === componentId);
+    if (!component?.detailModes?.some((mode) => mode.id === modeId)) return null;
+    componentModes[componentId] = modeId;
+  }
+
+  return componentModes;
+}
+
 function sanitizeQVPayload(value: Record<string, unknown>): SharePayload | null {
   const presetId = sanitizeText(value.presetId);
   if (presetId === null || !QV_PRESETS.some((preset) => preset.id === presetId)) return null;
@@ -190,7 +211,8 @@ function sanitizeQVPayload(value: Record<string, unknown>): SharePayload | null 
   const componentGrades = sanitizeQVComponentGrades(value.componentGrades, preset);
   const detailEnabled = sanitizeQVDetailEnabled(value.detailEnabled, preset);
   const detailGrades = sanitizeQVDetailGrades(value.detailGrades, preset);
-  if (!componentGrades || !detailEnabled || !detailGrades) return null;
+  const componentModes = sanitizeQVComponentModes(value.componentModes, preset);
+  if (!componentGrades || !detailEnabled || !detailGrades || !componentModes) return null;
 
   return {
     v: 1,
@@ -199,7 +221,8 @@ function sanitizeQVPayload(value: Record<string, unknown>): SharePayload | null 
     track: value.track,
     componentGrades,
     detailEnabled,
-    detailGrades
+    detailGrades,
+    componentModes,
   };
 }
 

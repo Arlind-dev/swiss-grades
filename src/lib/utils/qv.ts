@@ -1,9 +1,13 @@
 import type {
   QVComponent,
+  QVComponentId,
+  QVComponentMode,
+  QVDetailComponent,
   QVEvaluation,
   QVGradeMap,
   QVNeededGrade,
   QVPreset,
+  QVRoundingStep,
   QVTrack,
 } from '../qv/types';
 
@@ -11,19 +15,46 @@ const PASSING_GRADE = 4;
 const MAX_GRADE = 6;
 const MIN_GRADE = 1;
 
+type QVComponentModeMap = Partial<Record<QVComponentId, string>>;
+
+export function roundToStep(value: number, step: QVRoundingStep): number {
+  const factor = 1 / step;
+  const rounded = Math.round((value + Number.EPSILON) * factor) / factor;
+  return Number(rounded.toFixed(step === 1 ? 0 : 1));
+}
+
 export function roundToTenth(value: number): number {
-  return Math.round((value + Number.EPSILON) * 10) / 10;
+  return roundToStep(value, 0.1);
 }
 
 export function roundToHalf(value: number): number {
-  return Math.round((value + Number.EPSILON) * 2) / 2;
+  return roundToStep(value, 0.5);
 }
 
 export function isValidGrade(value: number | null | undefined): value is number {
   return typeof value === 'number' && !Number.isNaN(value) && value >= MIN_GRADE && value <= MAX_GRADE;
 }
 
-export function getActiveComponents(preset: QVPreset, track: QVTrack): QVComponent[] {
+export function getComponentMode(component: QVComponent, modeId?: string): QVComponentMode | null {
+  if (!component.detailModes?.length) return null;
+
+  return (
+    component.detailModes.find((mode) => mode.id === modeId)
+    ?? component.detailModes.find((mode) => mode.id === component.defaultDetailModeId)
+    ?? component.detailModes[0]
+  );
+}
+
+export function getComponentDetails(component: QVComponent, modeId?: string): QVDetailComponent[] {
+  const mode = getComponentMode(component, modeId);
+  return mode ? (mode.details ?? []) : (component.details ?? []);
+}
+
+export function isComponentExcluded(component: QVComponent, modeId?: string): boolean {
+  return getComponentMode(component, modeId)?.excluded === true;
+}
+
+export function getTrackComponents(preset: QVPreset, track: QVTrack): QVComponent[] {
   const trackOption = preset.tracks.find((option) => option.id === track) ?? preset.tracks[0];
   const excludedComponentIds = new Set(trackOption?.excludedComponentIds ?? []);
 
@@ -33,30 +64,46 @@ export function getActiveComponents(preset: QVPreset, track: QVTrack): QVCompone
   ));
 }
 
+export function getActiveComponents(
+  preset: QVPreset,
+  track: QVTrack,
+  componentModes: QVComponentModeMap = {}
+): QVComponent[] {
+  return getTrackComponents(preset, track)
+    .filter((component) => !isComponentExcluded(component, componentModes[component.id]));
+}
+
 export function computeComponentGrade(
   component: QVComponent,
-  detailGrades: Partial<Record<string, number | null | undefined>>
+  detailGrades: Partial<Record<string, number | null | undefined>>,
+  modeId?: string
 ): number | null {
-  if (!component.details?.length) return null;
+  if (isComponentExcluded(component, modeId)) return null;
+
+  const details = getComponentDetails(component, modeId);
+  if (!details.length) return null;
 
   let weightedSum = 0;
   let weightSum = 0;
-  for (const detail of component.details) {
+  for (const detail of details) {
     const grade = detailGrades[detail.id];
     if (!isValidGrade(grade)) return null;
     weightedSum += grade * detail.weight;
     weightSum += detail.weight;
   }
 
-  return weightSum > 0 ? roundToTenth(weightedSum / weightSum) : null;
+  const mode = getComponentMode(component, modeId);
+  const rounding = mode?.resultRounding ?? component.detailResultRounding ?? 0.1;
+  return weightSum > 0 ? roundToStep(weightedSum / weightSum, rounding) : null;
 }
 
 export function computeQVFinalGrade(
   preset: QVPreset,
   track: QVTrack,
-  grades: QVGradeMap
+  grades: QVGradeMap,
+  componentModes: QVComponentModeMap = {}
 ): { rawFinalGrade: number; finalGrade: number; activeWeightSum: number } | null {
-  const activeComponents = getActiveComponents(preset, track);
+  const activeComponents = getActiveComponents(preset, track, componentModes);
   let weightedSum = 0;
   let activeWeightSum = 0;
 
@@ -77,8 +124,13 @@ export function computeQVFinalGrade(
   };
 }
 
-export function evaluateQV(preset: QVPreset, track: QVTrack, grades: QVGradeMap): QVEvaluation {
-  const activeComponents = getActiveComponents(preset, track);
+export function evaluateQV(
+  preset: QVPreset,
+  track: QVTrack,
+  grades: QVGradeMap,
+  componentModes: QVComponentModeMap = {}
+): QVEvaluation {
+  const activeComponents = getActiveComponents(preset, track, componentModes);
   const activeWeightSum = activeComponents.reduce((sum, component) => sum + component.weight, 0);
   const missingComponentIds = activeComponents
     .filter((component) => !isValidGrade(grades[component.id]))
@@ -86,7 +138,7 @@ export function evaluateQV(preset: QVPreset, track: QVTrack, grades: QVGradeMap)
   const failedFallnoten = activeComponents
     .filter((component) => component.fallnote && isValidGrade(grades[component.id]) && grades[component.id]! < (component.minGrade ?? PASSING_GRADE))
     .map((component) => component.id);
-  const final = computeQVFinalGrade(preset, track, grades);
+  const final = computeQVFinalGrade(preset, track, grades, componentModes);
   const finalGradeFailed = final !== null && final.finalGrade < PASSING_GRADE;
   const passed = missingComponentIds.length > 0
     ? null
@@ -108,9 +160,12 @@ export function computeNeededGrade(
   preset: QVPreset,
   track: QVTrack,
   grades: QVGradeMap,
+  componentModes: QVComponentModeMap | number = {},
   targetGrade = PASSING_GRADE
 ): QVNeededGrade | null {
-  const activeComponents = getActiveComponents(preset, track);
+  const resolvedComponentModes = typeof componentModes === 'number' ? {} : componentModes;
+  const resolvedTargetGrade = typeof componentModes === 'number' ? componentModes : targetGrade;
+  const activeComponents = getActiveComponents(preset, track, resolvedComponentModes);
   const missingComponents = activeComponents.filter((component) => !isValidGrade(grades[component.id]));
   if (missingComponents.length === 0) return null;
 
@@ -145,7 +200,7 @@ export function computeNeededGrade(
 
   if (missingWeight <= 0 || totalWeight <= 0) return null;
 
-  const neededForFinal = (targetGrade * totalWeight - knownWeightedSum) / missingWeight;
+  const neededForFinal = (resolvedTargetGrade * totalWeight - knownWeightedSum) / missingWeight;
   const missingFallnoteMinimum = missingComponents.some((component) => component.fallnote)
     ? PASSING_GRADE
     : MIN_GRADE;

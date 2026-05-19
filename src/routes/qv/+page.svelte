@@ -1,11 +1,20 @@
 <script lang="ts">
   import { qv, resetQV } from '$lib/stores/qv';
   import { QV_PRESETS, getQVPreset, getQVTrack } from '$lib/qv/presets';
-  import type { QVComponent, QVComponentId, QVTrack } from '$lib/qv/types';
+  import type { QVComponent, QVComponentId, QVComponentMode, QVTrack } from '$lib/qv/types';
   import ShareButton from '$lib/components/ShareButton.svelte';
   import { clampInput, numericInput } from '$lib/actions';
   import { gradeColor } from '$lib/utils/grading';
-  import { computeComponentGrade, computeNeededGrade, evaluateQV, isValidGrade } from '$lib/utils/qv';
+  import {
+    computeComponentGrade,
+    computeNeededGrade,
+    evaluateQV,
+    getComponentDetails,
+    getComponentMode,
+    getTrackComponents,
+    isComponentExcluded,
+    isValidGrade,
+  } from '$lib/utils/qv';
   import { m } from '$lib/i18n';
   import { onMount } from 'svelte';
   import { clearShareParam, createShareUrl, readSharePayload } from '$lib/utils/share';
@@ -37,19 +46,26 @@
 
   let preset = $derived(getQVPreset($qv.presetId));
   let activeTrack = $derived(getQVTrack(preset, $qv.track));
+  let visibleComponents = $derived(getTrackComponents(preset, $qv.track));
   let componentGrades = $derived.by(() => {
     const grades: Record<string, number | null> = {};
     for (const component of preset.components) {
+      const modeId = $qv.componentModes[component.id];
+      if (isComponentExcluded(component, modeId)) {
+        grades[component.id] = null;
+        continue;
+      }
+
       if ($qv.detailEnabled[component.id]) {
-        grades[component.id] = computeComponentGrade(component, parseDetailGrades(component.id));
+        grades[component.id] = computeComponentGrade(component, parseDetailGrades(component.id), modeId);
       } else {
         grades[component.id] = parseGrade($qv.componentGrades[component.id]);
       }
     }
     return grades;
   });
-  let evaluation = $derived(evaluateQV(preset, $qv.track, componentGrades));
-  let needed = $derived(computeNeededGrade(preset, $qv.track, componentGrades));
+  let evaluation = $derived(evaluateQV(preset, $qv.track, componentGrades, $qv.componentModes));
+  let needed = $derived(computeNeededGrade(preset, $qv.track, componentGrades, $qv.componentModes));
   let overviewItems = $derived(
     preset.overviewItems.map((item, index) => ({
       ...item,
@@ -81,6 +97,7 @@
       componentGrades: payload.componentGrades,
       detailEnabled: payload.detailEnabled,
       detailGrades: payload.detailGrades,
+      componentModes: payload.componentModes ?? {},
     });
     clearShareParam();
   });
@@ -118,6 +135,7 @@
         componentGrades: filterQVMap(state.componentGrades, componentIds),
         detailEnabled: filterQVMap(state.detailEnabled, componentIds),
         detailGrades: filterQVMap(state.detailGrades, componentIds),
+        componentModes: filterQVMap(state.componentModes, componentIds),
       };
     });
   }
@@ -153,7 +171,24 @@
     }));
   }
 
+  function setComponentMode(componentId: QVComponentId, modeId: string) {
+    qv.update((state) => ({
+      ...state,
+      componentModes: { ...state.componentModes, [componentId]: modeId },
+    }));
+  }
+
+  function selectedComponentMode(component: QVComponent): QVComponentMode | null {
+    return getComponentMode(component, $qv.componentModes[component.id]);
+  }
+
+  function componentHasDetailControls(component: QVComponent): boolean {
+    return Boolean(component.detailModes?.length || component.details?.length);
+  }
+
   function componentInputValue(component: QVComponent): string {
+    const modeId = $qv.componentModes[component.id];
+    if (isComponentExcluded(component, modeId)) return '';
     if ($qv.detailEnabled[component.id]) {
       const grade = componentGrades[component.id];
       return typeof grade === 'number' ? grade.toFixed(1) : '';
@@ -166,9 +201,14 @@
   }
 
   function displayWeight(component: QVComponent): string {
+    if (isComponentExcluded(component, $qv.componentModes[component.id])) return '—';
     if (evaluation.activeWeightSum <= 0) return '0';
     const weight = (component.weight / evaluation.activeWeightSum) * 100;
     return Number.isInteger(weight) ? String(weight) : weight.toFixed(2);
+  }
+
+  function displayDetailWeight(weight: number): string {
+    return Number.isInteger(weight) ? String(weight) : weight.toFixed(1);
   }
 
   function componentNames(ids: QVComponentId[]): string {
@@ -262,6 +302,7 @@
           componentGrades: $qv.componentGrades,
           detailEnabled: $qv.detailEnabled,
           detailGrades: $qv.detailGrades,
+          componentModes: $qv.componentModes,
         })} />
       </div>
 
@@ -325,7 +366,10 @@
       <span></span>
     </div>
 
-    {#each evaluation.activeComponents as component (component.id)}
+    {#each visibleComponents as component (component.id)}
+      {@const selectedMode = selectedComponentMode(component)}
+      {@const detailItems = getComponentDetails(component, $qv.componentModes[component.id])}
+      {@const componentExcluded = isComponentExcluded(component, $qv.componentModes[component.id])}
       {@const grade = componentGrades[component.id]}
       {@const hasGrade = typeof grade === 'number' && grade >= 1 && grade <= 6}
       {@const failedFallnote = component.fallnote && hasGrade && grade < (component.minGrade ?? 4)}
@@ -347,14 +391,15 @@
             <input
               type="text"
               class="input input-bordered input-md w-full bg-ctp-base border-ctp-surface1 focus:border-ctp-lavender focus:outline-none transition-all text-center font-black text-xl"
-              class:bg-ctp-surface0={ $qv.detailEnabled[component.id] }
-              class:opacity-50={ $qv.detailEnabled[component.id] }
+              class:bg-ctp-surface0={ $qv.detailEnabled[component.id] || componentExcluded }
+              class:opacity-50={ $qv.detailEnabled[component.id] || componentExcluded }
               inputmode="decimal"
               placeholder="—"
               value={componentInputValue(component)}
-              readonly={$qv.detailEnabled[component.id]}
+              readonly={$qv.detailEnabled[component.id] || componentExcluded}
+              disabled={componentExcluded}
               use:numericInput
-              use:clampInput={{ min: 1, max: 6, decimals: 2, oncommit: (value) => !$qv.detailEnabled[component.id] && setComponentGrade(component.id, value) }}
+              use:clampInput={{ min: 1, max: 6, decimals: 2, oncommit: (value) => !$qv.detailEnabled[component.id] && !componentExcluded && setComponentGrade(component.id, value) }}
             />
           </div>
 
@@ -365,13 +410,15 @@
           <div class="text-center w-full sm:w-auto">
             <span
               class="badge border-none font-black uppercase tracking-tighter text-xs px-4 py-3 w-full sm:w-28"
-              class:bg-ctp-green={component.fallnote && hasGrade && !failedFallnote}
-              class:bg-ctp-red={failedFallnote}
-              class:text-ctp-base={component.fallnote && hasGrade}
-              class:bg-ctp-surface0={!component.fallnote || !hasGrade}
-              class:text-ctp-overlay1={!component.fallnote || !hasGrade}
+              class:bg-ctp-green={!componentExcluded && component.fallnote && hasGrade && !failedFallnote}
+              class:bg-ctp-red={!componentExcluded && failedFallnote}
+              class:text-ctp-base={!componentExcluded && component.fallnote && hasGrade}
+              class:bg-ctp-surface0={componentExcluded || !component.fallnote || !hasGrade}
+              class:text-ctp-overlay1={componentExcluded || !component.fallnote || !hasGrade}
             >
-              {#if component.fallnote}
+              {#if componentExcluded}
+                {$m.qv.dispensed}
+              {:else if component.fallnote}
                 {#if !hasGrade}
                   {$m.qv.fallnotePending}
                 {:else if failedFallnote}
@@ -386,7 +433,7 @@
           </div>
 
           <div class="flex justify-center w-full min-w-0 sm:w-auto">
-            {#if component.details?.length}
+            {#if componentHasDetailControls(component)}
               <button
                 type="button"
                 class="btn btn-ghost btn-xs h-auto min-h-8 w-full max-w-24 gap-1 px-2 py-1 whitespace-normal normal-case text-ctp-subtext1 hover:bg-ctp-surface0 hover:text-ctp-text"
@@ -406,30 +453,57 @@
           </div>
         </div>
 
-        {#if $qv.detailEnabled[component.id] && component.details?.length}
+        {#if $qv.detailEnabled[component.id] && componentHasDetailControls(component)}
           <div class="bg-ctp-base/40 border-t border-ctp-surface0 px-6 py-6 space-y-4" transition:slide>
-            {#each component.details as detail (detail.id)}
-              <div class="flex flex-col sm:grid sm:grid-cols-[1fr_8rem_6rem] items-center gap-4">
-                <div class="w-full sm:w-auto text-center sm:text-left">
-                  <span class="text-sm font-bold text-ctp-subtext1">{detail.label}</span>
-                  {#if detail.roundingNote}
-                    <p class="mt-1 text-xs font-bold text-ctp-overlay1">{detail.roundingNote}</p>
-                  {/if}
+            {#if component.detailModes?.length}
+              <div class="space-y-3">
+                <p class="text-xs font-black uppercase tracking-widest text-ctp-overlay1">{$m.qv.modeLabel}</p>
+                <div class="grid gap-2 md:grid-cols-2">
+                  {#each component.detailModes as mode (mode.id)}
+                    <button
+                      type="button"
+                      class="flex flex-col gap-1 rounded-xl border p-3 text-left transition-all {selectedMode?.id === mode.id ? 'border-ctp-lavender bg-ctp-lavender/10' : 'border-ctp-surface1 bg-ctp-base'}"
+                      onclick={() => setComponentMode(component.id, mode.id)}
+                    >
+                      <span class="text-sm font-black text-ctp-text leading-tight">{mode.label}</span>
+                      {#if mode.description}
+                        <span class="text-xs font-bold leading-relaxed text-ctp-overlay1">{mode.description}</span>
+                      {/if}
+                    </button>
+                  {/each}
                 </div>
-                <div class="w-24 sm:w-auto">
-                  <input
-                    type="text"
-                    class="input input-bordered input-sm w-full bg-ctp-base border-ctp-surface1 focus:border-ctp-lavender focus:outline-none transition-all text-center font-black"
-                    inputmode="decimal"
-                    placeholder="—"
-                    value={detailInputValue(component.id, detail.id)}
-                    use:numericInput
-                    use:clampInput={{ min: 1, max: 6, decimals: 2, oncommit: (value) => setDetailGrade(component.id, detail.id, value) }}
-                  />
-                </div>
-                <span class="text-xs font-black text-ctp-overlay1 tracking-widest uppercase">{detail.weight}%</span>
               </div>
-            {/each}
+            {/if}
+
+            {#if !componentExcluded && detailItems.length}
+              <div class="space-y-4">
+                {#if component.detailModes?.length}
+                  <p class="text-xs font-black uppercase tracking-widest text-ctp-overlay1">{$m.qv.partGrades}</p>
+                {/if}
+                {#each detailItems as detail (detail.id)}
+                  <div class="flex flex-col sm:grid sm:grid-cols-[1fr_8rem_6rem] items-center gap-4">
+                    <div class="w-full sm:w-auto text-center sm:text-left">
+                      <span class="text-sm font-bold text-ctp-subtext1">{detail.label}</span>
+                      {#if detail.roundingNote}
+                        <p class="mt-1 text-xs font-bold text-ctp-overlay1">{detail.roundingNote}</p>
+                      {/if}
+                    </div>
+                    <div class="w-24 sm:w-auto">
+                      <input
+                        type="text"
+                        class="input input-bordered input-sm w-full bg-ctp-base border-ctp-surface1 focus:border-ctp-lavender focus:outline-none transition-all text-center font-black"
+                        inputmode="decimal"
+                        placeholder="—"
+                        value={detailInputValue(component.id, detail.id)}
+                        use:numericInput
+                        use:clampInput={{ min: 1, max: 6, decimals: 2, oncommit: (value) => setDetailGrade(component.id, detail.id, value) }}
+                      />
+                    </div>
+                    <span class="text-xs font-black text-ctp-overlay1 tracking-widest uppercase">{displayDetailWeight(detail.weight)}%</span>
+                  </div>
+                {/each}
+              </div>
+            {/if}
           </div>
         {/if}
       </div>

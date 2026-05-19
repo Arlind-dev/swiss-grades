@@ -102,6 +102,9 @@ export interface Messages {
     gradeHeader: string;
     weightHeader: string;
     statusHeader: string;
+    modeLabel: string;
+    dispensed: string;
+    partGrades: string;
     showDetails: string;
     hideDetails: string;
     fallnotePending: string;
