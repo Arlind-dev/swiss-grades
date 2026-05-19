@@ -10,6 +10,7 @@ export interface QVSource {
 }
 
 export interface QVOverviewItem {
+  id: string;
   title: string;
   text: string;
 }

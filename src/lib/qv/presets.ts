@@ -99,7 +99,9 @@ const abuEfzDetailModes: QVComponentMode[] = [
 
 const informatikerSources = [
   { label: 'ICT-Berufsbildung', href: 'https://www.ict-berufsbildung.ch/grundbildung/ict-lehren/informatiker-in-efz' },
+  { label: 'ICT-Berufsbildung QV', href: 'https://www.ict-berufsbildung.ch/grundbildung/ausbildungsformen/qualifikationsverfahren' },
   { label: 'SBFI BiVo Art. 19', href: 'https://www.fedlex.admin.ch/eli/cc/2020/886/de#art_19' },
+  { label: 'Bildungsplan Informatiker/in EFZ BiVo 2021', href: 'https://www.becc.admin.ch/becc/public/bvz/beruf/download/10475' },
   { label: 'QV Ausführungsbestimmungen', href: 'https://www.ict-berufsbildung.ch/resources/Informatiker-EFZ_Ausfuehrungsbestimmungen_QV_202406121.pdf' },
   { label: 'ICT-BZ QV 2026', href: 'https://ict-bz.ch/download/qv-2026-prasentation-infoveranstaltung-applikation-und-plattformentwicklung' },
   { label: 'BBZBL BiVo 2021', href: 'https://www.bbzbl.ch/wp-content/uploads/2021/07/Qualifikationsverfahren-QV-BiVo-2021.pdf' },
@@ -108,18 +110,22 @@ const informatikerSources = [
 
 const informatikerOverview = [
   {
+    id: 'passing',
     title: 'Bestehen',
     text: 'Bestanden ist das QV nur mit IPA mindestens 4.0, IK mindestens 4.0 und Gesamtnote mindestens 4.0.',
   },
   {
+    id: 'weighting',
     title: 'Gewichtung',
     text: 'Regulär: IPA 40%, IK 30%, ABU 20%, eGK 10%. Mit BM zählen nur IPA und IK.',
   },
   {
+    id: 'rounding',
     title: 'Rundung',
-    text: 'Gesamtnote, IPA, IK und ABU auf 0.1; eGK sowie BFS-/ÜK-Mittel auf ganze oder halbe Noten.',
+    text: 'Gesamtnote, IPA, IK und ABU auf 0.1; eGK ist das auf ganze oder halbe Note gerundete Mittel aus acht Semesterzeugnisnoten. Vereinfacht kann eGK aus Mathematik und Englisch nach Lektionen gewichtet werden.',
   },
   {
+    id: 'ipa-current',
     title: 'IPA aktuell',
     text: 'Aktuell nach nationalen QV-Ausführungsbestimmungen: Ausführung 50%, Dokumentation 20%, Präsentation/Fachgespräch 30%.',
   },
@@ -127,20 +133,53 @@ const informatikerOverview = [
 
 const genericOverview = [
   {
+    id: 'passing',
     title: 'Bestehen',
     text: 'Die Gesamtnote muss mindestens 4.0 betragen. Als Fallnoten markierte Bereiche müssen zusätzlich mindestens 4.0 sein.',
   },
   {
+    id: 'weighting',
     title: 'Gewichtung',
     text: 'Die Bestandteile werden mit den in der Bildungsverordnung festgelegten Prozentwerten gewichtet.',
   },
   {
+    id: 'rounding',
     title: 'Rundung',
     text: 'Die Gesamtnote wird auf eine Dezimalstelle gerundet. Teilnoten sollen gemäss offiziellen Vorgaben bereits gerundet eingegeben werden.',
   },
   {
+    id: 'orientation',
     title: 'Orientierung',
     text: 'Der Rechner bildet die reguläre EFZ-Variante ab und ersetzt keinen offiziellen Notenentscheid.',
+  },
+];
+
+const informatikerEgkDetailModes: QVComponentMode[] = [
+  {
+    id: 'official-semester-grades',
+    label: 'Offiziell: acht Semesterzeugnisnoten',
+    description: 'Mittel aus acht eGK-Semesterzeugnisnoten, auf ganze oder halbe Note gerundet.',
+    resultRounding: 0.5,
+    details: [
+      { id: 'semester-1', label: 'eGK Semesterzeugnisnote 1', shortLabel: 'S1', weight: 12.5, roundingNote: 'ganze oder halbe Note' },
+      { id: 'semester-2', label: 'eGK Semesterzeugnisnote 2', shortLabel: 'S2', weight: 12.5, roundingNote: 'ganze oder halbe Note' },
+      { id: 'semester-3', label: 'eGK Semesterzeugnisnote 3', shortLabel: 'S3', weight: 12.5, roundingNote: 'ganze oder halbe Note' },
+      { id: 'semester-4', label: 'eGK Semesterzeugnisnote 4', shortLabel: 'S4', weight: 12.5, roundingNote: 'ganze oder halbe Note' },
+      { id: 'semester-5', label: 'eGK Semesterzeugnisnote 5', shortLabel: 'S5', weight: 12.5, roundingNote: 'ganze oder halbe Note' },
+      { id: 'semester-6', label: 'eGK Semesterzeugnisnote 6', shortLabel: 'S6', weight: 12.5, roundingNote: 'ganze oder halbe Note' },
+      { id: 'semester-7', label: 'eGK Semesterzeugnisnote 7', shortLabel: 'S7', weight: 12.5, roundingNote: 'ganze oder halbe Note' },
+      { id: 'semester-8', label: 'eGK Semesterzeugnisnote 8', shortLabel: 'S8', weight: 12.5, roundingNote: 'ganze oder halbe Note' },
+    ],
+  },
+  {
+    id: 'subject-finals',
+    label: 'Vereinfacht: Mathematik und Englisch',
+    description: 'Fachnoten nach Lektionen gewichtet: Mathematik 120 Lektionen, Englisch 200 Lektionen. Verwende die offizielle eGK-Endnote, falls sie bereits vorliegt.',
+    resultRounding: 0.5,
+    details: [
+      { id: 'math', label: 'Mathematik', shortLabel: 'Mathe', weight: 37.5, roundingNote: 'Fachnote; 120 von 320 Lektionen' },
+      { id: 'english', label: 'Englisch', shortLabel: 'Englisch', weight: 62.5, roundingNote: 'Fachnote; 200 von 320 Lektionen' },
+    ],
   },
 ];
 
@@ -175,8 +214,11 @@ const informatikerComponents: QVComponent[] = [
     label: 'Erweiterte Grundkompetenzen',
     shortLabel: 'eGK',
     weight: 10,
-    description: 'Durchschnitt aus den acht Semesterzeugnisnoten im Bereich erweiterte Grundkompetenzen.',
-    roundingNote: 'eGK-Note auf 0.5',
+    description: 'Erfahrungsnote aus dem Unterrichtsbereich erweiterte Grundkompetenzen. Für Informatiker/in EFZ BiVo 2021 umfasst dieser Bereich Mathematik und Englisch. Die offizielle eGK-Note ist das auf ganze oder halbe Note gerundete Mittel aus acht Semesterzeugnisnoten.',
+    roundingNote: 'eGK auf ganze oder halbe Note gerundet',
+    detailResultRounding: 0.5,
+    defaultDetailModeId: 'official-semester-grades',
+    detailModes: informatikerEgkDetailModes,
   },
   {
     id: 'ik',
@@ -209,7 +251,7 @@ const kaufmannComponents: QVComponent[] = [
     label: 'Berufskenntnisse und Allgemeinbildung',
     shortLabel: 'BK/AB',
     weight: 30,
-    description: 'Schulische Abschlussprüfung über fünf Handlungskompetenzbereiche. Dieser Bereich ist eine Fallnote.',
+    description: 'Schulische Abschlussprüfung über fünf Handlungskompetenzbereiche. Keine separate eGK-Komponente; schulische Inhalte sind hier und in der Erfahrungsnote abgebildet. Dieser Bereich ist eine Fallnote.',
     fallnote: true,
     minGrade: 4,
     details: [
@@ -225,7 +267,7 @@ const kaufmannComponents: QVComponent[] = [
     label: 'Erfahrungsnote',
     shortLabel: 'Erfahrung',
     weight: 40,
-    description: 'Gewichtetes Mittel aus Betrieb 25%, Berufsfachschule 50% und überbetrieblichen Kursen 25%.',
+    description: 'Gewichtetes Mittel aus Betrieb 25%, Berufsfachschule 50% und überbetrieblichen Kursen 25%. Keine separate eGK-Komponente.',
     roundingNote: 'Erfahrungsnote auf 0.1',
     details: [
       { id: 'betrieb', label: 'Bildung in beruflicher Praxis', shortLabel: 'Betrieb', weight: 25, roundingNote: 'auf 0.5 gerundet' },
@@ -267,7 +309,7 @@ const detailhandelComponents: QVComponent[] = [
     label: 'Erfahrungsnote',
     shortLabel: 'Erfahrung',
     weight: 30,
-    description: 'Gewichtetes Mittel aus beruflicher Praxis 25%, Berufskenntnisse-Unterricht 50% und überbetrieblichen Kursen 25%.',
+    description: 'Gewichtetes Mittel aus beruflicher Praxis 25%, Berufskenntnisse-Unterricht 50% und überbetrieblichen Kursen 25%. Keine separate eGK-Komponente.',
     roundingNote: 'Erfahrungsnote auf 0.1',
     details: [
       { id: 'betrieb', label: 'Bildung in beruflicher Praxis', shortLabel: 'Betrieb', weight: 25, roundingNote: 'auf 0.5 gerundet' },
@@ -313,7 +355,7 @@ const fabeComponents: QVComponent[] = [
     label: 'Erfahrungsnote',
     shortLabel: 'Erfahrung',
     weight: 20,
-    description: 'Mittel aus den sechs Semesterzeugnisnoten für den Unterricht in den Berufskenntnissen.',
+    description: 'Mittel aus den sechs Semesterzeugnisnoten für den Unterricht in den Berufskenntnissen. Keine separate eGK-Komponente.',
     roundingNote: 'auf ganze oder halbe Note gerundet',
   },
 ];
@@ -365,7 +407,7 @@ const mpaComponents: QVComponent[] = [
     label: 'Erfahrungsnote Berufskenntnisse-Unterricht',
     shortLabel: 'Erfahrung',
     weight: 20,
-    description: 'Mittel aus den sechs Semesterzeugnisnoten für den Unterricht in den Berufskenntnissen.',
+    description: 'Mittel aus den sechs Semesterzeugnisnoten für den Unterricht in den Berufskenntnissen. Keine separate eGK-Komponente.',
     roundingNote: 'auf ganze oder halbe Note gerundet',
   },
 ];
@@ -402,7 +444,7 @@ const fageComponents: QVComponent[] = [
     label: 'Erfahrungsnote',
     shortLabel: 'Erfahrung',
     weight: 20,
-    description: 'Gewichtetes Mittel aus Bildung in beruflicher Praxis 50% und Unterricht in den Berufskenntnissen 50%.',
+    description: 'Gewichtetes Mittel aus Bildung in beruflicher Praxis 50% und Unterricht in den Berufskenntnissen 50%. Keine separate eGK-Komponente.',
     roundingNote: 'Erfahrungsnote auf 0.1',
     details: [
       { id: 'praxis', label: 'Bildung in beruflicher Praxis', shortLabel: 'Praxis', weight: 50, roundingNote: 'auf 0.5 gerundet' },
@@ -455,7 +497,7 @@ const apothekeComponents: QVComponent[] = [
     label: 'Erfahrungsnote',
     shortLabel: 'Erfahrung',
     weight: 20,
-    description: 'Gewichtetes Mittel aus Berufskenntnisse-Unterricht 70% und überbetrieblichen Kursen 30%.',
+    description: 'Gewichtetes Mittel aus Berufskenntnisse-Unterricht 70% und überbetrieblichen Kursen 30%. Keine separate eGK-Komponente.',
     roundingNote: 'Erfahrungsnote auf 0.1',
     details: [
       { id: 'berufskenntnisse', label: 'Unterricht in den Berufskenntnissen', shortLabel: 'BFS', weight: 70, roundingNote: 'auf 0.5 gerundet' },
@@ -496,7 +538,7 @@ const logistikComponents: QVComponent[] = [
     label: 'Erfahrungsnote',
     shortLabel: 'Erfahrung',
     weight: 20,
-    description: 'Gewichtetes Mittel aus beruflicher Praxis 25%, Berufskenntnisse-Unterricht 50% und überbetrieblichen Kursen 25%.',
+    description: 'Gewichtetes Mittel aus beruflicher Praxis 25%, Berufskenntnisse-Unterricht 50% und überbetrieblichen Kursen 25%. Keine separate eGK-Komponente.',
     roundingNote: 'Erfahrungsnote auf 0.1',
     details: [
       { id: 'praxis', label: 'Bildung in beruflicher Praxis', shortLabel: 'Praxis', weight: 25, roundingNote: 'auf 0.5 gerundet' },
@@ -534,7 +576,7 @@ export const QV_PRESETS: QVPreset[] = [
     label: 'EFZ Kauffrau/Kaufmann',
     shortLabel: 'Kauffrau/Kaufmann',
     fachrichtung: 'Kaufmännische Grundbildung',
-    description: 'QV Kauffrau/Kaufmann EFZ mit praktischer Arbeit, Berufskenntnissen/Allgemeinbildung und Erfahrungsnote.',
+    description: 'QV Kauffrau/Kaufmann EFZ mit praktischer Arbeit, Berufskenntnissen/Allgemeinbildung und Erfahrungsnote. Keine separate eGK-Komponente; schulische Inhalte sind in HKB und Erfahrungsnote abgebildet.',
     overviewItems: genericOverview,
     sources: [
       { label: 'WKS QV Kaufleute EFZ', href: 'https://weiter-lernen.ch/anleitungen/noten-und-qualifikationsverfahren-kaufleute-efz' },
@@ -549,7 +591,7 @@ export const QV_PRESETS: QVPreset[] = [
     label: 'EFZ Detailhandelsfachfrau/-mann',
     shortLabel: 'Detailhandel',
     fachrichtung: 'Detailhandel',
-    description: 'QV Detailhandelsfachfrau/-mann EFZ mit praktischer Arbeit, Berufskenntnissen, Allgemeinbildung und Erfahrungsnote.',
+    description: 'QV Detailhandelsfachfrau/-mann EFZ mit praktischer Arbeit, Berufskenntnissen, Allgemeinbildung und Erfahrungsnote. Keine separate eGK-Komponente.',
     overviewItems: genericOverview,
     sources: [
       { label: 'BiVo Detailhandel Art. 21', href: 'https://www.droit-bilingue.ch/de-fr/4/41/412.101.220.03-21-24.html' },
@@ -564,7 +606,7 @@ export const QV_PRESETS: QVPreset[] = [
     label: 'EFZ Fachfrau/-mann Betreuung',
     shortLabel: 'FaBe',
     fachrichtung: 'Betreuung',
-    description: 'QV Fachfrau/-mann Betreuung EFZ mit praktischer Arbeit, Berufskenntnissen, Allgemeinbildung und Erfahrungsnote.',
+    description: 'QV Fachfrau/-mann Betreuung EFZ mit praktischer Arbeit, Berufskenntnissen, Allgemeinbildung und Erfahrungsnote. Keine separate eGK-Komponente.',
     overviewItems: genericOverview,
     sources: [
       { label: 'BiVo FaBe Art. 18', href: 'https://www.droit-bilingue.ch/fr-de/4/41/412.101.220.14-18-21.html' },
@@ -579,7 +621,7 @@ export const QV_PRESETS: QVPreset[] = [
     label: 'EFZ Medizinische/r Praxisassistent/in',
     shortLabel: 'MPA',
     fachrichtung: 'Medizinische Praxisassistenz',
-    description: 'QV Medizinische/r Praxisassistent/in EFZ mit praktischer Arbeit, Berufskenntnissen, Allgemeinbildung und Erfahrungsnote.',
+    description: 'QV Medizinische/r Praxisassistent/in EFZ mit praktischer Arbeit, Berufskenntnissen, Allgemeinbildung und Erfahrungsnote. Keine separate eGK-Komponente.',
     overviewItems: genericOverview,
     sources: [
       { label: 'BiVo MPA Art. 19', href: 'https://www.droit-bilingue.ch/de-fr/4/41/412.101.221.07-19-22.html' },
@@ -594,7 +636,7 @@ export const QV_PRESETS: QVPreset[] = [
     label: 'EFZ Fachfrau/-mann Gesundheit',
     shortLabel: 'FaGe',
     fachrichtung: 'Gesundheit',
-    description: 'QV Fachfrau/-mann Gesundheit EFZ mit praktischer Arbeit, Berufskenntnissen, Allgemeinbildung und Erfahrungsnote.',
+    description: 'QV Fachfrau/-mann Gesundheit EFZ mit praktischer Arbeit, Berufskenntnissen, Allgemeinbildung und Erfahrungsnote. Keine separate eGK-Komponente.',
     overviewItems: genericOverview,
     sources: [
       { label: 'BiVo FaGe Art. 19', href: 'https://www.droit-bilingue.ch/de-fr/4/41/412.101.220.96-19-22.html' },
@@ -609,7 +651,7 @@ export const QV_PRESETS: QVPreset[] = [
     label: 'EFZ Fachfrau/-mann Apotheke',
     shortLabel: 'Apotheke',
     fachrichtung: 'Apotheke',
-    description: 'QV Fachfrau/-mann Apotheke EFZ mit praktischer Arbeit, Berufskenntnissen, Allgemeinbildung und Erfahrungsnote.',
+    description: 'QV Fachfrau/-mann Apotheke EFZ mit praktischer Arbeit, Berufskenntnissen, Allgemeinbildung und Erfahrungsnote. Keine separate eGK-Komponente.',
     overviewItems: genericOverview,
     sources: [
       { label: 'BiVo Apotheke Art. 19', href: 'https://www.droit-bilingue.ch/de-fr/4/41/412.101.220.40-19-22.html' },
@@ -624,7 +666,7 @@ export const QV_PRESETS: QVPreset[] = [
     label: 'EFZ Logistiker/in',
     shortLabel: 'Logistik',
     fachrichtung: 'Logistik',
-    description: 'QV Logistiker/in EFZ mit praktischer Arbeit, Berufskenntnissen, Allgemeinbildung und Erfahrungsnote.',
+    description: 'QV Logistiker/in EFZ mit praktischer Arbeit, Berufskenntnissen, Allgemeinbildung und Erfahrungsnote. Keine separate eGK-Komponente.',
     overviewItems: genericOverview,
     sources: [
       { label: 'BiVo Logistik Art. 20', href: 'https://www.droit-bilingue.ch/de-fr/4/41/412.101.220.31-20-23.html' },

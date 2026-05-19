@@ -15,7 +15,8 @@
     isComponentExcluded,
     isValidGrade,
   } from '$lib/utils/qv';
-  import { m } from '$lib/i18n';
+  import { locale, m } from '$lib/i18n';
+  import { localizeQVPreset, localizeQVPresets } from '$lib/qv/localize';
   import { onMount } from 'svelte';
   import { clearShareParam, createShareUrl, readSharePayload } from '$lib/utils/share';
   import { slide, fade, scale } from 'svelte/transition';
@@ -44,7 +45,9 @@
     { icon: BriefcaseOutline, color: 'text-ctp-peach', bg: 'bg-ctp-peach/10' },
   ];
 
-  let preset = $derived(getQVPreset($qv.presetId));
+  let basePreset = $derived(getQVPreset($qv.presetId));
+  let preset = $derived(localizeQVPreset(basePreset, $locale));
+  let selectablePresets = $derived(localizeQVPresets(QV_PRESETS, $locale));
   let activeTrack = $derived(getQVTrack(preset, $qv.track));
   let visibleComponents = $derived(getTrackComponents(preset, $qv.track));
   let componentGrades = $derived.by(() => {
@@ -622,7 +625,7 @@
       
       <div class="p-6 max-h-[70vh] overflow-y-auto">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {#each QV_PRESETS as item}
+          {#each selectablePresets as item}
             {@const ItemIcon = getPresetIcon(item.id)}
             <button
               type="button"
@@ -644,7 +647,7 @@
         </div>
       </div>
     </div>
-    <button type="button" class="modal-backdrop bg-ctp-crust/80 backdrop-blur-sm" onclick={() => (showPresetModal = false)}>Close</button>
+    <button type="button" class="modal-backdrop bg-ctp-crust/80 backdrop-blur-sm" aria-label={$m.common.close} onclick={() => (showPresetModal = false)}>{$m.common.close}</button>
   </div>
 {/if}
 

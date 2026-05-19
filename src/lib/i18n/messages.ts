@@ -1,6 +1,11 @@
 import type { CsvExportLabels } from '$lib/utils/export';
 
+export type Locale = 'de' | 'en' | 'fr' | 'it';
+
 export interface Messages {
+  common: {
+    close: string;
+  };
   nav: {
     calculator: string;
     average: string;
