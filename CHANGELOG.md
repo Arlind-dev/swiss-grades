@@ -1,3 +1,11 @@
+## [1.16.0](https://github.com/Arlind-dev/swiss-grades/compare/v1.15.0...v1.16.0) (2026-05-19)
+
+### Features
+
+* **qv:** clarify eGK grade sources ([#50](https://github.com/Arlind-dev/swiss-grades/issues/50)) ([f5fbbc4](https://github.com/Arlind-dev/swiss-grades/commit/f5fbbc4690fdf60f3e57138eacc89ff856f31edf))
+* **qv:** clarify eGK semester grades ([#49](https://github.com/Arlind-dev/swiss-grades/issues/49)) ([fbfbf53](https://github.com/Arlind-dev/swiss-grades/commit/fbfbf53bea601da16720502a64ef97d136e70d15))
+* **qv:** localize preset content ([#52](https://github.com/Arlind-dev/swiss-grades/issues/52)) ([6165f41](https://github.com/Arlind-dev/swiss-grades/commit/6165f41b38a1f135946f747bb34148d0fe62fe74))
+
 ## [1.15.0](https://github.com/Arlind-dev/swiss-grades/compare/v1.14.0...v1.15.0) (2026-05-19)
 
 ### Features
