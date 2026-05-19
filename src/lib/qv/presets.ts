@@ -1,4 +1,4 @@
-import type { QVComponent, QVPreset, QVTrackOption } from './types';
+import type { QVComponent, QVComponentMode, QVPreset, QVTrackOption } from './types';
 
 const regularTrack: QVTrackOption = {
   id: 'regular',
@@ -28,12 +28,82 @@ const popularitySources = [
   },
 ];
 
+const abuSources = [
+  {
+    label: 'SBFI Allgemeinbildung',
+    href: 'https://www.sbfi.admin.ch/de/die-allgemeinbildung-als-wichtiges-fundament-der-beruflichen-grundbildung',
+  },
+  {
+    label: 'SBFI Mindestvorschriften ABU 2025',
+    href: 'https://www.fedlex.admin.ch/eli/cc/2025/263/de',
+  },
+  {
+    label: 'Archiv ABU-Verordnung 2006',
+    href: 'https://www.fedlex.admin.ch/eli/cc/2006/510/de',
+  },
+];
+
+const abuDescription = 'Erfahrungsnote, Vertiefungs-/Schlussarbeit und Schlussprüfung zählen regulär je 1/3. Sonderfälle können in den Details ausgewählt werden.';
+const abuRoundingNote = 'ABU-Note auf 0.1; Sonderfälle gemäss Auswahl';
+
+const abuEfzDetailModes: QVComponentMode[] = [
+  {
+    id: 'efz-standard',
+    label: 'EFZ 3-/4-jährig regulär',
+    description: 'Erfahrungsnote, Vertiefungs-/Schlussarbeit und Schlussprüfung zählen je ein Drittel.',
+    resultRounding: 0.1,
+    details: [
+      { id: 'experience', label: 'Erfahrungsnote Allgemeinbildung', shortLabel: 'Erfahrung', weight: 33.3333, roundingNote: 'auf ganze oder halbe Note gerundet' },
+      { id: 'work', label: 'Vertiefungs-/Schlussarbeit', shortLabel: 'VA/SA', weight: 33.3333, roundingNote: 'auf ganze oder halbe Note gerundet' },
+      { id: 'exam', label: 'ABU-Schlussprüfung', shortLabel: 'Prüfung', weight: 33.3333, roundingNote: 'auf ganze oder halbe Note gerundet' },
+    ],
+  },
+  {
+    id: 'bm-transfer-late',
+    label: 'BM-Übertritt im vorletzten Schulsemester',
+    description: 'Vertiefungs-/Schlussarbeit und Schlussprüfung zählen je zur Hälfte.',
+    resultRounding: 0.1,
+    details: [
+      { id: 'work', label: 'Vertiefungs-/Schlussarbeit', shortLabel: 'VA/SA', weight: 50, roundingNote: 'auf ganze oder halbe Note gerundet' },
+      { id: 'exam', label: 'ABU-Schlussprüfung', shortLabel: 'Prüfung', weight: 50, roundingNote: 'auf ganze oder halbe Note gerundet' },
+    ],
+  },
+  {
+    id: 'outside-regular-education',
+    label: 'Zulassung ausserhalb Bildungsgang',
+    description: 'Für EFZ 3-/4-jährig zählen Vertiefungs-/Schlussarbeit und Schlussprüfung je zur Hälfte.',
+    resultRounding: 0.1,
+    details: [
+      { id: 'work', label: 'Vertiefungs-/Schlussarbeit', shortLabel: 'VA/SA', weight: 50, roundingNote: 'auf ganze oder halbe Note gerundet' },
+      { id: 'exam', label: 'ABU-Schlussprüfung', shortLabel: 'Prüfung', weight: 50, roundingNote: 'auf ganze oder halbe Note gerundet' },
+    ],
+  },
+  {
+    id: 'repeat-without-abu-school',
+    label: 'Wiederholung ohne ABU-Unterricht',
+    description: 'Bisherige Erfahrungsnote, neue Vertiefungs-/Schlussarbeit und neue Schlussprüfung zählen je ein Drittel.',
+    resultRounding: 0.1,
+    details: [
+      { id: 'experience', label: 'Bisherige Erfahrungsnote Allgemeinbildung', shortLabel: 'Erfahrung', weight: 33.3333, roundingNote: 'auf ganze oder halbe Note gerundet' },
+      { id: 'work', label: 'Neue Vertiefungs-/Schlussarbeit', shortLabel: 'VA/SA', weight: 33.3333, roundingNote: 'auf ganze oder halbe Note gerundet' },
+      { id: 'exam', label: 'Neue ABU-Schlussprüfung', shortLabel: 'Prüfung', weight: 33.3333, roundingNote: 'auf ganze oder halbe Note gerundet' },
+    ],
+  },
+  {
+    id: 'dispensed',
+    label: 'ABU dispensiert',
+    description: 'Allgemeinbildung zählt in diesem Modus nicht zur Gesamtnote.',
+    excluded: true,
+  },
+];
+
 const informatikerSources = [
   { label: 'ICT-Berufsbildung', href: 'https://www.ict-berufsbildung.ch/grundbildung/ict-lehren/informatiker-in-efz' },
   { label: 'SBFI BiVo Art. 19', href: 'https://www.fedlex.admin.ch/eli/cc/2020/886/de#art_19' },
   { label: 'QV Ausführungsbestimmungen', href: 'https://www.ict-berufsbildung.ch/resources/Informatiker-EFZ_Ausfuehrungsbestimmungen_QV_202406121.pdf' },
   { label: 'ICT-BZ QV 2026', href: 'https://ict-bz.ch/download/qv-2026-prasentation-infoveranstaltung-applikation-und-plattformentwicklung' },
   { label: 'BBZBL BiVo 2021', href: 'https://www.bbzbl.ch/wp-content/uploads/2021/07/Qualifikationsverfahren-QV-BiVo-2021.pdf' },
+  ...abuSources,
 ];
 
 const informatikerOverview = [
@@ -95,8 +165,10 @@ const informatikerComponents: QVComponent[] = [
     label: 'Allgemeinbildung',
     shortLabel: 'ABU',
     weight: 20,
-    description: 'Erfahrungsnote ABU, Vertiefungsarbeit und Schlussprüfung zählen je 1/3.',
-    roundingNote: 'ABU-Note auf 0.1',
+    description: abuDescription,
+    roundingNote: abuRoundingNote,
+    defaultDetailModeId: 'efz-standard',
+    detailModes: abuEfzDetailModes,
   },
   {
     id: 'egk',
@@ -185,7 +257,10 @@ const detailhandelComponents: QVComponent[] = [
     label: 'Allgemeinbildung',
     shortLabel: 'ABU',
     weight: 10,
-    description: 'Qualifikationsbereich Allgemeinbildung.',
+    description: abuDescription,
+    roundingNote: abuRoundingNote,
+    defaultDetailModeId: 'efz-standard',
+    detailModes: abuEfzDetailModes,
   },
   {
     id: 'detailhandel-erfahrungsnote',
@@ -228,7 +303,10 @@ const fabeComponents: QVComponent[] = [
     label: 'Allgemeinbildung',
     shortLabel: 'ABU',
     weight: 20,
-    description: 'Qualifikationsbereich Allgemeinbildung.',
+    description: abuDescription,
+    roundingNote: abuRoundingNote,
+    defaultDetailModeId: 'efz-standard',
+    detailModes: abuEfzDetailModes,
   },
   {
     id: 'fabe-erfahrungsnote',
@@ -277,7 +355,10 @@ const mpaComponents: QVComponent[] = [
     label: 'Allgemeinbildung',
     shortLabel: 'ABU',
     weight: 20,
-    description: 'Qualifikationsbereich Allgemeinbildung.',
+    description: abuDescription,
+    roundingNote: abuRoundingNote,
+    defaultDetailModeId: 'efz-standard',
+    detailModes: abuEfzDetailModes,
   },
   {
     id: 'mpa-erfahrungsnote',
@@ -311,7 +392,10 @@ const fageComponents: QVComponent[] = [
     label: 'Allgemeinbildung',
     shortLabel: 'ABU',
     weight: 20,
-    description: 'Qualifikationsbereich Allgemeinbildung.',
+    description: abuDescription,
+    roundingNote: abuRoundingNote,
+    defaultDetailModeId: 'efz-standard',
+    detailModes: abuEfzDetailModes,
   },
   {
     id: 'fage-erfahrungsnote',
@@ -361,7 +445,10 @@ const apothekeComponents: QVComponent[] = [
     label: 'Allgemeinbildung',
     shortLabel: 'ABU',
     weight: 20,
-    description: 'Qualifikationsbereich Allgemeinbildung.',
+    description: abuDescription,
+    roundingNote: abuRoundingNote,
+    defaultDetailModeId: 'efz-standard',
+    detailModes: abuEfzDetailModes,
   },
   {
     id: 'apotheke-erfahrungsnote',
@@ -399,7 +486,10 @@ const logistikComponents: QVComponent[] = [
     label: 'Allgemeinbildung',
     shortLabel: 'ABU',
     weight: 20,
-    description: 'Qualifikationsbereich Allgemeinbildung.',
+    description: abuDescription,
+    roundingNote: abuRoundingNote,
+    defaultDetailModeId: 'efz-standard',
+    detailModes: abuEfzDetailModes,
   },
   {
     id: 'logistik-erfahrungsnote',
@@ -463,6 +553,7 @@ export const QV_PRESETS: QVPreset[] = [
     overviewItems: genericOverview,
     sources: [
       { label: 'BiVo Detailhandel Art. 21', href: 'https://www.droit-bilingue.ch/de-fr/4/41/412.101.220.03-21-24.html' },
+      ...abuSources,
       ...popularitySources,
     ],
     tracks: defaultTracks,
@@ -477,6 +568,7 @@ export const QV_PRESETS: QVPreset[] = [
     overviewItems: genericOverview,
     sources: [
       { label: 'BiVo FaBe Art. 18', href: 'https://www.droit-bilingue.ch/fr-de/4/41/412.101.220.14-18-21.html' },
+      ...abuSources,
       ...popularitySources,
     ],
     tracks: defaultTracks,
@@ -491,6 +583,7 @@ export const QV_PRESETS: QVPreset[] = [
     overviewItems: genericOverview,
     sources: [
       { label: 'BiVo MPA Art. 19', href: 'https://www.droit-bilingue.ch/de-fr/4/41/412.101.221.07-19-22.html' },
+      ...abuSources,
       ...popularitySources,
     ],
     tracks: defaultTracks,
@@ -505,6 +598,7 @@ export const QV_PRESETS: QVPreset[] = [
     overviewItems: genericOverview,
     sources: [
       { label: 'BiVo FaGe Art. 19', href: 'https://www.droit-bilingue.ch/de-fr/4/41/412.101.220.96-19-22.html' },
+      ...abuSources,
       ...popularitySources,
     ],
     tracks: defaultTracks,
@@ -519,6 +613,7 @@ export const QV_PRESETS: QVPreset[] = [
     overviewItems: genericOverview,
     sources: [
       { label: 'BiVo Apotheke Art. 19', href: 'https://www.droit-bilingue.ch/de-fr/4/41/412.101.220.40-19-22.html' },
+      ...abuSources,
       ...popularitySources,
     ],
     tracks: defaultTracks,
@@ -533,6 +628,7 @@ export const QV_PRESETS: QVPreset[] = [
     overviewItems: genericOverview,
     sources: [
       { label: 'BiVo Logistik Art. 20', href: 'https://www.droit-bilingue.ch/de-fr/4/41/412.101.220.31-20-23.html' },
+      ...abuSources,
       ...popularitySources,
     ],
     tracks: defaultTracks,

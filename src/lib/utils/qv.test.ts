@@ -10,6 +10,7 @@ import type { QVComponent, QVPreset } from '../qv/types';
 
 const preset = QV_PRESETS[0];
 const ipa = preset.components.find((component) => component.id === 'ipa')!;
+const abu = preset.components.find((component) => component.id === 'abu')!;
 const ik = preset.components.find((component) => component.id === 'ik')!;
 
 const popularPresetIds = [
@@ -96,6 +97,67 @@ describe('QV Informatiker/in EFZ calculations', () => {
   test('IK detail calculation uses 80/20', () => {
     const result = computeComponentGrade(ik, { bfs: 4.5, uek: 5.5 });
     expect(result).toBe(4.7);
+  });
+
+  test('ABU standard mode uses experience, work and exam in equal thirds', () => {
+    const result = computeComponentGrade(abu, {
+      experience: 4,
+      work: 5,
+      exam: 6,
+    }, 'efz-standard');
+    expect(result).toBe(5);
+  });
+
+  test('ABU standard mode rounds the component grade to 0.1', () => {
+    const result = computeComponentGrade(abu, {
+      experience: 4,
+      work: 4,
+      exam: 5,
+    }, 'efz-standard');
+    expect(result).toBe(4.3);
+  });
+
+  test('ABU BM transfer mode uses work and exam at 50/50', () => {
+    const result = computeComponentGrade(abu, {
+      work: 4,
+      exam: 6,
+    }, 'bm-transfer-late');
+    expect(result).toBe(5);
+  });
+
+  test('ABU outside regular education mode uses work and exam at 50/50', () => {
+    const result = computeComponentGrade(abu, {
+      work: 3,
+      exam: 5,
+    }, 'outside-regular-education');
+    expect(result).toBe(4);
+  });
+
+  test('ABU repeat without ABU school mode uses previous experience, new work and new exam', () => {
+    const result = computeComponentGrade(abu, {
+      experience: 4,
+      work: 5,
+      exam: 6,
+    }, 'repeat-without-abu-school');
+    expect(result).toBe(5);
+  });
+
+  test('ABU dispensed mode removes ABU from missing components and active weight', () => {
+    const result = evaluateQV(preset, 'regular', { ipa: 4, egk: 4, ik: 4 }, { abu: 'dispensed' });
+    expect(result.activeWeightSum).toBe(80);
+    expect(result.missingComponentIds).toEqual([]);
+    expect(result.finalGrade).toBe(4);
+    expect(result.passed).toBe(true);
+
+    const needed = computeNeededGrade(preset, 'regular', { ipa: 4, egk: 4, ik: 4 }, { abu: 'dispensed' });
+    expect(needed).toBeNull();
+  });
+
+  test('BM track still excludes ABU and eGK independently of ABU mode', () => {
+    const result = evaluateQV(preset, 'bm', { ipa: 4, ik: 4 }, { abu: 'efz-standard' });
+    expect(result.activeComponents.map((component) => component.id)).toEqual(['ipa', 'ik']);
+    expect(result.activeWeightSum).toBe(70);
+    expect(result.passed).toBe(true);
   });
 
   test('needed grade respects fallnoten', () => {
