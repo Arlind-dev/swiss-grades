@@ -110,18 +110,22 @@ const informatikerSources = [
 
 const informatikerOverview = [
   {
+    id: 'passing',
     title: 'Bestehen',
     text: 'Bestanden ist das QV nur mit IPA mindestens 4.0, IK mindestens 4.0 und Gesamtnote mindestens 4.0.',
   },
   {
+    id: 'weighting',
     title: 'Gewichtung',
     text: 'Regulär: IPA 40%, IK 30%, ABU 20%, eGK 10%. Mit BM zählen nur IPA und IK.',
   },
   {
+    id: 'rounding',
     title: 'Rundung',
     text: 'Gesamtnote, IPA, IK und ABU auf 0.1; eGK ist das auf ganze oder halbe Note gerundete Mittel aus acht Semesterzeugnisnoten. Vereinfacht kann eGK aus Mathematik und Englisch nach Lektionen gewichtet werden.',
   },
   {
+    id: 'ipa-current',
     title: 'IPA aktuell',
     text: 'Aktuell nach nationalen QV-Ausführungsbestimmungen: Ausführung 50%, Dokumentation 20%, Präsentation/Fachgespräch 30%.',
   },
@@ -129,18 +133,22 @@ const informatikerOverview = [
 
 const genericOverview = [
   {
+    id: 'passing',
     title: 'Bestehen',
     text: 'Die Gesamtnote muss mindestens 4.0 betragen. Als Fallnoten markierte Bereiche müssen zusätzlich mindestens 4.0 sein.',
   },
   {
+    id: 'weighting',
     title: 'Gewichtung',
     text: 'Die Bestandteile werden mit den in der Bildungsverordnung festgelegten Prozentwerten gewichtet.',
   },
   {
+    id: 'rounding',
     title: 'Rundung',
     text: 'Die Gesamtnote wird auf eine Dezimalstelle gerundet. Teilnoten sollen gemäss offiziellen Vorgaben bereits gerundet eingegeben werden.',
   },
   {
+    id: 'orientation',
     title: 'Orientierung',
     text: 'Der Rechner bildet die reguläre EFZ-Variante ab und ersetzt keinen offiziellen Notenentscheid.',
   },
