@@ -10,6 +10,7 @@ export interface QVState {
   componentGrades: Record<string, string>;
   detailEnabled: Record<string, boolean>;
   detailGrades: Record<string, Record<string, string>>;
+  componentModes: Record<string, string>;
 }
 
 const STORAGE_KEY = STORAGE_KEYS.qv;
@@ -22,6 +23,7 @@ const defaults: QVState = {
   componentGrades: {},
   detailEnabled: {},
   detailGrades: {},
+  componentModes: {},
 };
 
 function sanitizePresetId(value: unknown): string {
@@ -64,6 +66,21 @@ function isNestedStringRecord(value: unknown): value is Record<string, Record<st
   );
 }
 
+function sanitizeComponentModes(presetId: string, value: unknown): Record<string, string> {
+  if (!isStringRecord(value)) return {};
+
+  const preset = getQVPreset(presetId);
+  const componentModes: Record<string, string> = {};
+  for (const [componentId, modeId] of Object.entries(value)) {
+    const component = preset.components.find((entry) => entry.id === componentId);
+    if (component?.detailModes?.some((mode) => mode.id === modeId)) {
+      componentModes[componentId] = modeId;
+    }
+  }
+
+  return componentModes;
+}
+
 function loadInitial(): QVState {
   if (!browser) return defaults;
   try {
@@ -77,6 +94,7 @@ function loadInitial(): QVState {
       componentGrades: isStringRecord(parsed.componentGrades) ? parsed.componentGrades : {},
       detailEnabled: isBooleanRecord(parsed.detailEnabled) ? parsed.detailEnabled : {},
       detailGrades: isNestedStringRecord(parsed.detailGrades) ? parsed.detailGrades : {},
+      componentModes: sanitizeComponentModes(presetId, parsed.componentModes),
     };
   } catch {
     return defaults;

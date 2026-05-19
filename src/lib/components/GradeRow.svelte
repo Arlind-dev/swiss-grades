@@ -18,7 +18,10 @@
     onchange({ ...entry, ...changes });
   }
 
+  const MAX_DEPTH = 7;
+
   function addSubgrade() {
+    if (depth >= MAX_DEPTH) return;
     const subgrades = [...entry.subgrades, newEntry()];
     const grade = recomputeParentGrade(subgrades);
     emit({ subgrades, grade });
@@ -66,7 +69,7 @@
       <div class="flex-grow min-w-0 hidden sm:block">
         <input
           type="text"
-          class="input input-ghost input-sm w-full bg-transparent focus:bg-ctp-surface0 border-none focus:outline-none px-2 font-medium text-ctp-text placeholder:text-ctp-overlay0 transition-all rounded-lg"
+          class="input input-bordered input-sm w-full bg-ctp-mantle border-ctp-surface1 focus:border-ctp-lavender focus:outline-none px-2 font-medium text-ctp-text placeholder:text-ctp-overlay0 transition-all rounded-lg"
           placeholder={$m.gradeRow.placeholderName}
           value={entry.name}
           oninput={(e) => emit({ name: e.currentTarget.value })}
@@ -74,7 +77,7 @@
       </div>
 
       <!-- Grade -->
-      <div class="w-20 sm:w-28 flex-shrink-0">
+      <div class="w-20 sm:w-48 flex-shrink-0">
         <input
           type="text"
           class="input input-bordered input-sm w-full bg-ctp-mantle border-ctp-surface1 focus:border-ctp-lavender focus:outline-none transition-all text-center font-black rounded-lg"
@@ -93,7 +96,7 @@
       </div>
 
       <!-- Weight -->
-      <div class="w-16 sm:w-24 flex-shrink-0 flex items-center gap-1 bg-ctp-mantle px-2 py-1 rounded-lg border border-ctp-surface1 focus-within:border-ctp-lavender transition-all">
+      <div class="w-28 sm:w-44 flex-shrink-0 flex items-center gap-1 bg-ctp-mantle px-2 py-1 rounded-lg border border-ctp-surface1 focus-within:border-ctp-lavender transition-all">
         <input
           type="text"
           class="bg-transparent border-none focus:outline-none w-full text-right font-bold text-ctp-text text-sm"
@@ -109,9 +112,10 @@
 
     <!-- Actions -->
     <div class="flex items-center gap-1 opacity-100 sm:opacity-0 group-hover/row:opacity-100 transition-opacity">
-      <button 
-        type="button" 
+      <button
+        type="button"
         class="btn btn-ghost btn-circle btn-xs text-ctp-lavender hover:bg-ctp-lavender/10"
+        class:invisible={depth >= MAX_DEPTH}
         onclick={addSubgrade}
         title={$m.gradeRow.addSubgrade}
       >
