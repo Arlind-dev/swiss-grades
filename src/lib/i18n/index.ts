@@ -3,11 +3,10 @@ import { de } from './de';
 import { en } from './en';
 import { fr } from './fr';
 import { it } from './it';
-import type { Messages } from './messages';
+import type { Locale, Messages } from './messages';
 import { STORAGE_KEYS } from '$lib/storage-keys';
 
-export type Locale = 'de' | 'en' | 'fr' | 'it';
-export type { Messages };
+export type { Locale, Messages };
 
 const catalogs: Record<Locale, Messages> = { de, en, fr, it };
 

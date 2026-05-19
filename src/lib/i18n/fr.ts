@@ -1,6 +1,9 @@
 import type { Messages } from './messages';
 
 export const fr: Messages = {
+  common: {
+    close: 'Fermer',
+  },
   nav: {
     calculator: 'Calculateur de notes',
     average: 'Moyenne des notes',
