@@ -71,7 +71,7 @@
 
 <div class="flex flex-col gap-8">
   <div class="text-center space-y-4">
-    <h1 class="text-4xl font-black tracking-tight text-ctp-text">{$m.calculator.title}</h1>
+    <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-ctp-text">{$m.calculator.title}</h1>
     
     <div class="inline-flex items-center gap-4 px-6 py-3 bg-ctp-mantle border border-ctp-surface0 rounded-2xl shadow-sm text-ctp-subtext1">
       <span class="font-bold">{$m.calculator.formulaLabel}</span>
@@ -109,7 +109,7 @@
             bind:value={points}
             use:numericInput
             placeholder="0"
-            class="input input-bordered w-full bg-ctp-base border-ctp-surface1 focus:border-ctp-lavender focus:outline-none transition-all text-lg font-bold"
+            class="input input-bordered w-full bg-ctp-base border-ctp-surface1 focus:border-ctp-lavender focus:outline-none transition-all text-lg font-bold font-mono"
           />
         </div>
 
@@ -124,7 +124,7 @@
             bind:value={maxPoints}
             use:numericInput
             placeholder="100"
-            class="input input-bordered w-full bg-ctp-base border-ctp-surface1 focus:border-ctp-lavender focus:outline-none transition-all text-lg font-bold"
+            class="input input-bordered w-full bg-ctp-base border-ctp-surface1 focus:border-ctp-lavender focus:outline-none transition-all text-lg font-bold font-mono"
           />
         </div>
       </div>
@@ -156,7 +156,7 @@
       <div class="p-8 text-center space-y-2">
         <span class="text-xs font-black uppercase tracking-[0.2em] text-ctp-subtext1">{$m.calculator.resultPrefix}</span>
         <div 
-          class="text-8xl font-black tracking-tighter"
+          class="text-6xl sm:text-7xl lg:text-8xl font-black tracking-tighter font-mono"
           style:color={gradeColor(resultGrade)}
           style:text-shadow="0 0 40px {gradeColor(resultGrade)}40"
         >

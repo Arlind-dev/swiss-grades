@@ -185,7 +185,7 @@ let results = $derived.by((): ExamResult[] => {
 
 <div class="flex flex-col gap-8">
   <div class="text-center space-y-4">
-    <h1 class="text-4xl font-black tracking-tight text-ctp-text">{$m.needed.title}</h1>
+    <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-ctp-text">{$m.needed.title}</h1>
     <p class="text-ctp-subtext1 max-w-lg mx-auto">{$m.needed.description}</p>
     <div class="alert bg-ctp-mantle border-ctp-surface0 shadow-sm inline-flex w-auto py-2 px-4 rounded-2xl">
       <p class="text-xs font-medium text-ctp-subtext1">

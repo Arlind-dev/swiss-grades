@@ -147,7 +147,7 @@
 
 <div class="flex flex-col gap-8">
   <div class="text-center">
-    <h1 class="text-4xl font-black tracking-tight text-ctp-text">{$m.average.title}</h1>
+    <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-ctp-text">{$m.average.title}</h1>
   </div>
 
   <div class="card bg-ctp-mantle shadow-xl border border-ctp-surface0">
@@ -211,8 +211,8 @@
               </div>
               
               {#if delta !== null}
-                <div 
-                  class="hidden sm:flex items-center justify-center min-w-[4rem] px-2 py-1 rounded-full text-xs font-black tracking-tight"
+                <div
+                  class="hidden sm:flex items-center justify-center min-w-[4rem] px-2 py-1 rounded-full text-xs font-black tracking-tight font-mono"
                   class:bg-ctp-green={delta > 0.005}
                   class:bg-ctp-red={delta < -0.005}
                   class:bg-ctp-surface1={Math.abs(delta) <= 0.005}
@@ -258,7 +258,7 @@
       <div class="p-8 text-center space-y-2">
         <span class="text-xs font-black uppercase tracking-[0.2em] text-ctp-subtext1">{$m.average.resultPrefix}</span>
         <div 
-          class="text-8xl font-black tracking-tighter"
+          class="text-6xl sm:text-7xl lg:text-8xl font-black tracking-tighter font-mono"
           style:color={gradeColor(averageGrade)}
           style:text-shadow="0 0 40px {gradeColor(averageGrade)}40"
         >
