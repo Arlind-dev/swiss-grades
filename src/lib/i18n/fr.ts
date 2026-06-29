@@ -3,12 +3,21 @@ import type { Messages } from './messages';
 export const fr: Messages = {
   common: {
     close: 'Fermer',
+    pass: 'Réussi',
+    fail: 'Échoué',
+    emptyState: 'Saisissez des valeurs pour voir le résultat.',
   },
   nav: {
     calculator: 'Calculateur de notes',
     average: 'Moyenne des notes',
     needed: 'Note requise',
     qv: 'Calculateur QV',
+  },
+  navShort: {
+    calculator: 'Points',
+    average: 'Moyenne',
+    needed: 'Requise',
+    qv: 'QV',
   },
   gradeRow: {
     placeholderName: 'Matière / Examen',
@@ -32,6 +41,7 @@ export const fr: Messages = {
   },
   calculator: {
     title: 'Calculateur de notes',
+    subtitle: 'Calculez une note à partir des points obtenus.',
     formulaLabel: 'Note =',
     formulaNumerator: 'Points obtenus × 5',
     formulaDenominator: 'Points max',
@@ -46,6 +56,7 @@ export const fr: Messages = {
   },
   average: {
     title: 'Moyenne des notes',
+    subtitle: 'Calculez une moyenne pondérée des notes.',
     addGrade: '+ Ajouter une note',
     exportCsv: 'Exporter CSV',
     exportCsvTitle: 'Exporter les notes en CSV',

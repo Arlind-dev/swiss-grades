@@ -3,12 +3,21 @@ import type { Messages } from './messages';
 export const en: Messages = {
   common: {
     close: 'Close',
+    pass: 'Pass',
+    fail: 'Fail',
+    emptyState: 'Enter values to see your result.',
   },
   nav: {
     calculator: 'Grade Calculator',
     average: 'Grade Average',
     needed: 'Required Grade',
     qv: 'QV Calculator',
+  },
+  navShort: {
+    calculator: 'Points',
+    average: 'Average',
+    needed: 'Required',
+    qv: 'QV',
   },
   gradeRow: {
     placeholderName: 'Subject / Exam',
@@ -32,6 +41,7 @@ export const en: Messages = {
   },
   calculator: {
     title: 'Grade Calculator',
+    subtitle: 'Work out a grade from achieved points.',
     formulaLabel: 'Grade =',
     formulaNumerator: 'Points achieved × 5',
     formulaDenominator: 'Max points',
@@ -46,6 +56,7 @@ export const en: Messages = {
   },
   average: {
     title: 'Grade Average',
+    subtitle: 'Calculate a weighted grade average.',
     addGrade: '+ Add grade',
     exportCsv: 'Export CSV',
     exportCsvTitle: 'Export grades as CSV',

@@ -5,8 +5,17 @@ export type Locale = 'de' | 'en' | 'fr' | 'it';
 export interface Messages {
   common: {
     close: string;
+    pass: string;
+    fail: string;
+    emptyState: string;
   };
   nav: {
+    calculator: string;
+    average: string;
+    needed: string;
+    qv: string;
+  };
+  navShort: {
     calculator: string;
     average: string;
     needed: string;
@@ -34,6 +43,7 @@ export interface Messages {
   };
   calculator: {
     title: string;
+    subtitle: string;
     formulaLabel: string;
     formulaNumerator: string;
     formulaDenominator: string;
@@ -48,6 +58,7 @@ export interface Messages {
   };
   average: {
     title: string;
+    subtitle: string;
     addGrade: string;
     exportCsv: string;
     exportCsvTitle: string;

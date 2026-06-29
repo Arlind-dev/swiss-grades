@@ -7,9 +7,16 @@
     label,
     Icon,
     onclick,
-    class: klass = ''
-  }: { href: string; label: string; Icon: Component; onclick?: () => void; class?: string } =
-    $props();
+    class: klass = '',
+    labelClass = ''
+  }: {
+    href: string;
+    label: string;
+    Icon: Component;
+    onclick?: () => void;
+    class?: string;
+    labelClass?: string;
+  } = $props();
 
   let active = $derived($page.url.pathname === href);
 </script>
@@ -26,5 +33,5 @@
   class:hover:text-ctp-text={!active}
 >
   <Icon class="h-4 w-4 shrink-0" />
-  <span>{label}</span>
+  <span class={labelClass}>{label}</span>
 </a>

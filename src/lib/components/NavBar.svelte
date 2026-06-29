@@ -3,12 +3,17 @@
   import { tick } from 'svelte';
   import { m, locale, type Locale } from '$lib/i18n';
   import { theme } from '$lib/stores/theme';
+  import NavLink from './NavLink.svelte';
   import {
     BarsOutline,
     CheckOutline,
     ChevronDownOutline,
     MoonOutline,
     SunOutline,
+    ScaleBalancedOutline,
+    ArrowsRepeatOutline,
+    FlagOutline,
+    GraduationCapOutline,
   } from 'flowbite-svelte-icons';
 
   const locales: { value: Locale; name: string }[] = [
@@ -17,6 +22,13 @@
     { value: 'fr', name: 'Français' },
     { value: 'it', name: 'Italiano' },
   ];
+
+  const tools = [
+    { href: '/average', key: 'average', Icon: ScaleBalancedOutline },
+    { href: '/calculator', key: 'calculator', Icon: ArrowsRepeatOutline },
+    { href: '/needed', key: 'needed', Icon: FlagOutline },
+    { href: '/qv', key: 'qv', Icon: GraduationCapOutline },
+  ] as const;
 
   let localeOpen = $state(false);
   let localeButton: HTMLButtonElement | undefined;
@@ -115,47 +127,21 @@
       <label for="nav-drawer" class="btn btn-ghost btn-circle sm:hidden">
         <BarsOutline class="h-5 w-5" />
       </label>
-      <a href="/" class="text-xl font-black italic tracking-tighter text-ctp-lavender">Swiss Grades</a>
+      <a href="/" class="text-xl font-bold italic tracking-tight text-ctp-lavender">Swiss Grades</a>
     </div>
 
     <div class="hidden flex-1 justify-center sm:flex">
-      <ul class="flex gap-1">
-        <li>
-          <a href="/calculator" 
-             class="px-4 py-2 rounded-xl transition-all font-bold text-sm"
-             class:bg-ctp-surface0={ $page.url.pathname === '/calculator' }
-             class:text-ctp-lavender={ $page.url.pathname === '/calculator' }
-             class:hover:bg-ctp-surface0={ $page.url.pathname !== '/calculator' }>
-            {$m.nav.calculator}
-          </a>
-        </li>
-        <li>
-          <a href="/average" 
-             class="px-4 py-2 rounded-xl transition-all font-bold text-sm"
-             class:bg-ctp-surface0={ $page.url.pathname === '/average' }
-             class:text-ctp-lavender={ $page.url.pathname === '/average' }
-             class:hover:bg-ctp-surface0={ $page.url.pathname !== '/average' }>
-            {$m.nav.average}
-          </a>
-        </li>
-        <li>
-          <a href="/needed" 
-             class="px-4 py-2 rounded-xl transition-all font-bold text-sm"
-             class:bg-ctp-surface0={ $page.url.pathname === '/needed' }
-             class:text-ctp-lavender={ $page.url.pathname === '/needed' }
-             class:hover:bg-ctp-surface0={ $page.url.pathname !== '/needed' }>
-            {$m.nav.needed}
-          </a>
-        </li>
-        <li>
-          <a href="/qv" 
-             class="px-4 py-2 rounded-xl transition-all font-bold text-sm"
-             class:bg-ctp-surface0={ $page.url.pathname === '/qv' }
-             class:text-ctp-lavender={ $page.url.pathname === '/qv' }
-             class:hover:bg-ctp-surface0={ $page.url.pathname !== '/qv' }>
-            {$m.nav.qv}
-          </a>
-        </li>
+      <ul class="flex items-center gap-1">
+        {#each tools as tool}
+          <li>
+            <NavLink
+              href={tool.href}
+              label={$m.navShort[tool.key]}
+              Icon={tool.Icon}
+              labelClass="hidden md:inline"
+            />
+          </li>
+        {/each}
       </ul>
     </div>
 
@@ -188,7 +174,7 @@
         </button>
         {#if localeOpen}
         <ul
-          class="dropdown-content z-50 mt-3 w-60 rounded-lg border border-ctp-surface0 bg-ctp-mantle p-2 shadow-xl"
+          class="dropdown-content z-50 mt-3 w-60 rounded-xl border border-ctp-surface0 bg-ctp-mantle p-2 shadow-lg"
           role="menu"
           aria-label="Language"
           onkeydown={handleLocaleMenuKeydown}
@@ -214,7 +200,7 @@
                 onclick={() => selectLocale(loc.value)}
               >
                 <span class="min-w-0 flex-1">
-                  <span class="block truncate text-sm font-black leading-5">{loc.name}</span>
+                  <span class="block truncate text-sm font-semibold leading-5">{loc.name}</span>
                 </span>
                 <CheckOutline
                   class={`h-4 w-4 shrink-0 ${$locale === loc.value ? 'opacity-100' : 'opacity-0'}`}

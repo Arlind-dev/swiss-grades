@@ -3,12 +3,21 @@ import type { Messages } from './messages';
 export const it: Messages = {
   common: {
     close: 'Chiudi',
+    pass: 'Superato',
+    fail: 'Non superato',
+    emptyState: 'Inserisci dei valori per vedere il risultato.',
   },
   nav: {
     calculator: 'Calcolatore voti',
     average: 'Media voti',
     needed: 'Voto necessario',
     qv: 'Calcolatore QV',
+  },
+  navShort: {
+    calculator: 'Punti',
+    average: 'Media',
+    needed: 'Necessario',
+    qv: 'QV',
   },
   gradeRow: {
     placeholderName: 'Materia / Esame',
@@ -32,6 +41,7 @@ export const it: Messages = {
   },
   calculator: {
     title: 'Calcolatore voti',
+    subtitle: 'Calcola un voto dai punti ottenuti.',
     formulaLabel: 'Voto =',
     formulaNumerator: 'Punti ottenuti × 5',
     formulaDenominator: 'Punti massimi',
@@ -46,6 +56,7 @@ export const it: Messages = {
   },
   average: {
     title: 'Media voti',
+    subtitle: 'Calcola una media ponderata dei voti.',
     addGrade: '+ Aggiungi voto',
     exportCsv: 'Esporta CSV',
     exportCsvTitle: 'Esporta voti come CSV',

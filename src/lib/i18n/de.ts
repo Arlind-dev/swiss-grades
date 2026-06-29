@@ -3,12 +3,21 @@ import type { Messages } from './messages';
 export const de: Messages = {
   common: {
     close: 'Schliessen',
+    pass: 'Bestanden',
+    fail: 'Nicht bestanden',
+    emptyState: 'Werte eingeben, um das Ergebnis zu sehen.',
   },
   nav: {
     calculator: 'Notenrechner',
     average: 'Notenschnitt',
     needed: 'Benötigte Note',
     qv: 'QV Rechner',
+  },
+  navShort: {
+    calculator: 'Punkte',
+    average: 'Schnitt',
+    needed: 'Benötigt',
+    qv: 'QV',
   },
   gradeRow: {
     placeholderName: 'Fach / Prüfung',
@@ -32,6 +41,7 @@ export const de: Messages = {
   },
   calculator: {
     title: 'Notenrechner',
+    subtitle: 'Note aus erreichten Punkten berechnen.',
     formulaLabel: 'Note =',
     formulaNumerator: 'Erreichte Punkte × 5',
     formulaDenominator: 'Maximalpunkte',
@@ -46,6 +56,7 @@ export const de: Messages = {
   },
   average: {
     title: 'Notenschnitt',
+    subtitle: 'Gewichteten Notenschnitt berechnen.',
     addGrade: '+ Note hinzufügen',
     exportCsv: 'CSV exportieren',
     exportCsvTitle: 'Noten als CSV exportieren',
