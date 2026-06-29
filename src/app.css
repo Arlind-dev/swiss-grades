@@ -22,7 +22,6 @@
   --color-ctp-mauve: var(--ctp-mauve);
   --color-ctp-peach: var(--ctp-peach);
 
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 }
 
@@ -112,7 +111,7 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100dvh;
-  font-family: var(--font-sans);
+  font-family: 'JetBrains Mono', monospace;
   background: var(--ctp-base);
   color: var(--ctp-text);
   line-height: 1.5;
