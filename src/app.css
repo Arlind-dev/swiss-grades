@@ -21,6 +21,9 @@
   --color-ctp-yellow: var(--ctp-yellow);
   --color-ctp-mauve: var(--ctp-mauve);
   --color-ctp-peach: var(--ctp-peach);
+
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
 /* ── Catppuccin Latte (light, default) ─────────────────────────────────── */
@@ -109,7 +112,7 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100dvh;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-sans);
   background: var(--ctp-base);
   color: var(--ctp-text);
   line-height: 1.5;

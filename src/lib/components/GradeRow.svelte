@@ -80,7 +80,7 @@
       <div class="w-20 sm:w-48 flex-shrink-0">
         <input
           type="text"
-          class="input input-bordered input-sm w-full bg-ctp-mantle border-ctp-surface1 focus:border-ctp-lavender focus:outline-none transition-all text-center font-black rounded-lg"
+          class="input input-bordered input-sm w-full bg-ctp-mantle border-ctp-surface1 focus:border-ctp-lavender focus:outline-none transition-all text-center font-black rounded-lg font-mono"
           class:bg-ctp-surface0={hasSubgrades}
           class:opacity-50={hasSubgrades}
           class:border-ctp-green={gradePassing}
@@ -99,7 +99,7 @@
       <div class="w-28 sm:w-44 flex-shrink-0 flex items-center gap-1 bg-ctp-mantle px-2 py-1 rounded-lg border border-ctp-surface1 focus-within:border-ctp-lavender transition-all">
         <input
           type="text"
-          class="bg-transparent border-none focus:outline-none w-full text-right font-bold text-ctp-text text-sm"
+          class="bg-transparent border-none focus:outline-none w-full text-right font-bold text-ctp-text text-sm font-mono"
           inputmode="decimal"
           placeholder={small ? $m.gradeRow.placeholderWeightShort : $m.gradeRow.placeholderWeight}
           value={entry.weight}
