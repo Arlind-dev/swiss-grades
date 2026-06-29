@@ -1,146 +1,121 @@
-@import "tailwindcss";
-@plugin "daisyui/index.js";
+@import 'tailwindcss';
 
-@theme {
-  --color-ctp-base: var(--ctp-base);
-  --color-ctp-mantle: var(--ctp-mantle);
-  --color-ctp-crust: var(--ctp-crust);
-  --color-ctp-surface0: var(--ctp-surface0);
-  --color-ctp-surface1: var(--ctp-surface1);
-  --color-ctp-surface2: var(--ctp-surface2);
-  --color-ctp-overlay0: var(--ctp-overlay0);
-  --color-ctp-overlay1: var(--ctp-overlay1);
-  --color-ctp-overlay2: var(--ctp-overlay2);
-  --color-ctp-subtext0: var(--ctp-subtext0);
-  --color-ctp-subtext1: var(--ctp-subtext1);
-  --color-ctp-text: var(--ctp-text);
-  --color-ctp-lavender: var(--ctp-lavender);
-  --color-ctp-blue: var(--ctp-blue);
-  --color-ctp-green: var(--ctp-green);
-  --color-ctp-red: var(--ctp-red);
-  --color-ctp-yellow: var(--ctp-yellow);
-  --color-ctp-mauve: var(--ctp-mauve);
-  --color-ctp-peach: var(--ctp-peach);
-
-  --font-mono: 'JetBrains Mono', monospace;
-}
-
-/* ── Catppuccin Latte (light, default) ─────────────────────────────────── */
+/*
+ * Catppuccin token layer.
+ * Light = Latte (leaning white), dark = Mocha. One accent (blue); the
+ * semantic --ctp-green / --ctp-yellow / --ctp-red are reserved for
+ * pass / warning / fail and are read by gradeColor() in utils/grading.ts,
+ * so their names must not change.
+ */
 :root,
-[data-theme="latte"] {
+[data-theme='latte'] {
+  --page: #ffffff;
+  --surface: #f3f5f9;
+  --surface-2: #e9ecf2;
+  --line: #e0e3eb;
+  --input-bg: #ffffff;
+  --input-line: #ccd0da;
+  --text: #4c4f69;
+  --muted: #6c6f85;
+  --faint: #8c8fa1;
+  --accent: #1e66f5;
+  --accent-hover: #1552d8;
+  --accent-contrast: #ffffff;
+  --accent-soft: #e6edff;
+  --ctp-green: #40a02b;
+  --ctp-yellow: #b5830f; /* darkened from Latte #DF8E1D for text contrast on white */
+  --ctp-red: #d20f39;
+  --focus: #1e66f5;
+
   color-scheme: light;
-  --ctp-base:     #EFF1F5;
-  --ctp-mantle:   #E6E9EF;
-  --ctp-crust:    #DCE0E8;
-  --ctp-surface0: #CCD0DA;
-  --ctp-surface1: #BCC0CC;
-  --ctp-surface2: #ACB0BE;
-  --ctp-overlay0: #9CA0B0;
-  --ctp-overlay1: #8C8FA1;
-  --ctp-overlay2: #7C7F93;
-  --ctp-subtext0: #6C6F85;
-  --ctp-subtext1: #5C5F77;
-  --ctp-text:     #4C4F69;
-  --ctp-lavender: #7287FD;
-  --ctp-blue:     #1E66F5;
-  --ctp-green:    #40A02B;
-  --ctp-red:      #D20F39;
-  --ctp-yellow:   #DF8E1D;
-  --ctp-mauve:    #8839EF;
-  --ctp-peach:    #FE640B;
-
-  /* daisyUI theme overrides */
-  --color-primary: var(--ctp-lavender);
-  --color-secondary: var(--ctp-blue);
-  --color-accent: var(--ctp-mauve);
-  --color-neutral: var(--ctp-surface0);
-  --color-base-100: var(--ctp-base);
-  --color-info: var(--ctp-blue);
-  --color-success: var(--ctp-green);
-  --color-warning: var(--ctp-yellow);
-  --color-error: var(--ctp-red);
-  
-  --radius-selector: 1rem;
-  --radius-field: 0.75rem;
-  --radius-box: 1.5rem;
 }
 
-/* ── Catppuccin Mocha (dark) ────────────────────────────────────────────── */
-[data-theme="mocha"] {
+[data-theme='mocha'] {
+  --page: #1e1e2e;
+  --surface: #181825;
+  --surface-2: #313244;
+  --line: #313244;
+  --input-bg: #181825;
+  --input-line: #45475a;
+  --text: #cdd6f4;
+  --muted: #a6adc8;
+  --faint: #7f849c;
+  --accent: #89b4fa;
+  --accent-hover: #a5c4fc;
+  --accent-contrast: #11111b;
+  --accent-soft: #28304a;
+  --ctp-green: #a6e3a1;
+  --ctp-yellow: #f9e2af;
+  --ctp-red: #f38ba8;
+  --focus: #89b4fa;
+
   color-scheme: dark;
-  --ctp-base:     #1E1E2E;
-  --ctp-mantle:   #181825;
-  --ctp-crust:    #11111B;
-  --ctp-surface0: #313244;
-  --ctp-surface1: #45475A;
-  --ctp-surface2: #585B70;
-  --ctp-overlay0: #6C7086;
-  --ctp-overlay1: #7F849C;
-  --ctp-overlay2: #9399B2;
-  --ctp-subtext0: #A6ADC8;
-  --ctp-subtext1: #BAC2DE;
-  --ctp-text:     #CDD6F4;
-  --ctp-lavender: #B4BEFE;
-  --ctp-blue:     #89B4FA;
-  --ctp-green:    #A6E3A1;
-  --ctp-red:      #F38BA8;
-  --ctp-yellow:   #F9E2AF;
-  --ctp-mauve:    #CBA6F7;
-  --ctp-peach:    #FAB387;
-
-  /* daisyUI theme overrides */
-  --color-primary: var(--ctp-lavender);
-  --color-secondary: var(--ctp-blue);
-  --color-accent: var(--ctp-mauve);
-  --color-neutral: var(--ctp-surface0);
-  --color-base-100: var(--ctp-base);
-  --color-info: var(--ctp-blue);
-  --color-success: var(--ctp-green);
-  --color-warning: var(--ctp-yellow);
-  --color-error: var(--ctp-red);
 }
 
-/* ── Reset & Base ───────────────────────────────────────────────────────── */
+/* Map tokens onto Tailwind utilities. `inline` so the utilities resolve to
+   var(--token) and switch at runtime with [data-theme]. */
+@theme inline {
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-input: var(--input-bg);
+  --color-input-line: var(--input-line);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-contrast: var(--accent-contrast);
+  --color-accent-soft: var(--accent-soft);
+  --color-pass: var(--ctp-green);
+  --color-warn: var(--ctp-yellow);
+  --color-fail: var(--ctp-red);
+
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+}
+
 html {
-  background: var(--ctp-base);
-  color: var(--ctp-text);
-  scroll-behavior: smooth;
+  background: var(--page);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  margin: 0;
-  padding: 0;
-  min-height: 100dvh;
-  font-family: 'JetBrains Mono', monospace;
-  background: var(--ctp-base);
-  color: var(--ctp-text);
-  line-height: 1.5;
+  background: var(--page);
+  color: var(--text);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* daisyUI global style tweaks — calm, consistent baseline */
-.btn {
-  @apply rounded-xl font-semibold border;
+/* Grade numerals line up in columns. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
 }
 
-.card {
-  @apply rounded-2xl border border-ctp-surface0 shadow-sm;
+/* Visible, consistent focus ring everywhere. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 2px;
 }
 
-.input, .select {
-  @apply rounded-xl border;
+::selection {
+  background: color-mix(in srgb, var(--accent) 28%, transparent);
 }
 
-.badge {
-  @apply rounded-full font-semibold border;
+a {
+  color: var(--accent);
 }
 
-/* small caps section label, replaces scattered uppercase tracking-widest labels */
-.section-label {
-  @apply text-xs font-semibold uppercase tracking-wider text-ctp-overlay1;
-}
-
-/* keyboard key — readable in both themes */
-.kbd-key {
-  @apply inline-flex items-center justify-center min-w-[1.65rem] h-6 px-1.5 rounded-md border border-ctp-surface1 bg-ctp-surface0 text-ctp-text text-xs font-semibold;
+/* Native select chevron picks up currentColor via the wrapper, not here. */
+select {
+  color: var(--text);
 }
