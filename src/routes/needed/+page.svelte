@@ -3,6 +3,7 @@
   import { gradeColor, computeWeightedSums, applyRounding } from '$lib/utils/grading';
   import { numericInput, clampInput } from '$lib/actions';
   import { m } from '$lib/i18n';
+  import ShortcutHint from '$lib/components/ShortcutHint.svelte';
   import { focusRowInput } from '$lib/utils/focus';
   import { browser } from '$app/environment';
   import { settings } from '$lib/stores/settings';
@@ -144,9 +145,6 @@ let results = $derived.by((): ExamResult[] => {
   }
 
 
-  let isMac = $state(false);
-  $effect(() => { if (browser) isMac = /Macintosh|Mac OS X/.test(navigator.userAgent); });
-
   function onWindowKeydown(e: KeyboardEvent) {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault();
@@ -170,7 +168,7 @@ let results = $derived.by((): ExamResult[] => {
 <svelte:head><title>{$m.needed.title}</title></svelte:head>
 <svelte:window onkeydown={onWindowKeydown} />
 
-<Page title={$m.needed.title} subtitle={$m.needed.description}>
+<Page title={$m.needed.title}>
   <p class="-mt-2 text-center text-xs text-ctp-subtext1">
     {$m.needed.hint}
     <a href="/average" class="text-ctp-lavender font-semibold hover:underline">{$m.needed.hintLink}</a>
@@ -242,7 +240,7 @@ let results = $derived.by((): ExamResult[] => {
             </div>
           {/each}
         </div>
-        <button type="button" class="btn btn-outline btn-block border-ctp-surface1 text-ctp-subtext1 hover:bg-ctp-surface0" onclick={addExam}>
+        <button type="button" class="btn btn-outline btn-block border-ctp-surface1 text-ctp-subtext1 hover:border-ctp-lavender hover:text-ctp-lavender hover:bg-transparent" onclick={addExam}>
           <PlusOutline class="w-4 h-4" />
           {$m.needed.addExam}
         </button>
@@ -251,17 +249,13 @@ let results = $derived.by((): ExamResult[] => {
       <div class="flex justify-center border-t border-ctp-surface0 pt-5">
         <ClearButton
           onConfirm={clearAll}
-          label={$m.needed.clearAll}
-          confirmLabel={$m.needed.clearConfirm}
+          label={$m.common.clearAll}
+          confirmLabel={$m.common.clearConfirm}
           class="w-full sm:w-auto px-12"
         />
       </div>
 
-      <p class="text-center text-xs font-medium text-ctp-overlay1 hidden sm:block">
-        <kbd class="kbd kbd-xs bg-ctp-surface0 border-ctp-surface1">{isMac ? '⌘' : 'Ctrl'}</kbd>+<kbd class="kbd kbd-xs bg-ctp-surface0 border-ctp-surface1">Enter</kbd> {$m.needed.shortcutAdd}
-        <span class="mx-2 opacity-30">|</span>
-        <kbd class="kbd kbd-xs bg-ctp-surface0 border-ctp-surface1">{isMac ? '⌘' : 'Ctrl'}</kbd>+<kbd class="kbd kbd-xs bg-ctp-surface0 border-ctp-surface1">{isMac ? '⌫' : 'Del'}</kbd> {$m.needed.shortcutDelete}
-      </p>
+      <ShortcutHint addLabel={$m.needed.shortcutAdd} deleteLabel={$m.needed.shortcutDelete} />
     </div>
   </div>
 

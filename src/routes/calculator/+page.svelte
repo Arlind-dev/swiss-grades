@@ -54,7 +54,7 @@
 
 <svelte:head><title>{$m.calculator.title}</title></svelte:head>
 
-<Page title={$m.calculator.title} subtitle={$m.calculator.subtitle}>
+<Page title={$m.calculator.title}>
   <div class="flex items-center justify-center gap-3 text-sm text-ctp-subtext1">
     <span class="font-semibold">{$m.calculator.formulaLabel}</span>
     <span class="flex flex-col items-center leading-tight">
@@ -123,8 +123,8 @@
       <div class="flex justify-center border-t border-ctp-surface0 pt-5">
         <ClearButton
           onConfirm={clearAll}
-          label={$m.calculator.clearAll}
-          confirmLabel={$m.calculator.clearConfirm}
+          label={$m.common.clearAll}
+          confirmLabel={$m.common.clearConfirm}
           class="w-full sm:w-auto px-12"
         />
       </div>

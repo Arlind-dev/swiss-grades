@@ -10,6 +10,7 @@
   import EmptyState from '$lib/components/EmptyState.svelte';
   import ShareButton from '$lib/components/ShareButton.svelte';
   import GradeRow from '$lib/components/GradeRow.svelte';
+  import ShortcutHint from '$lib/components/ShortcutHint.svelte';
   import { m } from '$lib/i18n';
   import { focusRowInput } from '$lib/utils/focus';
   import { browser } from '$app/environment';
@@ -19,8 +20,6 @@
   import { clearShareParam, createShareUrl, hydrateGrades, readSharePayload, serializeGrades } from '$lib/utils/share';
 
   let rounding = $state($settings.averageRounding);
-  let isMac = $state(false);
-  $effect(() => { if (browser) isMac = /Macintosh|Mac OS X/.test(navigator.userAgent); });
   $effect(() => { settings.update((s) => ({ ...s, averageRounding: rounding })); });
 
   onMount(() => {
@@ -132,7 +131,7 @@
 <svelte:head><title>{$m.average.title}</title></svelte:head>
 <svelte:window onkeydown={onWindowKeydown} />
 
-<Page title={$m.average.title} subtitle={$m.average.subtitle}>
+<Page title={$m.average.title}>
   <div class="card bg-ctp-mantle">
     <div class="card-body p-5 sm:p-6">
       <div class="mb-6">
@@ -193,22 +192,20 @@
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-5 border-t border-ctp-surface0">
-        <button type="button" class="btn btn-outline border-ctp-lavender text-ctp-lavender hover:bg-ctp-lavender hover:text-ctp-base" onclick={addGrade}>
+        <button type="button" class="btn btn-outline border-ctp-surface1 text-ctp-subtext1 hover:border-ctp-lavender hover:text-ctp-lavender hover:bg-transparent" onclick={addGrade}>
           <PlusOutline class="w-5 h-5" />
           {$m.average.addGrade}
         </button>
         <ClearButton
           onConfirm={clearAll}
-          label={$m.average.clearAll}
-          confirmLabel={$m.average.clearConfirm}
+          label={$m.common.clearAll}
+          confirmLabel={$m.common.clearConfirm}
         />
       </div>
 
-      <p class="text-center text-xs font-medium text-ctp-overlay1 mt-5 hidden sm:block">
-        <kbd class="kbd kbd-xs bg-ctp-surface0 border-ctp-surface1">{isMac ? '⌘' : 'Ctrl'}</kbd>+<kbd class="kbd kbd-xs bg-ctp-surface0 border-ctp-surface1">Enter</kbd> {$m.average.shortcutAdd}
-        <span class="mx-2 opacity-30">|</span>
-        <kbd class="kbd kbd-xs bg-ctp-surface0 border-ctp-surface1">{isMac ? '⌘' : 'Ctrl'}</kbd>+<kbd class="kbd kbd-xs bg-ctp-surface0 border-ctp-surface1">{isMac ? '⌫' : 'Del'}</kbd> {$m.average.shortcutDelete}
-      </p>
+      <div class="mt-5">
+        <ShortcutHint addLabel={$m.average.shortcutAdd} deleteLabel={$m.average.shortcutDelete} />
+      </div>
     </div>
   </div>
 

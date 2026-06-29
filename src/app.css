@@ -139,3 +139,8 @@ body {
 .section-label {
   @apply text-xs font-semibold uppercase tracking-wider text-ctp-overlay1;
 }
+
+/* keyboard key — readable in both themes */
+.kbd-key {
+  @apply inline-flex items-center justify-center min-w-[1.65rem] h-6 px-1.5 rounded-md border border-ctp-surface1 bg-ctp-surface0 text-ctp-text text-xs font-semibold;
+}

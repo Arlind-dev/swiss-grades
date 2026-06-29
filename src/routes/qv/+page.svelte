@@ -41,10 +41,10 @@
   } from 'flowbite-svelte-icons';
 
   const overviewStyles = [
-    { icon: ShieldCheckOutline, color: 'text-ctp-green', bg: 'bg-ctp-green/10' },
-    { icon: ChartPieOutline, color: 'text-ctp-blue', bg: 'bg-ctp-blue/10' },
-    { icon: AdjustmentsHorizontalOutline, color: 'text-ctp-mauve', bg: 'bg-ctp-mauve/10' },
-    { icon: BriefcaseOutline, color: 'text-ctp-peach', bg: 'bg-ctp-peach/10' },
+    { icon: ShieldCheckOutline, color: 'text-ctp-lavender', bg: 'bg-ctp-surface0' },
+    { icon: ChartPieOutline, color: 'text-ctp-lavender', bg: 'bg-ctp-surface0' },
+    { icon: AdjustmentsHorizontalOutline, color: 'text-ctp-lavender', bg: 'bg-ctp-surface0' },
+    { icon: BriefcaseOutline, color: 'text-ctp-lavender', bg: 'bg-ctp-surface0' },
   ];
 
   let basePreset = $derived(getQVPreset($qv.presetId));
@@ -233,7 +233,7 @@
 
 <svelte:head><title>{$m.qv.title}</title></svelte:head>
 
-<Page title={$m.qv.title} subtitle={$m.qv.description}>
+<Page title={$m.qv.title}>
   <div class="card bg-ctp-mantle overflow-visible">
     <div class="card-body p-5 sm:p-6">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
@@ -261,16 +261,14 @@
 
           <div>
             <p class="section-label mb-2">{$m.qv.trackLabel}</p>
-            <div class="join w-full">
+            <div class="inline-flex w-full sm:w-auto gap-1 rounded-xl border border-ctp-surface1 bg-ctp-base p-1">
               {#each preset.tracks as track}
                 <button
                   type="button"
-                  class="btn join-item btn-sm flex-grow sm:flex-grow-0 min-w-[6rem] transition-all"
-                  class:bg-ctp-lavender={$qv.track === track.id}
-                  class:text-ctp-base={$qv.track === track.id}
-                  class:bg-ctp-base={$qv.track !== track.id}
-                  class:text-ctp-text={$qv.track !== track.id}
-                  class:border-ctp-surface1={$qv.track !== track.id}
+                  class="flex-grow sm:flex-grow-0 rounded-lg px-4 py-1.5 text-sm font-semibold transition-colors {$qv.track ===
+                  track.id
+                    ? 'bg-ctp-lavender text-ctp-base'
+                    : 'text-ctp-subtext1 hover:bg-ctp-surface0 hover:text-ctp-text'}"
                   onclick={() => setTrack(track.id)}
                 >{track.label}</button>
               {/each}
@@ -565,8 +563,8 @@
     <div class="flex justify-center pt-2">
       <ClearButton
         onConfirm={resetQV}
-        label={$m.qv.clearAll}
-        confirmLabel={$m.qv.clearConfirm}
+        label={$m.common.clearAll}
+        confirmLabel={$m.common.clearConfirm}
         class="px-12"
       />
     </div>
