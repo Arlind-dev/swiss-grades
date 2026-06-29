@@ -588,7 +588,8 @@
     <div class="flex justify-center pt-4">
       <button 
         type="button" 
-        class="btn btn-ghost px-12 transition-all rounded-2xl" 
+        class="btn btn-ghost px-12 transition-all rounded-2xl"
+        class:text-ctp-subtext1={!confirmClear}
         class:btn-error={confirmClear}
         class:bg-ctp-red={confirmClear}
         class:text-ctp-base={confirmClear}

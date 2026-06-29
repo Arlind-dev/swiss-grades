@@ -233,7 +233,8 @@
         </button>
         <button 
           type="button" 
-          class="btn btn-ghost transition-all" 
+          class="btn btn-ghost transition-all"
+          class:text-ctp-subtext1={!confirmClear}
           class:btn-error={confirmClear}
           class:bg-ctp-red={confirmClear}
           class:text-ctp-base={confirmClear}

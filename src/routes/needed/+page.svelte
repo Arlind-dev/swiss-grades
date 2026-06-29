@@ -275,7 +275,8 @@ let results = $derived.by((): ExamResult[] => {
       <div class="card-actions justify-center mt-8 pt-6 border-t border-ctp-surface0">
         <button 
           type="button" 
-          class="btn btn-ghost w-full sm:w-auto px-12 transition-all" 
+          class="btn btn-ghost w-full sm:w-auto px-12 transition-all"
+          class:text-ctp-subtext1={!confirmClear}
           class:btn-error={confirmClear}
           class:bg-ctp-red={confirmClear}
           class:text-ctp-base={confirmClear}
