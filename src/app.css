@@ -118,19 +118,24 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* daisyUI global style tweaks */
+/* daisyUI global style tweaks — calm, consistent baseline */
 .btn {
-  @apply rounded-xl font-black tracking-tight capitalize border-2;
+  @apply rounded-xl font-semibold border;
 }
 
 .card {
-  @apply rounded-3xl border-2 border-ctp-surface0 shadow-xl;
+  @apply rounded-2xl border border-ctp-surface0 shadow-sm;
 }
 
 .input, .select {
-  @apply rounded-xl border-2;
+  @apply rounded-xl border;
 }
 
 .badge {
-  @apply rounded-lg font-black border-2;
+  @apply rounded-full font-semibold border;
+}
+
+/* small caps section label, replaces scattered uppercase tracking-widest labels */
+.section-label {
+  @apply text-xs font-semibold uppercase tracking-wider text-ctp-overlay1;
 }

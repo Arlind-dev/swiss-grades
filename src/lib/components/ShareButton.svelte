@@ -87,11 +87,11 @@
 
 <button 
   type="button" 
-  class="btn btn-ghost btn-sm text-ctp-subtext1 gap-2 rounded-lg hover:bg-ctp-surface0 transition-all border border-ctp-surface1 px-4" 
+  class="btn btn-ghost btn-sm text-ctp-subtext1 gap-2 hover:bg-ctp-surface0 transition-all border border-ctp-surface1 px-4"
   aria-label={$m.share.action} 
   title={$m.share.action} 
   onclick={handleShare}
 >
   <ShareNodesOutline class="w-4 h-4" />
-  <span aria-live="polite" class="text-xs font-bold uppercase tracking-wider">{statusText}</span>
+  <span aria-live="polite" class="text-xs font-semibold uppercase tracking-wider">{statusText}</span>
 </button>
