@@ -1,208 +1,50 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  import { tick } from 'svelte';
-  import { m, locale, type Locale } from '$lib/i18n';
-  import { theme } from '$lib/stores/theme';
-  import NavLink from './NavLink.svelte';
-  import {
-    BarsOutline,
-    CheckOutline,
-    ChevronDownOutline,
-    MoonOutline,
-    SunOutline,
-  } from 'flowbite-svelte-icons';
+  import { m } from '$lib/i18n';
+  import ThemeToggle from './ThemeToggle.svelte';
+  import LocaleSelect from './LocaleSelect.svelte';
 
-  const locales: { value: Locale; name: string }[] = [
-    { value: 'de', name: 'Deutsch' },
-    { value: 'en', name: 'English' },
-    { value: 'fr', name: 'Français' },
-    { value: 'it', name: 'Italiano' },
-  ];
-
-  const tools = [
-    { href: '/average', key: 'average' },
+  const items = [
     { href: '/calculator', key: 'calculator' },
+    { href: '/average', key: 'average' },
     { href: '/needed', key: 'needed' },
-    { href: '/qv', key: 'qv' },
+    { href: '/qv', key: 'qv' }
   ] as const;
-
-  let localeOpen = $state(false);
-  let localeButton: HTMLButtonElement | undefined;
-  const selectedLocale = $derived(locales.find((loc) => loc.value === $locale) ?? locales[0]);
-
-  function toggleTheme() {
-    theme.update((t) => (t === 'latte' ? 'mocha' : 'latte'));
-  }
-
-  function closeLocaleMenu({ focusTrigger = false } = {}) {
-    localeOpen = false;
-    if (focusTrigger) localeButton?.focus();
-  }
-
-  async function openLocaleMenu() {
-    localeOpen = true;
-    await tick();
-    document.querySelector<HTMLButtonElement>('[data-active-locale="true"]')?.focus();
-  }
-
-  function toggleLocaleMenu() {
-    if (localeOpen) {
-      closeLocaleMenu();
-      return;
-    }
-    void openLocaleMenu();
-  }
-
-  function selectLocale(value: Locale) {
-    locale.set(value);
-    closeLocaleMenu();
-    if (document.activeElement instanceof HTMLElement) {
-      document.activeElement.blur();
-    }
-  }
-
-  function handleLocaleToggleKeydown(event: KeyboardEvent) {
-    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
-    event.preventDefault();
-    void openLocaleMenu();
-  }
-
-  function moveLocaleFocus(direction: 1 | -1) {
-    const options = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-locale-option]'));
-    if (!options.length) return;
-
-    const currentIndex = options.indexOf(document.activeElement as HTMLButtonElement);
-    const nextIndex = currentIndex === -1
-      ? 0
-      : (currentIndex + direction + options.length) % options.length;
-
-    options[nextIndex]?.focus();
-  }
-
-  function handleLocaleMenuKeydown(event: KeyboardEvent) {
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      closeLocaleMenu({ focusTrigger: true });
-    }
-
-    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-      event.preventDefault();
-      moveLocaleFocus(event.key === 'ArrowDown' ? 1 : -1);
-    }
-
-    if (event.key === 'Home' || event.key === 'End') {
-      event.preventDefault();
-      const options = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-locale-option]'));
-      options[event.key === 'Home' ? 0 : options.length - 1]?.focus();
-    }
-  }
-
-  function handleWindowClick(event: MouseEvent) {
-    if (!localeOpen) return;
-    if (event.target instanceof Element && event.target.closest('[data-locale-menu]')) return;
-    closeLocaleMenu();
-  }
-
-  function handleWindowKeydown(event: KeyboardEvent) {
-    if (event.key === 'Escape' && localeOpen) {
-      closeLocaleMenu({ focusTrigger: true });
-    }
-  }
-
-  $effect(() => {
-    $page.url.pathname;
-    localeOpen = false;
-  });
 </script>
 
-<svelte:window onclick={handleWindowClick} onkeydown={handleWindowKeydown} />
-
-<nav class="sticky top-0 z-40 w-full border-b border-ctp-surface0 bg-ctp-base/80 backdrop-blur-md">
-  <div class="container mx-auto flex h-20 max-w-5xl items-center justify-between px-4">
-    <div class="flex items-center gap-2">
-      <label for="nav-drawer" class="btn btn-ghost btn-circle sm:hidden">
-        <BarsOutline class="h-5 w-5" />
-      </label>
-      <a href="/" class="text-xl font-bold italic tracking-tight text-ctp-lavender">Swiss Grades</a>
-    </div>
-
-    <div class="hidden flex-1 justify-center sm:flex">
-      <ul class="flex items-center gap-1">
-        {#each tools as tool}
-          <li>
-            <NavLink href={tool.href} label={$m.navShort[tool.key]} />
-          </li>
-        {/each}
-      </ul>
-    </div>
-
-    <div class="flex items-center gap-1">
-      <button
-        type="button"
-        class="btn btn-ghost btn-circle btn-sm text-ctp-subtext1 hover:bg-ctp-surface0"
-        aria-label={$theme === 'latte' ? 'Switch to dark mode' : 'Switch to light mode'}
-        title={$theme === 'latte' ? 'Switch to dark mode' : 'Switch to light mode'}
-        onclick={toggleTheme}
-      >
-        {#if $theme === 'latte'}<MoonOutline class="h-5 w-5" />{:else}<SunOutline class="h-5 w-5" />{/if}
-      </button>
-
-      <div class="dropdown dropdown-end" class:dropdown-open={localeOpen} data-locale-menu>
-        <button
-          bind:this={localeButton}
-          type="button"
-          class="btn btn-ghost btn-sm h-10 min-h-10 gap-2 rounded-lg border border-transparent px-2.5 text-ctp-subtext1 hover:border-ctp-surface0 hover:bg-ctp-surface0 sm:px-3"
-          aria-haspopup="menu"
-          aria-expanded={localeOpen}
-          aria-label={`Select language, current language ${selectedLocale.name}`}
-          onclick={toggleLocaleMenu}
-          onkeydown={handleLocaleToggleKeydown}
+<header class="sticky top-0 z-20 border-b border-line bg-page/85 backdrop-blur">
+  <div class="mx-auto flex h-14 max-w-5xl items-center gap-3 px-4">
+    <a href="/average" class="hidden shrink-0 font-semibold tracking-tight text-text sm:block">
+      Swiss Grades
+    </a>
+    <nav class="nav-scroll flex flex-1 items-center gap-1 overflow-x-auto" aria-label="Tools">
+      {#each items as item (item.href)}
+        {@const active = $page.url.pathname === item.href}
+        <a
+          href={item.href}
+          aria-current={active ? 'page' : undefined}
+          class="rounded-md px-3 py-1.5 text-sm whitespace-nowrap transition-colors
+            {active
+            ? 'bg-accent-soft font-medium text-accent'
+            : 'text-muted hover:bg-surface hover:text-text'}"
         >
-          <span class="text-sm font-bold tracking-normal">{selectedLocale.name}</span>
-          <ChevronDownOutline
-            class={`h-3.5 w-3.5 transition-transform ${localeOpen ? 'rotate-180' : ''}`}
-          />
-        </button>
-        {#if localeOpen}
-        <ul
-          class="dropdown-content z-50 mt-3 w-60 rounded-xl border border-ctp-surface0 bg-ctp-mantle p-2 shadow-lg"
-          role="menu"
-          aria-label="Language"
-          onkeydown={handleLocaleMenuKeydown}
-        >
-          {#each locales as loc}
-            <li>
-              <button
-                type="button"
-                class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-all focus:outline-none"
-                role="menuitemradio"
-                aria-checked={$locale === loc.value}
-                data-locale-option
-                data-active-locale={$locale === loc.value}
-                class:bg-ctp-lavender={$locale === loc.value}
-                class:text-ctp-base={$locale === loc.value}
-                class:hover:bg-ctp-lavender={$locale === loc.value}
-                class:focus:bg-ctp-lavender={$locale === loc.value}
-                class:text-ctp-subtext1={$locale !== loc.value}
-                class:hover:bg-ctp-surface0={$locale !== loc.value}
-                class:hover:text-ctp-text={$locale !== loc.value}
-                class:focus:bg-ctp-surface0={$locale !== loc.value}
-                class:focus:text-ctp-text={$locale !== loc.value}
-                onclick={() => selectLocale(loc.value)}
-              >
-                <span class="min-w-0 flex-1">
-                  <span class="block truncate text-sm font-semibold leading-5">{loc.name}</span>
-                </span>
-                <CheckOutline
-                  class={`h-4 w-4 shrink-0 ${$locale === loc.value ? 'opacity-100' : 'opacity-0'}`}
-                  aria-hidden="true"
-                />
-              </button>
-            </li>
-          {/each}
-        </ul>
-        {/if}
-      </div>
+          <span class="hidden sm:inline">{$m.nav[item.key]}</span>
+          <span class="sm:hidden">{$m.navShort[item.key]}</span>
+        </a>
+      {/each}
+    </nav>
+    <div class="flex shrink-0 items-center gap-1.5">
+      <LocaleSelect />
+      <ThemeToggle />
     </div>
   </div>
-</nav>
+</header>
+
+<style>
+  .nav-scroll {
+    scrollbar-width: none;
+  }
+  .nav-scroll::-webkit-scrollbar {
+    display: none;
+  }
+</style>
