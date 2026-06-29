@@ -1,24 +1,26 @@
 <script lang="ts">
-  import type { RoundingKey } from '$lib/types';
   import { m } from '$lib/i18n';
+  import type { RoundingKey } from '$lib/types';
 
-  let { value = $bindable(), label }: { value: RoundingKey; label?: string } = $props();
-  let resolvedLabel = $derived(label ?? $m.rounding.label);
-  const id = $props.id();
+  let {
+    value,
+    onChange
+  }: {
+    value: RoundingKey;
+    onChange: (value: RoundingKey) => void;
+  } = $props();
 </script>
 
-<div class="form-control">
-  <label class="label pt-0 cursor-pointer" for={id}>
-    <span class="label-text section-label">{resolvedLabel}</span>
-  </label>
+<label class="flex items-center gap-2 text-sm text-muted">
+  <span>{$m.rounding.label}</span>
   <select
-    {id}
-    bind:value
-    class="select select-bordered select-sm bg-ctp-base border-ctp-surface1 text-ctp-text focus:border-ctp-lavender focus:outline-none transition-all font-semibold min-w-[8rem]"
+    {value}
+    onchange={(e) => onChange(e.currentTarget.value as RoundingKey)}
+    class="h-9 rounded-md border border-input-line bg-input px-2 text-sm text-text transition-colors hover:border-accent"
   >
-    <option value="0.25">0.25</option>
-    <option value="0.5">0.5</option>
-    <option value="1">{$m.rounding.oneDecimal}</option>
     <option value="2">{$m.rounding.twoDecimal}</option>
+    <option value="1">{$m.rounding.oneDecimal}</option>
+    <option value="0.5">0.5</option>
+    <option value="0.25">0.25</option>
   </select>
-</div>
+</label>

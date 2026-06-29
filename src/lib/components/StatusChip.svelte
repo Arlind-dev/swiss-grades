@@ -1,20 +1,27 @@
 <script lang="ts">
-  import type { Snippet } from 'svelte';
+  let {
+    tone = 'neutral',
+    label
+  }: {
+    tone?: 'pass' | 'fail' | 'warn' | 'neutral';
+    label: string;
+  } = $props();
 
-  type Variant = 'success' | 'error' | 'warning' | 'neutral';
-
-  let { variant = 'neutral', children }: { variant?: Variant; children: Snippet } = $props();
-
-  const styles: Record<Variant, string> = {
-    success: 'bg-ctp-green/15 text-ctp-green',
-    error: 'bg-ctp-red/15 text-ctp-red',
-    warning: 'bg-ctp-yellow/15 text-ctp-yellow',
-    neutral: 'bg-ctp-surface0 text-ctp-subtext1'
-  };
+  const color = $derived(
+    tone === 'pass'
+      ? 'var(--ctp-green)'
+      : tone === 'fail'
+        ? 'var(--ctp-red)'
+        : tone === 'warn'
+          ? 'var(--ctp-yellow)'
+          : 'var(--muted)'
+  );
 </script>
 
 <span
-  class="inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide leading-tight text-center whitespace-normal {styles[variant]}"
+  class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium"
+  style="color: {color}; background: color-mix(in srgb, {color} 12%, transparent);"
 >
-  {@render children()}
+  <span class="size-1.5 rounded-full" style="background: {color};" aria-hidden="true"></span>
+  {label}
 </span>

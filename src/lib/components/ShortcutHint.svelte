@@ -1,27 +1,14 @@
 <script lang="ts">
-  import { browser } from '$app/environment';
-
-  let { addLabel, deleteLabel }: { addLabel: string; deleteLabel: string } = $props();
-
-  let isMac = $state(false);
-  $effect(() => {
-    if (browser) isMac = /Macintosh|Mac OS X/.test(navigator.userAgent);
-  });
+  let { items }: { items: { keys: string; label: string }[] } = $props();
 </script>
 
-<div
-  class="hidden sm:flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-ctp-subtext1"
->
-  <span class="inline-flex items-center gap-1.5">
-    <kbd class="kbd-key">{isMac ? '⌘' : 'Ctrl'}</kbd>
-    <span class="text-ctp-overlay1">+</span>
-    <kbd class="kbd-key">Enter</kbd>
-    <span class="ml-1">{addLabel}</span>
-  </span>
-  <span class="inline-flex items-center gap-1.5">
-    <kbd class="kbd-key">{isMac ? '⌘' : 'Ctrl'}</kbd>
-    <span class="text-ctp-overlay1">+</span>
-    <kbd class="kbd-key">{isMac ? '⌫' : 'Del'}</kbd>
-    <span class="ml-1">{deleteLabel}</span>
-  </span>
-</div>
+<p class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-faint">
+  {#each items as item (item.label)}
+    <span class="inline-flex items-center gap-1.5">
+      <kbd class="rounded border border-line px-1.5 py-0.5 text-[0.7rem] leading-none text-muted">
+        {item.keys}
+      </kbd>
+      {item.label}
+    </span>
+  {/each}
+</p>

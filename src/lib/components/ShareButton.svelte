@@ -1,97 +1,64 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
-  import { ShareNodesOutline } from 'flowbite-svelte-icons';
   import { m } from '$lib/i18n';
-  import { MAX_SHARE_URL_LENGTH } from '$lib/utils/share';
+  import { createShareUrl, type SharePayload } from '$lib/utils/share';
+  import Button from './Button.svelte';
 
-  let { getUrl }: { getUrl: () => string } = $props();
+  let { payload }: { payload: () => SharePayload } = $props();
 
-  type ShareStatus = 'idle' | 'copied' | 'failed' | 'too-large';
+  type State = 'idle' | 'copied' | 'failed' | 'tooLarge';
+  let state = $state<State>('idle');
+  let timer: ReturnType<typeof setTimeout> | undefined;
 
-  let status = $state<ShareStatus>('idle');
-  let resetTimer: ReturnType<typeof setTimeout> | null = null;
-
-  let statusText = $derived.by(() => {
-    if (status === 'copied') return $m.share.copied;
-    if (status === 'failed') return $m.share.failed;
-    if (status === 'too-large') return $m.share.tooLarge;
-    return $m.share.action;
-  });
-
-  onDestroy(() => {
-    if (resetTimer) clearTimeout(resetTimer);
-  });
-
-  function isShareCancel(error: unknown): boolean {
-    return error instanceof DOMException && error.name === 'AbortError';
+  function flash(next: State) {
+    state = next;
+    clearTimeout(timer);
+    timer = setTimeout(() => (state = 'idle'), 2200);
   }
 
-  function showStatus(nextStatus: ShareStatus) {
-    status = nextStatus;
-    if (resetTimer) clearTimeout(resetTimer);
-    if (nextStatus !== 'idle') {
-      resetTimer = setTimeout(() => {
-        status = 'idle';
-        resetTimer = null;
-      }, 2200);
+  async function share() {
+    let url: string;
+    try {
+      url = createShareUrl(payload());
+    } catch {
+      flash('tooLarge');
+      return;
     }
-  }
-
-  async function copyUrl(url: string): Promise<boolean> {
     try {
       await navigator.clipboard.writeText(url);
-      showStatus('copied');
-      return true;
+      flash('copied');
     } catch {
-      window.prompt($m.share.copyPrompt, url);
-      showStatus('failed');
-      return false;
+      const copied = window.prompt($m.share.copyPrompt, url);
+      if (copied === null) flash('failed');
     }
   }
 
-  async function handleShare() {
-    let url = '';
-    try {
-      url = getUrl();
-    } catch {
-      showStatus('too-large');
-      return;
-    }
-
-    if (!url) {
-      showStatus('failed');
-      return;
-    }
-
-    if (url.length > MAX_SHARE_URL_LENGTH) {
-      showStatus('too-large');
-      return;
-    }
-
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: document.title, url });
-        showStatus('idle');
-        return;
-      } catch (error) {
-        if (isShareCancel(error)) {
-          showStatus('idle');
-          return;
-        }
-      }
-    }
-
-    await copyUrl(url);
-  }
+  const label = $derived(
+    state === 'copied'
+      ? $m.share.copied
+      : state === 'failed'
+        ? $m.share.failed
+        : state === 'tooLarge'
+          ? $m.share.tooLarge
+          : $m.share.action
+  );
 </script>
 
-<button 
-  type="button" 
-  class="btn btn-ghost btn-sm text-ctp-subtext1 gap-2 hover:bg-ctp-surface0 transition-all border border-ctp-surface1 px-4"
-  aria-label={$m.share.action} 
-  title={$m.share.action} 
-  onclick={handleShare}
->
-  <ShareNodesOutline class="w-4 h-4" />
-  <span aria-live="polite" class="text-xs font-semibold uppercase tracking-wider">{statusText}</span>
-</button>
+<Button variant="secondary" onclick={share} title={$m.share.action}>
+  <svg
+    width="15"
+    height="15"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <circle cx="18" cy="5" r="3" />
+    <circle cx="6" cy="12" r="3" />
+    <circle cx="18" cy="19" r="3" />
+    <path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" />
+  </svg>
+  {label}
+</Button>
