@@ -8,6 +8,8 @@ export interface Messages {
     pass: string;
     fail: string;
     emptyState: string;
+    clearAll: string;
+    clearConfirm: string;
   };
   nav: {
     calculator: string;

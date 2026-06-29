@@ -6,6 +6,8 @@ export const de: Messages = {
     pass: 'Bestanden',
     fail: 'Nicht bestanden',
     emptyState: 'Werte eingeben, um das Ergebnis zu sehen.',
+    clearAll: 'Alle löschen',
+    clearConfirm: 'Sicher?',
   },
   nav: {
     calculator: 'Notenrechner',
@@ -14,9 +16,9 @@ export const de: Messages = {
     qv: 'QV Rechner',
   },
   navShort: {
-    calculator: 'Punkte',
-    average: 'Schnitt',
-    needed: 'Benötigt',
+    calculator: 'Rechner',
+    average: 'Durchschnitt',
+    needed: 'Zielnote',
     qv: 'QV',
   },
   gradeRow: {

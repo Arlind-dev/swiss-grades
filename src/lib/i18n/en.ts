@@ -6,6 +6,8 @@ export const en: Messages = {
     pass: 'Pass',
     fail: 'Fail',
     emptyState: 'Enter values to see your result.',
+    clearAll: 'Clear all',
+    clearConfirm: 'Sure?',
   },
   nav: {
     calculator: 'Grade Calculator',
@@ -14,9 +16,9 @@ export const en: Messages = {
     qv: 'QV Calculator',
   },
   navShort: {
-    calculator: 'Points',
+    calculator: 'Calculator',
     average: 'Average',
-    needed: 'Required',
+    needed: 'Target',
     qv: 'QV',
   },
   gradeRow: {

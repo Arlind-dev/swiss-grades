@@ -6,6 +6,8 @@ export const it: Messages = {
     pass: 'Superato',
     fail: 'Non superato',
     emptyState: 'Inserisci dei valori per vedere il risultato.',
+    clearAll: 'Cancella tutto',
+    clearConfirm: 'Sicuro?',
   },
   nav: {
     calculator: 'Calcolatore voti',
@@ -14,9 +16,9 @@ export const it: Messages = {
     qv: 'Calcolatore QV',
   },
   navShort: {
-    calculator: 'Punti',
+    calculator: 'Calcolatore',
     average: 'Media',
-    needed: 'Necessario',
+    needed: 'Obiettivo',
     qv: 'QV',
   },
   gradeRow: {
