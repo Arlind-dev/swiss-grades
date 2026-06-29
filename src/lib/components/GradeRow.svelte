@@ -69,7 +69,7 @@
       <div class="flex-grow min-w-0 hidden sm:block">
         <input
           type="text"
-          class="input input-bordered input-sm w-full bg-ctp-mantle border-ctp-surface1 focus:border-ctp-lavender focus:outline-none px-2 font-medium text-ctp-text placeholder:text-ctp-overlay0 transition-all rounded-lg"
+          class="input input-bordered input-sm w-full bg-ctp-mantle border-ctp-surface1 focus:border-ctp-lavender focus:outline-none px-2 font-medium text-ctp-text placeholder:text-ctp-overlay0 transition-all rounded-xl"
           placeholder={$m.gradeRow.placeholderName}
           value={entry.name}
           oninput={(e) => emit({ name: e.currentTarget.value })}
@@ -80,7 +80,7 @@
       <div class="w-20 sm:w-48 flex-shrink-0">
         <input
           type="text"
-          class="input input-bordered input-sm w-full bg-ctp-mantle border-ctp-surface1 focus:border-ctp-lavender focus:outline-none transition-all text-center font-black rounded-lg font-mono"
+          class="input input-bordered input-sm w-full bg-ctp-mantle border-ctp-surface1 focus:border-ctp-lavender focus:outline-none transition-all text-center font-semibold rounded-xl font-mono"
           class:bg-ctp-surface0={hasSubgrades}
           class:opacity-50={hasSubgrades}
           class:border-ctp-green={gradePassing}
@@ -96,17 +96,17 @@
       </div>
 
       <!-- Weight -->
-      <div class="w-28 sm:w-44 flex-shrink-0 flex items-center gap-1 bg-ctp-mantle px-2 py-1 rounded-lg border border-ctp-surface1 focus-within:border-ctp-lavender transition-all">
+      <div class="w-28 sm:w-44 flex-shrink-0 flex items-center gap-1 bg-ctp-mantle px-2 py-1 rounded-xl border border-ctp-surface1 focus-within:border-ctp-lavender transition-all">
         <input
           type="text"
-          class="bg-transparent border-none focus:outline-none w-full text-right font-bold text-ctp-text text-sm font-mono"
+          class="bg-transparent border-none focus:outline-none w-full text-right font-semibold text-ctp-text text-sm font-mono"
           inputmode="decimal"
           placeholder={small ? $m.gradeRow.placeholderWeightShort : $m.gradeRow.placeholderWeight}
           value={entry.weight}
           use:numericInput
           use:clampInput={{ min: 0, max: 100, oncommit: (v) => emit({ weight: v }) }}
         />
-        <span class="text-[10px] font-black text-ctp-overlay1">%</span>
+        <span class="text-[10px] font-semibold text-ctp-overlay1">%</span>
       </div>
     </div>
 
@@ -133,7 +133,7 @@
   </div>
 
   {#if hasSubgrades}
-    <div class="mt-2 ml-4 border-l-2 border-ctp-surface1 pl-2 space-y-2 py-1">
+    <div class="mt-2 ml-4 border-l border-ctp-surface1 pl-2 space-y-2 py-1">
       {#each entry.subgrades as sub, i (sub.id)}
         <GradeRow
           entry={sub}

@@ -1,19 +1,22 @@
 <script lang="ts">
   import { grades } from '$lib/stores/grades';
   import { settings } from '$lib/stores/settings';
-  import { applyRounding, computeWeightedAverage, newEntry, gradeColor } from '$lib/utils/grading';
+  import { applyRounding, computeWeightedAverage, newEntry } from '$lib/utils/grading';
   import type { GradeEntry } from '$lib/types';
-  import RoundingSelect from '$lib/components/RoundingSelect.svelte';
+  import Page from '$lib/components/Page.svelte';
+  import ToolbarRow from '$lib/components/ToolbarRow.svelte';
+  import ClearButton from '$lib/components/ClearButton.svelte';
+  import ResultDisplay from '$lib/components/ResultDisplay.svelte';
+  import EmptyState from '$lib/components/EmptyState.svelte';
   import ShareButton from '$lib/components/ShareButton.svelte';
   import GradeRow from '$lib/components/GradeRow.svelte';
   import { m } from '$lib/i18n';
   import { focusRowInput } from '$lib/utils/focus';
   import { browser } from '$app/environment';
   import { buildCsvFilename, downloadCsv, formatGradesAsCsv, hasExportableGradeEntries } from '$lib/utils/export';
-  import { FileCsvOutline, PlusOutline, TrashBinOutline } from 'flowbite-svelte-icons';
+  import { FileCsvOutline, PlusOutline } from 'flowbite-svelte-icons';
   import { onMount } from 'svelte';
   import { clearShareParam, createShareUrl, hydrateGrades, readSharePayload, serializeGrades } from '$lib/utils/share';
-  import { scale } from 'svelte/transition';
 
   let rounding = $state($settings.averageRounding);
   let isMac = $state(false);
@@ -62,23 +65,7 @@
     grades.set(Array.from({ length: 10 }, newEntry));
   }
 
-  let confirmClear = $state(false);
-  let confirmTimer: ReturnType<typeof setTimeout> | null = null;
-
-  function handleClearAll() {
-    if (window.matchMedia('(pointer: coarse)').matches) {
-      if (confirmClear) {
-        confirmClear = false;
-        if (confirmTimer) clearTimeout(confirmTimer);
-        clearAll();
-      } else {
-        confirmClear = true;
-        confirmTimer = setTimeout(() => { confirmClear = false; }, 3000);
-      }
-    } else {
-      clearAll();
-    }
-  }
+  let resultLabel = $derived($m.average.resultPrefix.replace(/:\s*$/, ''));
 
   // ── Drag-to-reorder ──────────────────────────────────────────────────────
 
@@ -145,42 +132,20 @@
 <svelte:head><title>{$m.average.title}</title></svelte:head>
 <svelte:window onkeydown={onWindowKeydown} />
 
-<div class="flex flex-col gap-8">
-  <div class="text-center">
-    <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-ctp-text">{$m.average.title}</h1>
-  </div>
-
-  <div class="card bg-ctp-mantle shadow-xl border border-ctp-surface0">
-    <div class="card-body p-6 sm:p-8">
-      <div class="flex justify-between items-center gap-4 mb-8">
-        <RoundingSelect bind:value={rounding} />
-        <div class="flex gap-2">
-          <button
-            type="button"
-            class="btn btn-ghost btn-circle btn-sm text-ctp-subtext1 hover:bg-ctp-surface0"
-            onclick={exportCsv}
-            disabled={!hasCsvExportRows}
-            aria-label={$m.average.exportCsvTitle}
-            title={$m.average.exportCsvTitle}
-          >
-            <FileCsvOutline class="w-5 h-5" />
-          </button>
-          <ShareButton getUrl={() => createShareUrl({
-            v: 1,
-            page: 'average',
-            grades: serializeGrades($grades),
-            rounding
-          })} />
-        </div>
+<Page title={$m.average.title} subtitle={$m.average.subtitle}>
+  <div class="card bg-ctp-mantle">
+    <div class="card-body p-5 sm:p-6">
+      <div class="mb-6">
+        <ToolbarRow bind:rounding actions={toolActions} />
       </div>
 
-      <div class="flex flex-col gap-3 mb-8" id="grade-list" role="list">
+      <div class="flex flex-col gap-2.5 mb-6" id="grade-list" role="list">
         {#each $grades as entry, i (entry.id)}
           {@const gradeNum = parseFloat(entry.grade)}
           {@const delta = !isNaN(gradeNum) && averageGrade !== null && validCount >= 2 ? gradeNum - averageGrade : null}
             <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
             <div
-              class="flex items-center gap-3 p-3 rounded-2xl bg-ctp-base border border-ctp-surface0 transition-all hover:border-ctp-surface1 group"
+              class="flex items-center gap-3 p-3 rounded-xl bg-ctp-base border border-ctp-surface0 transition-all hover:border-ctp-surface1 group"
               role="listitem"
               class:border-ctp-lavender={dragOverIndex === i && dragSrcIndex !== i}
               class:bg-ctp-surface0={dragOverIndex === i && dragSrcIndex !== i}
@@ -211,13 +176,14 @@
               </div>
               
               {#if delta !== null}
+                {@const deltaClass =
+                  delta > 0.005
+                    ? 'bg-ctp-green/15 text-ctp-green'
+                    : delta < -0.005
+                      ? 'bg-ctp-red/15 text-ctp-red'
+                      : 'bg-ctp-surface1 text-ctp-overlay1'}
                 <div
-                  class="hidden sm:flex items-center justify-center min-w-[4rem] px-2 py-1 rounded-full text-xs font-black tracking-tight font-mono"
-                  class:bg-ctp-green={delta > 0.005}
-                  class:bg-ctp-red={delta < -0.005}
-                  class:bg-ctp-surface1={Math.abs(delta) <= 0.005}
-                  class:text-ctp-overlay1={Math.abs(delta) <= 0.005}
-                  class:text-ctp-base={Math.abs(delta) > 0.005}
+                  class="hidden sm:flex items-center justify-center min-w-[3.5rem] px-2.5 py-1 rounded-full text-xs font-semibold tabular-nums font-mono {deltaClass}"
                 >
                   {delta >= 0 ? '+' : '−'}{Math.abs(delta).toFixed(2)}
                 </div>
@@ -226,28 +192,20 @@
         {/each}
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6 border-t border-ctp-surface0">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-5 border-t border-ctp-surface0">
         <button type="button" class="btn btn-outline border-ctp-lavender text-ctp-lavender hover:bg-ctp-lavender hover:text-ctp-base" onclick={addGrade}>
           <PlusOutline class="w-5 h-5" />
           {$m.average.addGrade}
         </button>
-        <button 
-          type="button" 
-          class="btn btn-ghost transition-all"
-          class:text-ctp-subtext1={!confirmClear}
-          class:btn-error={confirmClear}
-          class:bg-ctp-red={confirmClear}
-          class:text-ctp-base={confirmClear}
-          class:hover:bg-ctp-surface1={!confirmClear}
-          onclick={handleClearAll}
-        >
-          <TrashBinOutline class="w-5 h-5" />
-          {confirmClear ? $m.average.clearConfirm : $m.average.clearAll}
-        </button>
+        <ClearButton
+          onConfirm={clearAll}
+          label={$m.average.clearAll}
+          confirmLabel={$m.average.clearConfirm}
+        />
       </div>
-      
-      <p class="text-center text-xs font-medium text-ctp-overlay1 mt-6 opacity-60 hidden sm:block">
-        <kbd class="kbd kbd-xs bg-ctp-surface0 border-ctp-surface1">{isMac ? '⌘' : 'Ctrl'}</kbd>+<kbd class="kbd kbd-xs bg-ctp-surface0 border-ctp-surface1">Enter</kbd> {$m.average.shortcutAdd} 
+
+      <p class="text-center text-xs font-medium text-ctp-overlay1 mt-5 hidden sm:block">
+        <kbd class="kbd kbd-xs bg-ctp-surface0 border-ctp-surface1">{isMac ? '⌘' : 'Ctrl'}</kbd>+<kbd class="kbd kbd-xs bg-ctp-surface0 border-ctp-surface1">Enter</kbd> {$m.average.shortcutAdd}
         <span class="mx-2 opacity-30">|</span>
         <kbd class="kbd kbd-xs bg-ctp-surface0 border-ctp-surface1">{isMac ? '⌘' : 'Ctrl'}</kbd>+<kbd class="kbd kbd-xs bg-ctp-surface0 border-ctp-surface1">{isMac ? '⌫' : 'Del'}</kbd> {$m.average.shortcutDelete}
       </p>
@@ -255,21 +213,34 @@
   </div>
 
   {#if averageGrade !== null}
-    <div class="card bg-ctp-mantle shadow-2xl border-2 border-ctp-surface0 overflow-hidden" transition:scale>
-      <div class="p-8 text-center space-y-2">
-        <span class="text-xs font-black uppercase tracking-[0.2em] text-ctp-subtext1">{$m.average.resultPrefix}</span>
-        <div 
-          class="text-6xl sm:text-7xl lg:text-8xl font-black tracking-tighter font-mono"
-          style:color={gradeColor(averageGrade)}
-          style:text-shadow="0 0 40px {gradeColor(averageGrade)}40"
-        >
-          {applyRounding(averageGrade, rounding)}
-        </div>
-      </div>
-      <div 
-        class="h-2 w-full"
-        style:background={gradeColor(averageGrade)}
-      ></div>
-    </div>
+    <ResultDisplay
+      label={resultLabel}
+      value={applyRounding(averageGrade, rounding)}
+      grade={averageGrade}
+      showStatus
+      passLabel={$m.common.pass}
+      failLabel={$m.common.fail}
+    />
+  {:else}
+    <EmptyState>{$m.common.emptyState}</EmptyState>
   {/if}
-</div>
+</Page>
+
+{#snippet toolActions()}
+  <button
+    type="button"
+    class="btn btn-ghost btn-circle btn-sm text-ctp-subtext1 hover:bg-ctp-surface0"
+    onclick={exportCsv}
+    disabled={!hasCsvExportRows}
+    aria-label={$m.average.exportCsvTitle}
+    title={$m.average.exportCsvTitle}
+  >
+    <FileCsvOutline class="w-5 h-5" />
+  </button>
+  <ShareButton getUrl={() => createShareUrl({
+    v: 1,
+    page: 'average',
+    grades: serializeGrades($grades),
+    rounding
+  })} />
+{/snippet}
