@@ -249,7 +249,7 @@
 
 <div class="flex flex-col gap-8">
   <div class="text-center space-y-4">
-    <h1 class="text-4xl font-black tracking-tight text-ctp-text">{$m.qv.title}</h1>
+    <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-ctp-text">{$m.qv.title}</h1>
     <p class="text-ctp-subtext1 max-w-lg mx-auto">{$m.qv.description}</p>
   </div>
 
@@ -361,7 +361,7 @@
   </div>
 
   <div class="flex flex-col gap-4">
-    <div class="sticky top-16 z-10 bg-ctp-base/90 backdrop-blur-md py-4 hidden sm:grid grid-cols-[minmax(0,1fr)_8rem_6rem_8rem_6rem] gap-4 px-8 text-xs font-black uppercase tracking-widest text-ctp-overlay1 border-b border-ctp-surface0/50">
+    <div class="sticky top-16 z-10 bg-ctp-base/90 backdrop-blur-md py-4 hidden lg:grid grid-cols-[minmax(0,1fr)_8rem_6rem_8rem_6rem] gap-4 px-8 text-xs font-black uppercase tracking-widest text-ctp-overlay1 border-b border-ctp-surface0/50">
       <span>{$m.qv.componentHeader}</span>
       <span class="text-center">{$m.qv.gradeHeader}</span>
       <span class="text-center">{$m.qv.weightHeader}</span>
@@ -378,8 +378,8 @@
       {@const failedFallnote = component.fallnote && hasGrade && grade < (component.minGrade ?? 4)}
       
       <div class="card bg-ctp-mantle border border-ctp-surface0 shadow-lg overflow-hidden group hover:border-ctp-surface1 transition-all">
-        <div class="p-4 sm:p-6 flex flex-col sm:grid sm:grid-cols-[minmax(0,1fr)_8rem_6rem_8rem_6rem] items-center gap-4">
-          <div class="w-full sm:w-auto text-center sm:text-left">
+        <div class="p-4 sm:p-6 flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_8rem_6rem_8rem_6rem] items-center gap-4">
+          <div class="w-full lg:w-auto text-center lg:text-left">
             <strong class="text-lg block font-black text-ctp-text">{component.label}</strong>
             <span class="text-xs font-bold text-ctp-overlay1 tracking-widest uppercase">{component.shortLabel}</span>
             {#if component.description}
@@ -390,10 +390,10 @@
             {/if}
           </div>
 
-          <div class="w-32 sm:w-auto">
+          <div class="w-32 lg:w-auto">
             <input
               type="text"
-              class="input input-bordered input-md w-full bg-ctp-base border-ctp-surface1 focus:border-ctp-lavender focus:outline-none transition-all text-center font-black text-xl"
+              class="input input-bordered input-md w-full bg-ctp-base border-ctp-surface1 focus:border-ctp-lavender focus:outline-none transition-all text-center font-black text-xl font-mono"
               class:bg-ctp-surface0={ $qv.detailEnabled[component.id] || componentExcluded }
               class:opacity-50={ $qv.detailEnabled[component.id] || componentExcluded }
               inputmode="decimal"
@@ -407,12 +407,12 @@
           </div>
 
           <div class="text-center">
-            <span class="badge bg-ctp-base border-ctp-surface1 text-ctp-subtext0 font-black px-4 py-3">{displayWeight(component)}%</span>
+            <span class="badge bg-ctp-base border-ctp-surface1 text-ctp-subtext0 font-black px-4 py-3 font-mono">{displayWeight(component)}%</span>
           </div>
 
-          <div class="text-center w-full sm:w-auto">
+          <div class="text-center w-full lg:w-auto">
             <span
-              class="badge border-none font-black uppercase tracking-tighter text-xs px-4 py-3 w-full sm:w-28"
+              class="badge border-none font-black uppercase tracking-tighter text-xs px-4 py-3 w-full text-center whitespace-normal leading-tight"
               class:bg-ctp-green={!componentExcluded && component.fallnote && hasGrade && !failedFallnote}
               class:bg-ctp-red={!componentExcluded && failedFallnote}
               class:text-ctp-base={!componentExcluded && component.fallnote && hasGrade}
@@ -435,7 +435,7 @@
             </span>
           </div>
 
-          <div class="flex justify-center w-full min-w-0 sm:w-auto">
+          <div class="flex justify-center w-full min-w-0 lg:w-auto">
             {#if componentHasDetailControls(component)}
               <button
                 type="button"
@@ -520,7 +520,7 @@
           <span class="text-xs font-black uppercase tracking-[0.3em] text-ctp-subtext1">{$m.qv.finalGrade}</span>
           {#if evaluation.finalGrade !== null}
             <div 
-              class="text-9xl font-black tracking-tighter"
+              class="text-6xl sm:text-8xl lg:text-9xl font-black tracking-tighter font-mono"
               style:color={gradeColor(evaluation.finalGrade)}
               style:text-shadow="0 0 50px {gradeColor(evaluation.finalGrade)}40"
             >
