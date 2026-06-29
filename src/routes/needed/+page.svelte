@@ -1,313 +1,245 @@
 <script lang="ts">
-  import { grades } from '$lib/stores/grades';
-  import { gradeColor, computeWeightedSums, applyRounding } from '$lib/utils/grading';
-  import { numericInput, clampInput } from '$lib/actions';
+  import { onMount, tick } from 'svelte';
+  import { get } from 'svelte/store';
   import { m } from '$lib/i18n';
-  import ShortcutHint from '$lib/components/ShortcutHint.svelte';
-  import { focusRowInput } from '$lib/utils/focus';
-  import { browser } from '$app/environment';
+  import { grades } from '$lib/stores/grades';
   import { settings } from '$lib/stores/settings';
+  import { needed, newExam, type FutureExam } from '$lib/stores/needed';
+  import type { GradeEntry, RoundingKey } from '$lib/types';
+  import { computeWeightedAverage, computeWeightedSums, applyRounding } from '$lib/utils/grading';
+  import {
+    serializeGrades,
+    hydrateGrades,
+    readSharePayload,
+    type SharePayload
+  } from '$lib/utils/share';
   import Page from '$lib/components/Page.svelte';
-  import ToolbarRow from '$lib/components/ToolbarRow.svelte';
-  import ClearButton from '$lib/components/ClearButton.svelte';
-  import ResultDisplay from '$lib/components/ResultDisplay.svelte';
-  import StatusChip from '$lib/components/StatusChip.svelte';
-  import EmptyState from '$lib/components/EmptyState.svelte';
+  import NumberField from '$lib/components/NumberField.svelte';
+  import ResultBar from '$lib/components/ResultBar.svelte';
+  import RoundingSelect from '$lib/components/RoundingSelect.svelte';
   import ShareButton from '$lib/components/ShareButton.svelte';
-  import { STORAGE_KEYS } from '$lib/storage-keys';
-  import { onMount } from 'svelte';
-  import { clearShareParam, createShareUrl, hydrateGrades, readSharePayload, serializeGrades } from '$lib/utils/share';
-  import { fade } from 'svelte/transition';
-  import { PlusOutline } from 'flowbite-svelte-icons';
+  import ClearButton from '$lib/components/ClearButton.svelte';
+  import Button from '$lib/components/Button.svelte';
+  import StatusChip from '$lib/components/StatusChip.svelte';
+  import ShortcutHint from '$lib/components/ShortcutHint.svelte';
 
-  const STORAGE_KEY = STORAGE_KEYS.needed;
+  let target = $state(get(needed).target);
+  let exams = $state<FutureExam[]>(get(needed).futureExams);
+  let rounding = $state<RoundingKey>(get(settings).neededRounding);
+  let focusedExam = $state(0);
 
-  let rounding = $state($settings.neededRounding);
-  $effect(() => { settings.update((s) => ({ ...s, neededRounding: rounding })); });
-
-  interface FutureExam {
-    id: string;
-    name: string;
-    weight: string;
+  // Parent grades are derived from subgrades; normalize the pulled-in grades.
+  function normalize(list: GradeEntry[]): GradeEntry[] {
+    return list.map((e) => {
+      const subgrades = normalize(e.subgrades);
+      const avg = computeWeightedAverage(subgrades);
+      return {
+        ...e,
+        subgrades,
+        grade: subgrades.length
+          ? avg !== null
+            ? (Math.round(avg * 100) / 100).toFixed(2)
+            : ''
+          : e.grade
+      };
+    });
   }
 
-  function loadSaved() {
-    if (!browser) return null;
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) return JSON.parse(raw);
-    } catch {}
-    return null;
-  }
-
-  const saved = loadSaved();
-  let targetAverage = $state<string>(saved?.targetAverage ?? '');
-  let futureExams = $state<FutureExam[]>(
-    saved?.futureExams?.length
-      ? saved.futureExams.map((e: { name: string; weight: string }) => ({ id: crypto.randomUUID(), name: e.name, weight: e.weight || '100' }))
-      : [{ id: crypto.randomUUID(), name: '', weight: '100' }]
+  const currentSums = $derived(computeWeightedSums(normalize($grades)));
+  const futureWeightSum = $derived(
+    exams.reduce((sum, e) => {
+      const w = parseFloat(e.weight);
+      return sum + (isNaN(w) || w <= 0 ? 100 : w);
+    }, 0)
   );
 
-  onMount(() => {
-    const payload = readSharePayload('needed');
-    if (payload?.page !== 'needed') return;
-
-    grades.set(hydrateGrades(payload.grades));
-    targetAverage = payload.targetAverage;
-    futureExams = payload.futureExams.length
-      ? payload.futureExams.map((exam) => ({ id: crypto.randomUUID(), name: exam.name, weight: exam.weight || '100' }))
-      : [{ id: crypto.randomUUID(), name: '', weight: '100' }];
-    rounding = payload.rounding;
-    clearShareParam();
-  });
-
   $effect(() => {
-    if (!browser) return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        targetAverage,
-        futureExams: futureExams.map(({ name, weight }) => ({ name, weight })),
-      }));
-    } catch {}
+    needed.set({ target, futureExams: exams });
+  });
+  $effect(() => {
+    settings.update((s) => ({ ...s, neededRounding: rounding }));
   });
 
-  interface ExamResult {
-    name: string;
-    needed: number;
-    impossible: boolean;
-    alreadyAchieved: boolean;
-  }
+  type Result =
+    | { kind: 'noGrades' }
+    | { kind: 'invalidTarget' }
+    | { kind: 'achieved' }
+    | { kind: 'impossible'; best: string }
+    | { kind: 'ok'; grade: string };
 
-let results = $derived.by((): ExamResult[] => {
-    const target = parseFloat(targetAverage);
-    if (isNaN(target) || target < 1 || target > 6) return [];
+  const result = $derived.by<Result>(() => {
+    if (currentSums.weightSum === 0) return { kind: 'noGrades' };
+    const t = parseFloat(target);
+    if (isNaN(t) || t < 1 || t > 6) return { kind: 'invalidTarget' };
+    if (futureWeightSum <= 0) return { kind: 'invalidTarget' };
 
-    const hasGrades = $grades.some((e) => e.grade !== '' && !isNaN(parseFloat(e.grade)));
-    if (!hasGrades) return [];
+    const totalWeight = currentSums.weightSum + futureWeightSum;
+    const g = (t * totalWeight - currentSums.weightedSum) / futureWeightSum;
 
-    const { weightSum, weightedSum } = computeWeightedSums($grades);
-
-    const futureWeightSum = futureExams.reduce((sum, e) => {
-      const w = parseFloat(e.weight);
-      return sum + (isNaN(w) || w <= 0 ? 100 : w);
-    }, 0);
-
-    const totalWeight = weightSum + futureWeightSum;
-    const needed = weightSum === 0 && futureWeightSum === 0
-      ? target
-      : (target * totalWeight - weightedSum) / futureWeightSum;
-
-    // impossible = even scoring 6.0 in all future exams won't reach the target after rounding
-    const rawBest = totalWeight > 0 ? (weightedSum + 6.0 * futureWeightSum) / totalWeight : 6.0;
-    const impossible = parseFloat(applyRounding(rawBest, rounding)) < target;
-    const alreadyAchieved = needed < 1.0;
-
-    return futureExams.map((exam) => ({
-      name: exam.name || $m.needed.examFallback,
-      needed,
-      impossible,
-      alreadyAchieved,
-    }));
-  });
-
-  let bestAttainable = $derived.by(() => {
-    const hasGrades = $grades.some((e) => e.grade !== '' && !isNaN(parseFloat(e.grade)));
-    if (!hasGrades) return 0;
-    const { weightSum, weightedSum } = computeWeightedSums($grades);
-    const futureWeightSum = futureExams.reduce((sum, e) => {
-      const w = parseFloat(e.weight);
-      return sum + (isNaN(w) || w <= 0 ? 100 : w);
-    }, 0);
-    const totalWeight = weightSum + futureWeightSum;
-    return totalWeight > 0 ? (weightedSum + 6.0 * futureWeightSum) / totalWeight : 6.0;
-  });
-
-  let noGradesError = $derived.by(() => {
-    const target = parseFloat(targetAverage);
-    if (isNaN(target) || target < 1 || target > 6) return false;
-    return !$grades.some((e) => e.grade !== '' && !isNaN(parseFloat(e.grade)));
-  });
-
-  function clearAll() {
-    targetAverage = '';
-    futureExams = [{ id: crypto.randomUUID(), name: '', weight: '100' }];
-    if (browser) {
-      try { localStorage.removeItem(STORAGE_KEY); } catch {}
+    if (g <= 1) return { kind: 'achieved' };
+    if (g > 6) {
+      const best = (currentSums.weightedSum + 6 * futureWeightSum) / totalWeight;
+      return { kind: 'impossible', best: applyRounding(best, rounding) };
     }
+    return { kind: 'ok', grade: applyRounding(g, rounding) };
+  });
+
+  async function focusExam(i: number) {
+    await tick();
+    const rows = document.querySelectorAll<HTMLElement>('#exam-rows > li');
+    const el = rows[Math.max(0, Math.min(i, rows.length - 1))];
+    el?.querySelector<HTMLInputElement>('input')?.focus();
   }
 
   function addExam() {
-    futureExams = [...futureExams, { id: crypto.randomUUID(), name: '', weight: '100' }];
+    exams.push(newExam());
+    focusedExam = exams.length - 1;
+    focusExam(focusedExam);
   }
 
-  function removeExam(id: string) {
-    futureExams = futureExams.filter((e) => e.id !== id);
+  function removeExam(i: number) {
+    exams.splice(i, 1);
+    focusedExam = Math.max(0, Math.min(focusedExam, exams.length - 1));
   }
 
+  function removeFocused() {
+    if (exams.length === 0) return;
+    const i = Math.min(focusedExam, exams.length - 1);
+    removeExam(i);
+    if (exams.length) focusExam(focusedExam);
+  }
 
-  function onWindowKeydown(e: KeyboardEvent) {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+  function onKeydown(e: KeyboardEvent) {
+    if (!(e.ctrlKey || e.metaKey)) return;
+    if (e.key === 'Enter') {
       e.preventDefault();
       addExam();
-      setTimeout(() => focusRowInput('.future-exams', '.exam-row', futureExams.length - 1), 0);
+    } else if (e.key === 'Delete') {
+      e.preventDefault();
+      removeFocused();
     }
   }
 
-  function onExamKeydown(e: KeyboardEvent, id: string) {
-    if ((e.ctrlKey && e.key === 'Delete') || (e.metaKey && e.key === 'Backspace')) {
-      e.preventDefault();
-      if (futureExams.length > 1) {
-        const index = futureExams.findIndex((ex) => ex.id === id);
-        removeExam(id);
-        setTimeout(() => focusRowInput('.future-exams', '.exam-row', index - 1), 0);
-      }
-    }
+  function clearAll() {
+    target = '';
+    exams = [newExam()];
+    focusedExam = 0;
   }
+
+  onMount(() => {
+    const shared = readSharePayload('needed');
+    if (shared && shared.page === 'needed') {
+      grades.set(hydrateGrades(shared.grades));
+      target = shared.targetAverage;
+      exams = shared.futureExams.map((e) => ({ id: crypto.randomUUID(), name: e.name, weight: e.weight }));
+      rounding = shared.rounding;
+    }
+  });
+
+  const payload = (): SharePayload => ({
+    v: 1,
+    page: 'needed',
+    grades: serializeGrades(normalize($grades)),
+    targetAverage: target,
+    futureExams: exams.map((e) => ({ name: e.name, weight: e.weight })),
+    rounding
+  });
 </script>
 
-<svelte:head><title>{$m.needed.title}</title></svelte:head>
-<svelte:window onkeydown={onWindowKeydown} />
+<svelte:head><title>{$m.needed.title} — Swiss Grades</title></svelte:head>
 
-<Page title={$m.needed.title}>
-  <p class="-mt-2 text-center text-xs text-ctp-subtext1">
+<Page title={$m.needed.title} subtitle={$m.needed.description}>
+  <p class="-mt-4 mb-6 text-sm text-muted">
     {$m.needed.hint}
-    <a href="/average" class="text-ctp-lavender font-semibold hover:underline">{$m.needed.hintLink}</a>
+    <a class="text-accent hover:underline" href="/average">{$m.needed.hintLink}</a>
     {$m.needed.hintSuffix}
   </p>
 
-  <div class="card bg-ctp-mantle">
-    <div class="card-body p-5 sm:p-6 space-y-6">
-      <ToolbarRow bind:rounding actions={shareAction} />
+  <div class="max-w-xs">
+    <NumberField id="target" label={$m.needed.targetLabel} bind:value={target} min={1} max={6} placeholder="4.0" />
+  </div>
 
-      <div class="form-control w-full max-w-xs mx-auto text-center">
-        <label class="label pt-0 justify-center" for="target">
-          <span class="label-text font-semibold text-ctp-subtext1">{$m.needed.targetLabel}</span>
-        </label>
+  <h2 class="mt-6 mb-2 field-label">{$m.needed.futureExamsLabel}</h2>
+  <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+  <ul id="exam-rows" class="flex flex-col gap-2" onkeydown={onKeydown}>
+    {#each exams as exam, i (exam.id)}
+      <li class="flex items-center gap-2" onfocusin={() => (focusedExam = i)}>
         <input
-          id="target"
-          type="text"
-          class="input input-bordered w-full bg-ctp-base border-ctp-surface1 focus:border-ctp-lavender focus:outline-none transition-all text-2xl font-semibold text-center font-mono"
-          inputmode="decimal"
-          placeholder="4.0"
-          bind:value={targetAverage}
-          use:numericInput
-          use:clampInput={{ min: 1, max: 6, decimals: 2 }}
+          class="field-input min-w-0 flex-1"
+          bind:value={exam.name}
+          placeholder={$m.needed.examNamePlaceholder}
+          autocomplete="off"
         />
-      </div>
-
-      <div class="space-y-3">
-        <p class="section-label">{$m.needed.futureExamsLabel}</p>
-        <div class="flex flex-col gap-2.5 future-exams">
-          {#each futureExams as exam (exam.id)}
-            <!-- svelte-ignore a11y_no_static_element_interactions -->
-            <div
-              class="exam-row flex flex-col gap-2 rounded-xl bg-ctp-base border border-ctp-surface0 p-2.5 transition-all hover:border-ctp-surface1 sm:flex-row sm:items-center sm:gap-3"
-              onkeydown={(e) => onExamKeydown(e, exam.id)}
-            >
-              <input
-                type="text"
-                class="input input-ghost w-full sm:flex-grow bg-transparent focus:bg-ctp-surface0 border-none focus:outline-none px-3 font-medium text-ctp-text rounded-lg"
-                autocomplete="off"
-                placeholder={$m.needed.examNamePlaceholder}
-                value={exam.name}
-                oninput={(e) => {
-                  futureExams = futureExams.map((ex) =>
-                    ex.id === exam.id ? { ...ex, name: e.currentTarget.value } : ex
-                  );
-                }}
-              />
-              <div class="flex items-center gap-2">
-                <div class="flex flex-grow items-center gap-1 rounded-xl border border-ctp-surface0 bg-ctp-mantle px-3 py-2 sm:w-28 sm:flex-grow-0">
-                  <input
-                    type="text"
-                    class="w-full border-none bg-transparent text-right font-semibold text-ctp-text font-mono focus:outline-none"
-                    inputmode="decimal"
-                    placeholder={$m.needed.weightPlaceholder}
-                    bind:value={exam.weight}
-                    use:numericInput
-                    use:clampInput={{ min: 0, max: 100 }}
-                  />
-                  <span class="text-xs font-semibold text-ctp-overlay1">%</span>
-                </div>
-                <button
-                  type="button"
-                  class="btn btn-ghost btn-circle btn-sm text-ctp-overlay1 hover:text-ctp-red shrink-0"
-                  disabled={futureExams.length === 1}
-                  onclick={() => removeExam(exam.id)}
-                  aria-label="Remove exam"
-                >✕</button>
-              </div>
-            </div>
-          {/each}
-        </div>
-        <button type="button" class="btn btn-outline btn-block border-ctp-surface1 text-ctp-subtext1 hover:border-ctp-lavender hover:text-ctp-lavender hover:bg-transparent" onclick={addExam}>
-          <PlusOutline class="w-4 h-4" />
-          {$m.needed.addExam}
+        <NumberField class="w-24 shrink-0" bind:value={exam.weight} min={0} placeholder={$m.needed.weightPlaceholder} ariaLabel={$m.needed.weightPlaceholder} />
+        <button
+          type="button"
+          class="grid size-8 shrink-0 place-items-center rounded text-faint hover:bg-surface hover:text-fail"
+          onclick={() => removeExam(i)}
+          title={$m.common.close}
+          aria-label={$m.common.close}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <path d="M18 6 6 18M6 6l12 12" />
+          </svg>
         </button>
-      </div>
+      </li>
+    {/each}
+  </ul>
+  <div class="mt-2">
+    <Button variant="ghost" onclick={addExam}>{$m.needed.addExam}</Button>
+  </div>
 
-      <div class="flex justify-center border-t border-ctp-surface0 pt-5">
-        <ClearButton
-          onConfirm={clearAll}
-          label={$m.common.clearAll}
-          confirmLabel={$m.common.clearConfirm}
-          class="w-full sm:w-auto px-12"
-        />
+  <ResultBar>
+    {#if result.kind === 'noGrades'}
+      <p class="text-sm text-muted">
+        {$m.needed.noGradesBefore}<a class="text-accent hover:underline" href="/average">{$m.needed.hintLink}</a>{$m.needed.noGradesAfter}
+      </p>
+    {:else if result.kind === 'invalidTarget'}
+      <p class="text-sm" style="color: var(--ctp-yellow);">{$m.needed.invalidTarget}</p>
+    {:else if result.kind === 'achieved'}
+      <StatusChip tone="pass" label={$m.needed.alreadyAchieved} />
+    {:else if result.kind === 'impossible'}
+      <div class="flex flex-col gap-2">
+        <StatusChip tone="fail" label={$m.needed.impossible} />
+        <p class="text-sm text-muted">
+          {$m.needed.bestAttainablePrefix}<span class="tnum font-medium text-text">{result.best}</span>
+        </p>
       </div>
+    {:else}
+      <div class="flex flex-col gap-3">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left text-xs text-muted">
+              <th class="pb-1 font-medium">{$m.needed.tableExam}</th>
+              <th class="pb-1 text-right font-medium">{$m.needed.tableRequired}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each exams as exam, i (exam.id)}
+              <tr class="border-t border-line/70">
+                <td class="py-1.5">{exam.name || `${$m.needed.examFallback} ${i + 1}`}</td>
+                <td class="tnum py-1.5 text-right font-medium">{result.grade}</td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+        <p class="text-xs text-faint">{$m.needed.assumption}</p>
+      </div>
+    {/if}
+  </ResultBar>
 
-      <ShortcutHint addLabel={$m.needed.shortcutAdd} deleteLabel={$m.needed.shortcutDelete} />
+  <div class="mt-4 flex flex-wrap items-center gap-3">
+    <RoundingSelect value={rounding} onChange={(v) => (rounding = v)} />
+    <div class="ml-auto flex items-center gap-2">
+      <ShareButton {payload} />
+      <ClearButton label={$m.needed.clearAll} confirmLabel={$m.needed.clearConfirm} onConfirm={clearAll} />
     </div>
   </div>
 
-  {#if noGradesError}
-    <div class="alert bg-ctp-red/10 border-ctp-red text-ctp-red rounded-xl" transition:fade>
-      <span class="text-sm font-semibold">
-        {$m.needed.noGradesBefore}<a href="/average" class="underline mx-1">{$m.nav.average}</a>{$m.needed.noGradesAfter}
-      </span>
-    </div>
-  {:else if results.length > 0}
-    {@const r = results[0]}
-    {@const neededValue = Math.min(r.needed, 6.0)}
-    <div class="card bg-ctp-mantle" transition:fade>
-      <div class="card-body p-5 sm:p-6 space-y-4">
-        {#if r.impossible}
-          <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-ctp-surface0 bg-ctp-base px-5 py-4">
-            <span class="section-label">{$m.needed.tableRequired}</span>
-            <StatusChip variant="error">{$m.needed.impossible}</StatusChip>
-          </div>
-        {:else if r.alreadyAchieved}
-          <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-ctp-surface0 bg-ctp-base px-5 py-4">
-            <span class="section-label">{$m.needed.tableRequired}</span>
-            <StatusChip variant="success">{$m.needed.alreadyAchieved}</StatusChip>
-          </div>
-        {:else}
-          <ResultDisplay
-            label={$m.needed.tableRequired}
-            value={applyRounding(neededValue, '2')}
-            grade={neededValue}
-          />
-        {/if}
-        <p class="text-xs text-ctp-overlay1">{$m.needed.assumption}</p>
-        <p class="text-xs text-ctp-subtext1">
-          {$m.needed.bestAttainablePrefix}
-          <span class="font-mono font-semibold tabular-nums" style:color={gradeColor(bestAttainable)}>
-            {applyRounding(bestAttainable, '2')}
-          </span>
-        </p>
-      </div>
-    </div>
-  {:else}
-    <EmptyState>{$m.common.emptyState}</EmptyState>
-  {/if}
+  <ShortcutHint
+    items={[
+      { keys: 'Ctrl+Enter', label: $m.needed.shortcutAdd },
+      { keys: 'Ctrl+Delete', label: $m.needed.shortcutDelete }
+    ]}
+  />
 </Page>
-
-{#snippet shareAction()}
-  <ShareButton getUrl={() => createShareUrl({
-    v: 1,
-    page: 'needed',
-    grades: serializeGrades($grades),
-    targetAverage,
-    futureExams: futureExams.map(({ name, weight }) => ({ name, weight })),
-    rounding
-  })} />
-{/snippet}
