@@ -412,7 +412,7 @@
 
           <div class="text-center w-full lg:w-auto">
             <span
-              class="badge border-none font-black uppercase tracking-tighter text-xs px-4 py-3 w-full text-center whitespace-normal leading-tight"
+              class="badge border-none font-black uppercase tracking-tighter text-xs px-4 py-2 w-full h-auto min-h-8 text-center whitespace-normal leading-tight"
               class:bg-ctp-green={!componentExcluded && component.fallnote && hasGrade && !failedFallnote}
               class:bg-ctp-red={!componentExcluded && failedFallnote}
               class:text-ctp-base={!componentExcluded && component.fallnote && hasGrade}
