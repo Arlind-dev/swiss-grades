@@ -10,10 +10,6 @@
     ChevronDownOutline,
     MoonOutline,
     SunOutline,
-    ScaleBalancedOutline,
-    ArrowsRepeatOutline,
-    FlagOutline,
-    GraduationCapOutline,
   } from 'flowbite-svelte-icons';
 
   const locales: { value: Locale; name: string }[] = [
@@ -24,10 +20,10 @@
   ];
 
   const tools = [
-    { href: '/average', key: 'average', Icon: ScaleBalancedOutline },
-    { href: '/calculator', key: 'calculator', Icon: ArrowsRepeatOutline },
-    { href: '/needed', key: 'needed', Icon: FlagOutline },
-    { href: '/qv', key: 'qv', Icon: GraduationCapOutline },
+    { href: '/average', key: 'average' },
+    { href: '/calculator', key: 'calculator' },
+    { href: '/needed', key: 'needed' },
+    { href: '/qv', key: 'qv' },
   ] as const;
 
   let localeOpen = $state(false);
@@ -134,12 +130,7 @@
       <ul class="flex items-center gap-1">
         {#each tools as tool}
           <li>
-            <NavLink
-              href={tool.href}
-              label={$m.navShort[tool.key]}
-              Icon={tool.Icon}
-              labelClass="hidden md:inline"
-            />
+            <NavLink href={tool.href} label={$m.navShort[tool.key]} />
           </li>
         {/each}
       </ul>

@@ -3,19 +3,13 @@
   import NavBar from '$lib/components/NavBar.svelte';
   import Footer from '$lib/components/Footer.svelte';
   import NavLink from '$lib/components/NavLink.svelte';
-  import {
-    CloseOutline,
-    ScaleBalancedOutline,
-    ArrowsRepeatOutline,
-    FlagOutline,
-    GraduationCapOutline,
-  } from 'flowbite-svelte-icons';
+  import { CloseOutline } from 'flowbite-svelte-icons';
 
   const tools = [
-    { href: '/average', key: 'average', Icon: ScaleBalancedOutline },
-    { href: '/calculator', key: 'calculator', Icon: ArrowsRepeatOutline },
-    { href: '/needed', key: 'needed', Icon: FlagOutline },
-    { href: '/qv', key: 'qv', Icon: GraduationCapOutline },
+    { href: '/average', key: 'average' },
+    { href: '/calculator', key: 'calculator' },
+    { href: '/needed', key: 'needed' },
+    { href: '/qv', key: 'qv' },
   ] as const;
   import { m, locale } from '$lib/i18n';
   import { theme } from '$lib/stores/theme';
@@ -80,10 +74,9 @@
           <li>
             <NavLink
               href={tool.href}
-              label={$m.nav[tool.key]}
-              Icon={tool.Icon}
+              label={$m.navShort[tool.key]}
               onclick={closeDrawer}
-              class="w-full gap-3 py-3 text-base"
+              class="w-full py-3 text-base"
             />
           </li>
         {/each}
