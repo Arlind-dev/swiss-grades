@@ -88,7 +88,7 @@
   let confirmClear = $state(false);
   let confirmTimer: ReturnType<typeof setTimeout> | null = null;
 
-  let activePresetIcon = $derived(getPresetIcon($qv.presetId));
+  let ActivePresetIcon = $derived(getPresetIcon($qv.presetId));
 
   onMount(() => {
     const payload = readSharePayload('qv');
@@ -266,7 +266,7 @@
             >
               <div class="flex items-center gap-4">
                 <div class="p-2.5 rounded-xl bg-ctp-mantle border border-ctp-surface0 group-hover:border-ctp-lavender/30 transition-all">
-                  <activePresetIcon class="w-6 h-6 text-ctp-lavender"></activePresetIcon>
+                  <ActivePresetIcon class="w-6 h-6 text-ctp-lavender" />
                 </div>
                 <div>
                   <span class="block font-black text-ctp-text leading-tight">{preset.label}</span>
