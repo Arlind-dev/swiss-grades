@@ -1,143 +1,132 @@
 <script lang="ts">
-  import { numericInput } from '$lib/actions';
-  import Page from '$lib/components/Page.svelte';
-  import ToolbarRow from '$lib/components/ToolbarRow.svelte';
-  import ClearButton from '$lib/components/ClearButton.svelte';
-  import ResultDisplay from '$lib/components/ResultDisplay.svelte';
-  import EmptyState from '$lib/components/EmptyState.svelte';
-  import ShareButton from '$lib/components/ShareButton.svelte';
-  import { calculateGradeFromPoints, applyRounding } from '$lib/utils/grading';
-  import { settings } from '$lib/stores/settings';
-  import { m } from '$lib/i18n';
   import { onMount } from 'svelte';
-  import { clearShareParam, createShareUrl, readSharePayload } from '$lib/utils/share';
+  import { get } from 'svelte/store';
+  import { m } from '$lib/i18n';
+  import { settings } from '$lib/stores/settings';
+  import { calculateGradeFromPoints, applyRounding } from '$lib/utils/grading';
+  import { readSharePayload, type SharePayload } from '$lib/utils/share';
+  import type { RoundingKey } from '$lib/types';
+  import Page from '$lib/components/Page.svelte';
+  import NumberField from '$lib/components/NumberField.svelte';
+  import RoundingSelect from '$lib/components/RoundingSelect.svelte';
+  import ShareButton from '$lib/components/ShareButton.svelte';
+  import ClearButton from '$lib/components/ClearButton.svelte';
+  import ResultBar from '$lib/components/ResultBar.svelte';
 
-  let points = $state($settings.calculatorPoints);
-  let maxPoints = $state($settings.calculatorMaxPoints);
-  let rounding = $state($settings.calculatorRounding);
+  const init = get(settings);
+  let points = $state(init.calculatorPoints);
+  let maxPoints = $state(init.calculatorMaxPoints);
+  let rounding = $state<RoundingKey>(init.calculatorRounding);
+
+  // Persist inputs + rounding back to settings.
+  $effect(() => {
+    settings.update((s) => ({
+      ...s,
+      calculatorPoints: points,
+      calculatorMaxPoints: maxPoints,
+      calculatorRounding: rounding
+    }));
+  });
 
   onMount(() => {
-    const payload = readSharePayload('calculator');
-    if (payload?.page !== 'calculator') return;
-
-    points = payload.points;
-    maxPoints = payload.maxPoints;
-    rounding = payload.rounding;
-    clearShareParam();
+    const shared = readSharePayload('calculator');
+    if (shared && shared.page === 'calculator') {
+      points = shared.points;
+      maxPoints = shared.maxPoints;
+      rounding = shared.rounding;
+    }
   });
 
-  $effect(() => { settings.update((s) => ({ ...s, calculatorPoints: points })); });
-  $effect(() => { settings.update((s) => ({ ...s, calculatorMaxPoints: maxPoints })); });
-  $effect(() => { settings.update((s) => ({ ...s, calculatorRounding: rounding })); });
+  type Result =
+    | { kind: 'empty' }
+    | { kind: 'invalid' }
+    | { kind: 'outOfRange' }
+    | { kind: 'ok'; value: string; grade: number };
 
-  let resultGrade = $derived.by(() => {
+  const result = $derived.by<Result>(() => {
+    if (points.trim() === '' || maxPoints.trim() === '') return { kind: 'empty' };
     const p = parseFloat(points);
     const max = parseFloat(maxPoints);
-    if (isNaN(p) || isNaN(max) || max <= 0 || p < 0 || p > max) return null;
-    return calculateGradeFromPoints(p, max);
+    if (isNaN(p) || isNaN(max) || max <= 0) return { kind: 'invalid' };
+    if (p < 0 || p > max) return { kind: 'outOfRange' };
+    const raw = calculateGradeFromPoints(p, max);
+    const value = applyRounding(raw, rounding);
+    return { kind: 'ok', value, grade: parseFloat(value) };
   });
 
-  let pointsError = $derived.by(() => {
-    const p = parseFloat(points);
-    const max = parseFloat(maxPoints);
-    if (!isNaN(p) && !isNaN(max) && max > 0 && p > max) return $m.calculator.pointsOutOfRange;
-    return '';
-  });
+  const tone = $derived(
+    result.kind === 'ok'
+      ? result.grade >= 4.5
+        ? 'pass'
+        : result.grade >= 4
+          ? 'warn'
+          : 'fail'
+      : 'neutral'
+  );
 
-  let resultLabel = $derived($m.calculator.resultPrefix.replace(/:\s*$/, ''));
-
-  function clearAll() {
+  function clear() {
     points = '';
     maxPoints = '';
   }
-</script>
 
-<svelte:head><title>{$m.calculator.title}</title></svelte:head>
-
-<Page title={$m.calculator.title}>
-  <div class="flex items-center justify-center gap-3 text-sm text-ctp-subtext1">
-    <span class="font-semibold">{$m.calculator.formulaLabel}</span>
-    <span class="flex flex-col items-center leading-tight">
-      <span class="text-xs">{$m.calculator.formulaNumerator}</span>
-      <span class="my-0.5 h-px w-full bg-ctp-surface2"></span>
-      <span class="text-xs">{$m.calculator.formulaDenominator}</span>
-    </span>
-    <span class="font-semibold">+ 1</span>
-  </div>
-
-  <div class="card bg-ctp-mantle">
-    <div class="card-body p-5 sm:p-6 space-y-6">
-      <ToolbarRow bind:rounding actions={shareAction} />
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div class="form-control w-full">
-          <label class="label pt-0" for="points">
-            <span class="label-text font-semibold text-ctp-subtext1">{$m.calculator.pointsLabel}</span>
-          </label>
-          <input
-            id="points"
-            type="text"
-            inputmode="decimal"
-            bind:value={points}
-            use:numericInput
-            placeholder="0"
-            class="input input-bordered w-full bg-ctp-base border-ctp-surface1 focus:border-ctp-lavender focus:outline-none transition-all text-lg font-semibold font-mono"
-          />
-        </div>
-
-        <div class="form-control w-full">
-          <label class="label pt-0" for="max-points">
-            <span class="label-text font-semibold text-ctp-subtext1">{$m.calculator.maxPointsLabel}</span>
-          </label>
-          <input
-            id="max-points"
-            type="text"
-            inputmode="decimal"
-            bind:value={maxPoints}
-            use:numericInput
-            placeholder="100"
-            class="input input-bordered w-full bg-ctp-base border-ctp-surface1 focus:border-ctp-lavender focus:outline-none transition-all text-lg font-semibold font-mono"
-          />
-        </div>
-      </div>
-
-      {#if pointsError}
-        <div class="alert bg-ctp-red/10 border-ctp-red text-ctp-red py-2">
-          <span class="text-sm font-semibold">{pointsError}</span>
-        </div>
-      {/if}
-
-      {#if resultGrade !== null}
-        <ResultDisplay
-          label={resultLabel}
-          value={applyRounding(resultGrade, rounding)}
-          grade={resultGrade}
-          showStatus
-          passLabel={$m.common.pass}
-          failLabel={$m.common.fail}
-        />
-      {:else}
-        <EmptyState>{$m.common.emptyState}</EmptyState>
-      {/if}
-
-      <div class="flex justify-center border-t border-ctp-surface0 pt-5">
-        <ClearButton
-          onConfirm={clearAll}
-          label={$m.common.clearAll}
-          confirmLabel={$m.common.clearConfirm}
-          class="w-full sm:w-auto px-12"
-        />
-      </div>
-    </div>
-  </div>
-</Page>
-
-{#snippet shareAction()}
-  <ShareButton getUrl={() => createShareUrl({
+  const payload = (): SharePayload => ({
     v: 1,
     page: 'calculator',
     points,
     maxPoints,
     rounding
-  })} />
-{/snippet}
+  });
+</script>
+
+<svelte:head><title>{$m.calculator.title} — Swiss Grades</title></svelte:head>
+
+<Page title={$m.calculator.title} subtitle={$m.calculator.subtitle}>
+  <!-- formula -->
+  <div class="mb-6 flex items-center gap-3 text-sm text-muted">
+    <span>{$m.calculator.formulaLabel}</span>
+    <span class="inline-flex flex-col text-center leading-tight">
+      <span class="px-2">{$m.calculator.formulaNumerator}</span>
+      <span class="border-t border-line px-2 pt-0.5">{$m.calculator.formulaDenominator}</span>
+    </span>
+    <span>+ 1</span>
+  </div>
+
+  <div class="grid gap-4 sm:grid-cols-2">
+    <NumberField id="points" label={$m.calculator.pointsLabel} bind:value={points} placeholder="0" />
+    <NumberField
+      id="max-points"
+      label={$m.calculator.maxPointsLabel}
+      bind:value={maxPoints}
+      placeholder="0"
+    />
+  </div>
+
+  {#if result.kind === 'ok'}
+    <ResultBar
+      label={$m.calculator.resultPrefix}
+      value={result.value}
+      {tone}
+      statusLabel={result.grade >= 4 ? $m.common.pass : $m.common.fail}
+    />
+  {:else if result.kind === 'empty'}
+    <ResultBar emptyText={$m.common.emptyState} />
+  {:else}
+    <ResultBar>
+      <p class="text-sm" style="color: var(--ctp-yellow);">
+        {result.kind === 'invalid' ? $m.calculator.invalidInput : $m.calculator.pointsOutOfRange}
+      </p>
+    </ResultBar>
+  {/if}
+
+  <div class="mt-4 flex flex-wrap items-center gap-3">
+    <RoundingSelect value={rounding} onChange={(v) => (rounding = v)} />
+    <div class="ml-auto flex items-center gap-2">
+      <ShareButton {payload} />
+      <ClearButton
+        label={$m.calculator.clearAll}
+        confirmLabel={$m.calculator.clearConfirm}
+        onConfirm={clear}
+      />
+    </div>
+  </div>
+</Page>
