@@ -1,147 +1,148 @@
 <script lang="ts">
-  import GradeRow from './GradeRow.svelte';
-  import type { GradeEntry } from '$lib/types';
-  import { recomputeParentGrade, newEntry } from '$lib/utils/grading';
-  import { numericInput, clampInput } from '$lib/actions';
   import { m } from '$lib/i18n';
-  import { PlusOutline, TrashBinOutline } from 'flowbite-svelte-icons';
+  import type { GradeEntry } from '$lib/types';
+  import { newEntry, recomputeParentGrade } from '$lib/utils/grading';
+  import NumberField from './NumberField.svelte';
+  import GradeRow from './GradeRow.svelte';
 
-  let { entry, onchange, onremove, depth = 0, removable = true }: {
+  let {
+    entry,
+    index,
+    depth = 0,
+    onRemove,
+    onDragStart,
+    onDragDrop,
+    onFocusIn
+  }: {
     entry: GradeEntry;
-    onchange: (updated: GradeEntry) => void;
-    onremove: () => void;
+    index: number;
     depth?: number;
-    removable?: boolean;
+    onRemove: () => void;
+    onDragStart: () => void;
+    onDragDrop: () => void;
+    onFocusIn?: () => void;
   } = $props();
 
-  function emit(changes: Partial<GradeEntry>) {
-    onchange({ ...entry, ...changes });
+  const isSub = $derived(depth > 0);
+  const hasSubs = $derived(entry.subgrades.length > 0);
+  const parentGrade = $derived(hasSubs ? recomputeParentGrade(entry.subgrades) : '');
+
+  // Reorder state for this entry's own subgrade list.
+  let subDrag = $state<number | null>(null);
+
+  function move(list: GradeEntry[], from: number, to: number) {
+    if (from === to) return;
+    const [item] = list.splice(from, 1);
+    list.splice(to, 0, item);
   }
 
-  const MAX_DEPTH = 7;
-
-  function addSubgrade() {
-    if (depth >= MAX_DEPTH) return;
-    const subgrades = [...entry.subgrades, newEntry()];
-    const grade = recomputeParentGrade(subgrades);
-    emit({ subgrades, grade });
+  function addSub() {
+    entry.subgrades.push(newEntry());
   }
-
-  function onSubChange(index: number, updated: GradeEntry) {
-    const subgrades = entry.subgrades.map((s, i) => (i === index ? updated : s));
-    const grade = recomputeParentGrade(subgrades);
-    emit({ subgrades, grade });
-  }
-
-  function onSubRemove(index: number) {
-    const subgrades = entry.subgrades.filter((_, i) => i !== index);
-    const grade = subgrades.length > 0 ? recomputeParentGrade(subgrades) : entry.grade;
-    emit({ subgrades, grade });
-  }
-
-  let small = $state(false);
-  $effect(() => {
-    const mq = window.matchMedia('(max-width: 600px)');
-    small = mq.matches;
-    const handler = (e: MediaQueryListEvent) => { small = e.matches; };
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  });
-
-  let indent = $derived(depth * 16);
-  let treeLineLeft = $derived(indent + 6);
-
-  let gradeNum = $derived(parseFloat(entry.grade));
-  let hasSubgrades = $derived(entry.subgrades.length > 0);
-  let gradeValid = $derived(!isNaN(gradeNum));
-  let gradePassing = $derived(gradeValid && gradeNum >= 4.5);
-  let gradeBorderline = $derived(gradeValid && gradeNum >= 4.0 && gradeNum < 4.5);
-  let gradeFailing = $derived(gradeValid && gradeNum < 4.0);
 </script>
 
-<div class="flex flex-col w-full">
-  <div 
-    class="flex items-center gap-2 sm:gap-4 group/row"
-    style:padding-left="{depth > 0 ? 12 : 0}px"
+<li
+  data-row
+  class="flex flex-wrap items-center gap-2 py-1"
+  onfocusin={onFocusIn}
+  ondragover={(e) => e.preventDefault()}
+  ondrop={(e) => {
+    e.preventDefault();
+    onDragDrop();
+  }}
+>
+  <button
+    type="button"
+    class="grid size-7 shrink-0 cursor-grab touch-none place-items-center rounded text-faint hover:text-muted active:cursor-grabbing"
+    draggable="true"
+    ondragstart={onDragStart}
+    aria-label={$m.average.dragHandleTitle}
+    title={$m.average.dragHandleTitle}
   >
-    <div class="flex-grow flex items-center gap-2 sm:gap-4">
-      <!-- Name -->
-      <div class="flex-grow min-w-0 hidden sm:block">
-        <input
-          type="text"
-          class="input input-bordered input-sm w-full bg-ctp-mantle border-ctp-surface1 focus:border-ctp-lavender focus:outline-none px-2 font-medium text-ctp-text placeholder:text-ctp-overlay0 transition-all rounded-xl"
-          placeholder={$m.gradeRow.placeholderName}
-          value={entry.name}
-          oninput={(e) => emit({ name: e.currentTarget.value })}
-        />
-      </div>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <circle cx="9" cy="6" r="1.6" /><circle cx="15" cy="6" r="1.6" />
+      <circle cx="9" cy="12" r="1.6" /><circle cx="15" cy="12" r="1.6" />
+      <circle cx="9" cy="18" r="1.6" /><circle cx="15" cy="18" r="1.6" />
+    </svg>
+  </button>
 
-      <!-- Grade -->
-      <div class="w-20 sm:w-48 flex-shrink-0">
-        <input
-          type="text"
-          class="input input-bordered input-sm w-full bg-ctp-mantle border-ctp-surface1 focus:border-ctp-lavender focus:outline-none transition-all text-center font-semibold rounded-xl font-mono"
-          class:bg-ctp-surface0={hasSubgrades}
-          class:opacity-50={hasSubgrades}
-          class:border-ctp-green={gradePassing}
-          class:border-ctp-yellow={gradeBorderline}
-          class:border-ctp-red={gradeFailing}
-          inputmode="decimal"
-          placeholder={small ? $m.gradeRow.placeholderGradeShort : $m.gradeRow.placeholderGrade}
-          value={entry.grade}
-          readonly={hasSubgrades}
-          use:numericInput
-          use:clampInput={{ min: 1, max: 6, decimals: 2, oncommit: (v) => !hasSubgrades && emit({ grade: v, weight: entry.weight === '' && v !== '' ? '100' : entry.weight }) }}
-        />
-      </div>
+  <input
+    class="field-input min-w-0 flex-1 basis-40"
+    bind:value={entry.name}
+    placeholder={$m.gradeRow.placeholderName}
+    autocomplete="off"
+  />
 
-      <!-- Weight -->
-      <div class="w-28 sm:w-44 flex-shrink-0 flex items-center gap-1 bg-ctp-mantle px-2 py-1 rounded-xl border border-ctp-surface1 focus-within:border-ctp-lavender transition-all">
-        <input
-          type="text"
-          class="bg-transparent border-none focus:outline-none w-full text-right font-semibold text-ctp-text text-sm font-mono"
-          inputmode="decimal"
-          placeholder={small ? $m.gradeRow.placeholderWeightShort : $m.gradeRow.placeholderWeight}
-          value={entry.weight}
-          use:numericInput
-          use:clampInput={{ min: 0, max: 100, oncommit: (v) => emit({ weight: v }) }}
-        />
-        <span class="text-[10px] font-semibold text-ctp-overlay1">%</span>
-      </div>
-    </div>
+  {#if hasSubs}
+    <input
+      class="field-input tnum w-20 shrink-0 text-muted"
+      value={parentGrade || '—'}
+      disabled
+      aria-label={$m.gradeRow.placeholderGrade}
+    />
+  {:else}
+    <NumberField
+      class="w-20 shrink-0"
+      bind:value={entry.grade}
+      min={1}
+      max={6}
+      placeholder={isSub ? $m.gradeRow.placeholderGradeShort : $m.gradeRow.placeholderGrade}
+      ariaLabel={$m.gradeRow.placeholderGrade}
+    />
+  {/if}
 
-    <!-- Actions -->
-    <div class="flex items-center gap-1 opacity-100 sm:opacity-0 group-hover/row:opacity-100 transition-opacity">
+  <NumberField
+    class="w-20 shrink-0"
+    bind:value={entry.weight}
+    min={0}
+    placeholder={isSub ? $m.gradeRow.placeholderWeightShort : $m.gradeRow.placeholderWeight}
+    ariaLabel={$m.gradeRow.placeholderWeight}
+  />
+
+  <div class="flex shrink-0 items-center">
+    {#if depth < 4}
       <button
         type="button"
-        class="btn btn-ghost btn-circle btn-xs text-ctp-lavender hover:bg-ctp-lavender/10"
-        class:invisible={depth >= MAX_DEPTH}
-        onclick={addSubgrade}
+        class="grid size-8 place-items-center rounded text-faint hover:bg-surface hover:text-accent"
+        onclick={addSub}
         title={$m.gradeRow.addSubgrade}
+        aria-label={$m.gradeRow.addSubgrade}
       >
-        <PlusOutline class="w-4 h-4" />
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <path d="M12 5v14M5 12h14" />
+        </svg>
       </button>
-      <button 
-        type="button" 
-        class="btn btn-ghost btn-circle btn-xs text-ctp-overlay1 hover:text-ctp-red hover:bg-ctp-red/10"
-        onclick={onremove}
-        disabled={!removable}
-      >
-        <TrashBinOutline class="w-3.5 h-3.5" />
-      </button>
-    </div>
+    {/if}
+    <button
+      type="button"
+      class="grid size-8 place-items-center rounded text-faint hover:bg-surface hover:text-fail"
+      onclick={onRemove}
+      title={$m.common.close}
+      aria-label={$m.common.close}
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path d="M18 6 6 18M6 6l12 12" />
+      </svg>
+    </button>
   </div>
+</li>
 
-  {#if hasSubgrades}
-    <div class="mt-2 ml-4 border-l border-ctp-surface1 pl-2 space-y-2 py-1">
+{#if hasSubs}
+  <li class="ml-3 border-l border-line pl-3">
+    <ul>
       {#each entry.subgrades as sub, i (sub.id)}
         <GradeRow
           entry={sub}
-          onchange={(updated) => onSubChange(i, updated)}
-          onremove={() => onSubRemove(i)}
+          index={i}
           depth={depth + 1}
+          onRemove={() => entry.subgrades.splice(i, 1)}
+          onDragStart={() => (subDrag = i)}
+          onDragDrop={() => {
+            if (subDrag !== null) move(entry.subgrades, subDrag, i);
+            subDrag = null;
+          }}
         />
       {/each}
-    </div>
-  {/if}
-</div>
+    </ul>
+  </li>
+{/if}

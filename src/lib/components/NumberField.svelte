@@ -8,7 +8,8 @@
     placeholder,
     min = 0,
     max = 1_000_000,
-    ariaLabel
+    ariaLabel,
+    class: className = ''
   }: {
     value?: string;
     label?: string;
@@ -17,10 +18,11 @@
     min?: number;
     max?: number;
     ariaLabel?: string;
+    class?: string;
   } = $props();
 </script>
 
-<div class="min-w-0">
+<div class="min-w-0 {className}">
   {#if label}<label for={id} class="field-label">{label}</label>{/if}
   <input
     {id}
