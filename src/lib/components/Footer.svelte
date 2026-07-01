@@ -33,7 +33,7 @@
         <a href="/average" class="font-semibold tracking-tight text-accent">Swiss Grades</a>
         <div class="text-xs text-muted">{$m.footer.tagline}</div>
         <a
-          href="{repo}/releases/tag/{version}"
+          href={repo}
           target="_blank"
           rel="noreferrer"
           class="mt-1 inline-flex items-center gap-2 text-[11px] text-faint transition-colors hover:text-muted"

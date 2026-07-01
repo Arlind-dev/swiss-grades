@@ -240,7 +240,7 @@
           </span>
 
           <!-- status -->
-          <div class="ml-auto shrink-0 text-right sm:ml-0 sm:w-28">
+          <div class="ml-auto shrink-0 whitespace-nowrap text-right sm:ml-0">
             {#if excluded}
               <span class="text-xs text-faint">{$m.qv.dispensed}</span>
             {:else if grade === undefined}
