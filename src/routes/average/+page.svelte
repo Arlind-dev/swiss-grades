@@ -7,12 +7,6 @@
   import type { GradeEntry, RoundingKey } from '$lib/types';
   import { computeWeightedAverage, applyRounding, newEntry } from '$lib/utils/grading';
   import {
-    formatGradesAsCsv,
-    buildCsvFilename,
-    downloadCsv,
-    hasExportableGradeEntries
-  } from '$lib/utils/export';
-  import {
     serializeGrades,
     hydrateGrades,
     readSharePayload,
@@ -49,7 +43,6 @@
   const average = $derived(computeWeightedAverage(normalized));
   const averageDisplay = $derived(average !== null ? applyRounding(average, rounding) : null);
   const averageNum = $derived(averageDisplay !== null ? parseFloat(averageDisplay) : null);
-  const canExport = $derived(hasExportableGradeEntries(normalized));
 
   const tone = $derived(
     averageNum === null ? 'neutral' : averageNum >= 4.5 ? 'pass' : averageNum >= 4 ? 'warn' : 'fail'
@@ -114,14 +107,6 @@
     focusedTop = 0;
   }
 
-  function exportCsv() {
-    const csv = formatGradesAsCsv(normalized, {
-      labels: $m.average.csv,
-      averageGrade: averageDisplay
-    });
-    downloadCsv(buildCsvFilename(), csv);
-  }
-
   const payload = (): SharePayload => ({
     v: 1,
     page: 'average',
@@ -171,9 +156,6 @@
   <div class="mt-4 flex flex-wrap items-center gap-3">
     <RoundingSelect value={rounding} onChange={(v) => (rounding = v)} />
     <div class="ml-auto flex flex-wrap items-center gap-2">
-      <Button variant="secondary" onclick={exportCsv} disabled={!canExport} title={$m.average.exportCsvTitle}>
-        {$m.average.exportCsv}
-      </Button>
       <ShareButton {payload} />
       <ClearButton label={$m.average.clearAll} confirmLabel={$m.average.clearConfirm} onConfirm={clearAll} />
     </div>

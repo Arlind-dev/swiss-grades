@@ -12,13 +12,6 @@ export function applyRounding(value: number, key: RoundingKey): string {
   return (Math.round(value * 100) / 100).toFixed(2);
 }
 
-/** Returns a CSS variable reference: green ≥ 4.5, yellow 4.0–4.49, red < 4.0. */
-export function gradeColor(grade: number): string {
-  if (grade >= 4.5) return 'var(--ctp-green)';
-  if (grade >= 4.0) return 'var(--ctp-yellow)';
-  return 'var(--ctp-red)';
-}
-
 /** Returns the raw weighted sums for entries that have a parseable grade. */
 export function computeWeightedSums(entries: GradeEntry[]): { weightSum: number; weightedSum: number } {
   let weightSum = 0;

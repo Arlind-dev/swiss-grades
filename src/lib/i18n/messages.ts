@@ -1,5 +1,3 @@
-import type { CsvExportLabels } from '$lib/utils/export';
-
 export type Locale = 'de' | 'en' | 'fr' | 'it';
 
 export interface Messages {
@@ -26,9 +24,7 @@ export interface Messages {
   gradeRow: {
     placeholderName: string;
     placeholderGrade: string;
-    placeholderGradeShort: string;
     placeholderWeight: string;
-    placeholderWeightShort: string;
     addSubgrade: string;
   };
   rounding: {
@@ -51,7 +47,6 @@ export interface Messages {
     formulaDenominator: string;
     pointsLabel: string;
     maxPointsLabel: string;
-    calculateButton: string;
     clearAll: string;
     clearConfirm: string;
     invalidInput: string;
@@ -62,16 +57,12 @@ export interface Messages {
     title: string;
     subtitle: string;
     addGrade: string;
-    exportCsv: string;
-    exportCsvTitle: string;
-    calculateButton: string;
     clearAll: string;
     clearConfirm: string;
     shortcutAdd: string;
     shortcutDelete: string;
     dragHandleTitle: string;
     resultPrefix: string;
-    csv: CsvExportLabels;
   };
   needed: {
     title: string;
@@ -80,60 +71,32 @@ export interface Messages {
     hintLink: string;
     hintSuffix: string;
     targetLabel: string;
-    futureExamsLabel: string;
     remainingExams: string;
-    examNamePlaceholder: string;
-    weightPlaceholder: string;
-    addExam: string;
-    calculateButton: string;
-    shortcutAdd: string;
-    shortcutDelete: string;
     clearAll: string;
     clearConfirm: string;
     invalidTarget: string;
     noGradesBefore: string;
     noGradesAfter: string;
     assumption: string;
-    tableExam: string;
     tableRequired: string;
     impossible: string;
     bestAttainablePrefix: string;
     alreadyAchieved: string;
-    examFallback: string;
   };
   qv: {
     title: string;
     description: string;
-    overviewFallnotenTitle: string;
-    overviewFallnotenText: string;
-    overviewWeightsTitle: string;
-    overviewWeightsText: string;
-    overviewRoundingTitle: string;
-    overviewRoundingText: string;
-    overviewIpaTitle: string;
-    overviewIpaText: string;
     presetLabel: string;
     trackLabel: string;
-    regularTrack: string;
-    bmTrack: string;
-    bmWeightNote: string;
-    componentHeader: string;
     gradeHeader: string;
-    weightHeader: string;
-    statusHeader: string;
     modeLabel: string;
     dispensed: string;
-    partGrades: string;
     showDetails: string;
     hideDetails: string;
-    fallnotePending: string;
     fallnotePass: string;
     fallnoteFail: string;
-    noFallnote: string;
     finalGrade: string;
     rawFinalGrade: string;
-    roundedFinalGrade: string;
-    missingFields: string;
     pass: string;
     fail: string;
     pending: string;
@@ -142,8 +105,6 @@ export interface Messages {
     neededGradeSuffix: string;
     neededKnownFallnoteImpossible: string;
     neededMaxImpossible: string;
-    clearAll: string;
-    clearConfirm: string;
     advisory: string;
   };
   footer: {
