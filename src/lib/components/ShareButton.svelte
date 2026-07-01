@@ -23,6 +23,16 @@
       flash('tooLarge');
       return;
     }
+    // Native share sheet first (mobile), then clipboard, then prompt.
+    if (navigator.share) {
+      try {
+        await navigator.share({ url });
+        return;
+      } catch (err) {
+        if (err instanceof DOMException && err.name === 'AbortError') return;
+        // otherwise fall through to clipboard
+      }
+    }
     try {
       await navigator.clipboard.writeText(url);
       flash('copied');

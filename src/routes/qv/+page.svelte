@@ -34,6 +34,11 @@
   const components = $derived(getTrackComponents(preset, state.track));
   const activeTrack = $derived(preset.tracks.find((t) => t.id === state.track) ?? preset.tracks[0]);
 
+  // Share of the active weight (so BM / dispensed tracks read correctly).
+  function formatWeight(pct: number): string {
+    return Number.isInteger(pct) ? String(pct) : pct.toFixed(1);
+  }
+
   function numMap(rec: Record<string, string> = {}): Record<string, number | undefined> {
     const out: Record<string, number | undefined> = {};
     for (const [k, v] of Object.entries(rec)) {
@@ -181,7 +186,12 @@
       <div class="py-3">
         <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
           <div class="w-full min-w-0 sm:w-auto sm:flex-1">
-            <div class="font-medium text-text">{c.label}</div>
+            <div
+              class="font-medium text-text {c.description ? 'cursor-help' : ''}"
+              title={c.description}
+            >
+              {c.label}
+            </div>
             {#if c.roundingNote}
               <div class="text-xs text-faint">{c.roundingNote}</div>
             {/if}
@@ -223,7 +233,11 @@
             />
           {/if}
 
-          <span class="tnum w-10 shrink-0 text-right text-sm text-muted">{c.weight}%</span>
+          <span class="tnum w-14 shrink-0 text-right text-sm text-muted">
+            {excluded || evaluation.activeWeightSum <= 0
+              ? '—'
+              : `${formatWeight((c.weight / evaluation.activeWeightSum) * 100)}%`}
+          </span>
 
           <!-- status -->
           <div class="ml-auto shrink-0 text-right sm:ml-0 sm:w-28">
