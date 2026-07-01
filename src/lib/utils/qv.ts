@@ -27,10 +27,6 @@ export function roundToTenth(value: number): number {
   return roundToStep(value, 0.1);
 }
 
-export function roundToHalf(value: number): number {
-  return roundToStep(value, 0.5);
-}
-
 export function isValidGrade(value: number | null | undefined): value is number {
   return typeof value === 'number' && !Number.isNaN(value) && value >= MIN_GRADE && value <= MAX_GRADE;
 }
@@ -160,12 +156,9 @@ export function computeNeededGrade(
   preset: QVPreset,
   track: QVTrack,
   grades: QVGradeMap,
-  componentModes: QVComponentModeMap | number = {},
-  targetGrade = PASSING_GRADE
+  componentModes: QVComponentModeMap = {}
 ): QVNeededGrade | null {
-  const resolvedComponentModes = typeof componentModes === 'number' ? {} : componentModes;
-  const resolvedTargetGrade = typeof componentModes === 'number' ? componentModes : targetGrade;
-  const activeComponents = getActiveComponents(preset, track, resolvedComponentModes);
+  const activeComponents = getActiveComponents(preset, track, componentModes);
   const missingComponents = activeComponents.filter((component) => !isValidGrade(grades[component.id]));
   if (missingComponents.length === 0) return null;
 
@@ -200,7 +193,7 @@ export function computeNeededGrade(
 
   if (missingWeight <= 0 || totalWeight <= 0) return null;
 
-  const neededForFinal = (resolvedTargetGrade * totalWeight - knownWeightedSum) / missingWeight;
+  const neededForFinal = (PASSING_GRADE * totalWeight - knownWeightedSum) / missingWeight;
   const missingFallnoteMinimum = missingComponents.some((component) => component.fallnote)
     ? PASSING_GRADE
     : MIN_GRADE;
