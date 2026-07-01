@@ -90,6 +90,7 @@ export const it: Messages = {
     hintSuffix: 'vengono inclusi automaticamente.',
     targetLabel: 'Media target',
     futureExamsLabel: 'Esami futuri',
+    remainingExams: 'Esami rimanenti',
     examNamePlaceholder: "Nome dell'esame",
     weightPlaceholder: 'Peso (%)',
     addExam: '+ Aggiungi esame',

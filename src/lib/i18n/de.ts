@@ -90,6 +90,7 @@ export const de: Messages = {
     hintSuffix: 'werden automatisch übernommen.',
     targetLabel: 'Zielschnitt',
     futureExamsLabel: 'Zukünftige Prüfungen',
+    remainingExams: 'Verbleibende Prüfungen',
     examNamePlaceholder: 'Prüfungsname',
     weightPlaceholder: 'Gewichtung (%)',
     addExam: '+ Prüfung hinzufügen',

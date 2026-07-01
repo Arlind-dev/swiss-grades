@@ -81,6 +81,7 @@ export interface Messages {
     hintSuffix: string;
     targetLabel: string;
     futureExamsLabel: string;
+    remainingExams: string;
     examNamePlaceholder: string;
     weightPlaceholder: string;
     addExam: string;

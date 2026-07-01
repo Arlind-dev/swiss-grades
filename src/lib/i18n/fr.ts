@@ -90,6 +90,7 @@ export const fr: Messages = {
     hintSuffix: 'sont incluses automatiquement.',
     targetLabel: 'Moyenne cible',
     futureExamsLabel: 'Examens futurs',
+    remainingExams: 'Examens restants',
     examNamePlaceholder: "Nom de l'examen",
     weightPlaceholder: 'Pondération (%)',
     addExam: '+ Ajouter un examen',

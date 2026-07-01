@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { onMount, tick } from 'svelte';
+  import { onMount } from 'svelte';
   import { get } from 'svelte/store';
   import { m } from '$lib/i18n';
   import { grades } from '$lib/stores/grades';
   import { settings } from '$lib/stores/settings';
-  import { needed, newExam, type FutureExam } from '$lib/stores/needed';
+  import { needed, sanitizeCount, MAX_REMAINING } from '$lib/stores/needed';
   import type { GradeEntry, RoundingKey } from '$lib/types';
   import { computeWeightedAverage, computeWeightedSums, applyRounding } from '$lib/utils/grading';
   import {
@@ -19,16 +19,15 @@
   import RoundingSelect from '$lib/components/RoundingSelect.svelte';
   import ShareButton from '$lib/components/ShareButton.svelte';
   import ClearButton from '$lib/components/ClearButton.svelte';
-  import Button from '$lib/components/Button.svelte';
   import StatusChip from '$lib/components/StatusChip.svelte';
-  import ShortcutHint from '$lib/components/ShortcutHint.svelte';
+
+  // Each remaining exam counts as one normal grade (weight 100).
+  const EXAM_WEIGHT = 100;
 
   let target = $state(get(needed).target);
-  let exams = $state<FutureExam[]>(get(needed).futureExams);
+  let count = $state(get(needed).count);
   let rounding = $state<RoundingKey>(get(settings).neededRounding);
-  let focusedExam = $state(0);
 
-  // Parent grades are derived from subgrades; normalize the pulled-in grades.
   function normalize(list: GradeEntry[]): GradeEntry[] {
     return list.map((e) => {
       const subgrades = normalize(e.subgrades);
@@ -46,19 +45,18 @@
   }
 
   const currentSums = $derived(computeWeightedSums(normalize($grades)));
-  const futureWeightSum = $derived(
-    exams.reduce((sum, e) => {
-      const w = parseFloat(e.weight);
-      return sum + (isNaN(w) || w <= 0 ? 100 : w);
-    }, 0)
-  );
+  const futureWeightSum = $derived(count * EXAM_WEIGHT);
 
   $effect(() => {
-    needed.set({ target, futureExams: exams });
+    needed.set({ target, count });
   });
   $effect(() => {
     settings.update((s) => ({ ...s, neededRounding: rounding }));
   });
+
+  function setCount(n: number) {
+    count = sanitizeCount(n);
+  }
 
   type Result =
     | { kind: 'noGrades' }
@@ -71,7 +69,6 @@
     if (currentSums.weightSum === 0) return { kind: 'noGrades' };
     const t = parseFloat(target);
     if (isNaN(t) || t < 1 || t > 6) return { kind: 'invalidTarget' };
-    if (futureWeightSum <= 0) return { kind: 'invalidTarget' };
 
     const totalWeight = currentSums.weightSum + futureWeightSum;
     const g = (t * totalWeight - currentSums.weightedSum) / futureWeightSum;
@@ -84,46 +81,9 @@
     return { kind: 'ok', grade: applyRounding(g, rounding) };
   });
 
-  async function focusExam(i: number) {
-    await tick();
-    const rows = document.querySelectorAll<HTMLElement>('#exam-rows > li');
-    const el = rows[Math.max(0, Math.min(i, rows.length - 1))];
-    el?.querySelector<HTMLInputElement>('input')?.focus();
-  }
-
-  function addExam() {
-    exams.push(newExam());
-    focusedExam = exams.length - 1;
-    focusExam(focusedExam);
-  }
-
-  function removeExam(i: number) {
-    exams.splice(i, 1);
-    focusedExam = Math.max(0, Math.min(focusedExam, exams.length - 1));
-  }
-
-  function removeFocused() {
-    if (exams.length === 0) return;
-    const i = Math.min(focusedExam, exams.length - 1);
-    removeExam(i);
-    if (exams.length) focusExam(focusedExam);
-  }
-
-  function onKeydown(e: KeyboardEvent) {
-    if (!(e.ctrlKey || e.metaKey)) return;
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      addExam();
-    } else if (e.key === 'Delete' || (e.metaKey && e.key === 'Backspace')) {
-      e.preventDefault();
-      removeFocused();
-    }
-  }
-
   function clearAll() {
     target = '';
-    exams = [newExam()];
-    focusedExam = 0;
+    count = 1;
   }
 
   onMount(() => {
@@ -131,7 +91,7 @@
     if (shared && shared.page === 'needed') {
       grades.set(hydrateGrades(shared.grades));
       target = shared.targetAverage;
-      exams = shared.futureExams.map((e) => ({ id: crypto.randomUUID(), name: e.name, weight: e.weight }));
+      count = sanitizeCount(shared.futureExams.length || 1);
       rounding = shared.rounding;
     }
   });
@@ -141,7 +101,7 @@
     page: 'needed',
     grades: serializeGrades(normalize($grades)),
     targetAverage: target,
-    futureExams: exams.map((e) => ({ name: e.name, weight: e.weight })),
+    futureExams: Array.from({ length: count }, () => ({ name: '', weight: '' })),
     rounding
   });
 </script>
@@ -155,38 +115,52 @@
     {$m.needed.hintSuffix}
   </p>
 
-  <div class="max-w-xs">
-    <NumberField id="target" label={$m.needed.targetLabel} bind:value={target} min={1} max={6} decimals={2} placeholder="4.0" />
-  </div>
+  <div class="flex flex-wrap items-end gap-x-8 gap-y-4">
+    <div class="w-28">
+      <NumberField
+        id="target"
+        label={$m.needed.targetLabel}
+        bind:value={target}
+        min={1}
+        max={6}
+        decimals={2}
+        placeholder="4.00"
+      />
+    </div>
 
-  <h2 class="mt-6 mb-2 field-label">{$m.needed.futureExamsLabel}</h2>
-  <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-  <ul id="exam-rows" class="flex flex-col gap-2" onkeydown={onKeydown}>
-    {#each exams as exam, i (exam.id)}
-      <li class="flex items-center gap-2" onfocusin={() => (focusedExam = i)}>
-        <input
-          class="field-input hidden min-w-0 flex-1 sm:block"
-          bind:value={exam.name}
-          placeholder={$m.needed.examNamePlaceholder}
-          autocomplete="off"
-        />
-        <NumberField class="min-w-0 flex-1 sm:w-24 sm:flex-none" bind:value={exam.weight} min={1} max={100} suffix="%" ariaLabel={$m.needed.weightPlaceholder} />
+    <div>
+      <span class="field-label">{$m.needed.remainingExams}</span>
+      <div class="flex items-center gap-2">
         <button
           type="button"
-          class="grid size-8 shrink-0 place-items-center rounded text-faint hover:bg-surface hover:text-fail"
-          onclick={() => removeExam(i)}
-          title={$m.common.close}
-          aria-label={$m.common.close}
+          class="grid size-9 shrink-0 place-items-center rounded-md border border-input-line text-muted transition-colors hover:border-accent hover:text-text disabled:opacity-40"
+          onclick={() => setCount(count - 1)}
+          disabled={count <= 1}
+          aria-label="−"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-            <path d="M18 6 6 18M6 6l12 12" />
-          </svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14" /></svg>
         </button>
-      </li>
-    {/each}
-  </ul>
-  <div class="mt-2">
-    <Button variant="ghost" onclick={addExam}>{$m.needed.addExam}</Button>
+        <input
+          class="field-input tnum w-14 text-center"
+          value={count}
+          inputmode="numeric"
+          aria-label={$m.needed.remainingExams}
+          oninput={(e) => {
+            const n = parseInt(e.currentTarget.value, 10);
+            if (Number.isFinite(n)) setCount(n);
+          }}
+        />
+        <button
+          type="button"
+          class="grid size-9 shrink-0 place-items-center rounded-md border border-input-line text-muted transition-colors hover:border-accent hover:text-text disabled:opacity-40"
+          onclick={() => setCount(count + 1)}
+          disabled={count >= MAX_REMAINING}
+          aria-label="+"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+        </button>
+      </div>
+    </div>
   </div>
 
   <ResultBar>
@@ -206,23 +180,11 @@
         </p>
       </div>
     {:else}
-      <div class="flex flex-col gap-3">
-        <table class="w-full text-sm">
-          <thead>
-            <tr class="text-left text-xs text-muted">
-              <th class="pb-1 font-medium">{$m.needed.tableExam}</th>
-              <th class="pb-1 text-right font-medium">{$m.needed.tableRequired}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each exams as exam, i (exam.id)}
-              <tr class="border-t border-line/70">
-                <td class="py-1.5">{exam.name || `${$m.needed.examFallback} ${i + 1}`}</td>
-                <td class="tnum py-1.5 text-right font-medium">{result.grade}</td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
+      <div class="flex flex-col gap-1">
+        <div class="flex items-baseline gap-2">
+          <span class="text-sm text-muted">{$m.needed.tableRequired}</span>
+          <span class="tnum text-lg font-semibold text-text">{result.grade}</span>
+        </div>
         <p class="text-xs text-faint">{$m.needed.assumption}</p>
       </div>
     {/if}
@@ -235,11 +197,4 @@
       <ClearButton label={$m.needed.clearAll} confirmLabel={$m.needed.clearConfirm} onConfirm={clearAll} />
     </div>
   </div>
-
-  <ShortcutHint
-    items={[
-      { keys: 'Ctrl+Enter', label: $m.needed.shortcutAdd },
-      { keys: 'Ctrl+Delete', label: $m.needed.shortcutDelete }
-    ]}
-  />
 </Page>
