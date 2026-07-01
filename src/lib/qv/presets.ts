@@ -681,7 +681,3 @@ export const QV_PRESETS: QVPreset[] = [
 export function getQVPreset(id: string): QVPreset {
   return QV_PRESETS.find((preset) => preset.id === id) ?? QV_PRESETS[0];
 }
-
-export function getQVTrack(preset: QVPreset, trackId: string): QVTrackOption {
-  return preset.tracks.find((track) => track.id === trackId) ?? preset.tracks[0];
-}

@@ -1,354 +1,185 @@
 <script lang="ts">
-  import { grades } from '$lib/stores/grades';
-  import { gradeColor, computeWeightedSums, applyRounding } from '$lib/utils/grading';
-  import { numericInput, clampInput } from '$lib/actions';
+  import { onMount } from 'svelte';
+  import { get } from 'svelte/store';
   import { m } from '$lib/i18n';
-  import { focusRowInput } from '$lib/utils/focus';
-  import { browser } from '$app/environment';
+  import { grades } from '$lib/stores/grades';
   import { settings } from '$lib/stores/settings';
+  import { needed, sanitizeCount, MAX_REMAINING } from '$lib/stores/needed';
+  import type { RoundingKey } from '$lib/types';
+  import { computeWeightedSums, applyRounding, normalizeGrades } from '$lib/utils/grading';
+  import {
+    serializeGrades,
+    hydrateGrades,
+    readSharePayload,
+    type SharePayload
+  } from '$lib/utils/share';
+  import Page from '$lib/components/Page.svelte';
+  import NumberField from '$lib/components/NumberField.svelte';
+  import ResultBar from '$lib/components/ResultBar.svelte';
   import RoundingSelect from '$lib/components/RoundingSelect.svelte';
   import ShareButton from '$lib/components/ShareButton.svelte';
-  import { STORAGE_KEYS } from '$lib/storage-keys';
-  import { onMount } from 'svelte';
-  import { clearShareParam, createShareUrl, hydrateGrades, readSharePayload, serializeGrades } from '$lib/utils/share';
-  import { scale, fade } from 'svelte/transition';
-  import { PlusOutline, TrashBinOutline } from 'flowbite-svelte-icons';
+  import ClearButton from '$lib/components/ClearButton.svelte';
+  import StatusChip from '$lib/components/StatusChip.svelte';
 
-  const STORAGE_KEY = STORAGE_KEYS.needed;
+  // Each remaining exam counts as one normal grade (weight 100).
+  const EXAM_WEIGHT = 100;
 
-  let rounding = $state($settings.neededRounding);
-  $effect(() => { settings.update((s) => ({ ...s, neededRounding: rounding })); });
+  let target = $state(get(needed).target);
+  let count = $state(get(needed).count);
+  let rounding = $state<RoundingKey>(get(settings).neededRounding);
 
-  interface FutureExam {
-    id: string;
-    name: string;
-    weight: string;
-  }
-
-  function loadSaved() {
-    if (!browser) return null;
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) return JSON.parse(raw);
-    } catch {}
-    return null;
-  }
-
-  const saved = loadSaved();
-  let targetAverage = $state<string>(saved?.targetAverage ?? '');
-  let futureExams = $state<FutureExam[]>(
-    saved?.futureExams?.length
-      ? saved.futureExams.map((e: { name: string; weight: string }) => ({ id: crypto.randomUUID(), name: e.name, weight: e.weight || '100' }))
-      : [{ id: crypto.randomUUID(), name: '', weight: '100' }]
-  );
-
-  onMount(() => {
-    const payload = readSharePayload('needed');
-    if (payload?.page !== 'needed') return;
-
-    grades.set(hydrateGrades(payload.grades));
-    targetAverage = payload.targetAverage;
-    futureExams = payload.futureExams.length
-      ? payload.futureExams.map((exam) => ({ id: crypto.randomUUID(), name: exam.name, weight: exam.weight || '100' }))
-      : [{ id: crypto.randomUUID(), name: '', weight: '100' }];
-    rounding = payload.rounding;
-    clearShareParam();
-  });
+  const currentSums = $derived(computeWeightedSums(normalizeGrades($grades)));
+  const futureWeightSum = $derived(count * EXAM_WEIGHT);
 
   $effect(() => {
-    if (!browser) return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        targetAverage,
-        futureExams: futureExams.map(({ name, weight }) => ({ name, weight })),
-      }));
-    } catch {}
+    needed.set({ target, count });
+  });
+  $effect(() => {
+    settings.update((s) => ({ ...s, neededRounding: rounding }));
   });
 
-  interface ExamResult {
-    name: string;
-    needed: number;
-    impossible: boolean;
-    alreadyAchieved: boolean;
+  function setCount(n: number) {
+    count = sanitizeCount(n);
   }
 
-let results = $derived.by((): ExamResult[] => {
-    const target = parseFloat(targetAverage);
-    if (isNaN(target) || target < 1 || target > 6) return [];
+  type Result =
+    | { kind: 'noGrades' }
+    | { kind: 'invalidTarget' }
+    | { kind: 'achieved' }
+    | { kind: 'impossible'; best: string }
+    | { kind: 'ok'; grade: string };
 
-    const hasGrades = $grades.some((e) => e.grade !== '' && !isNaN(parseFloat(e.grade)));
-    if (!hasGrades) return [];
+  const result = $derived.by<Result>(() => {
+    if (currentSums.weightSum === 0) return { kind: 'noGrades' };
+    const t = parseFloat(target);
+    if (isNaN(t) || t < 1 || t > 6) return { kind: 'invalidTarget' };
 
-    const { weightSum, weightedSum } = computeWeightedSums($grades);
+    const totalWeight = currentSums.weightSum + futureWeightSum;
+    const g = (t * totalWeight - currentSums.weightedSum) / futureWeightSum;
 
-    const futureWeightSum = futureExams.reduce((sum, e) => {
-      const w = parseFloat(e.weight);
-      return sum + (isNaN(w) || w <= 0 ? 100 : w);
-    }, 0);
-
-    const totalWeight = weightSum + futureWeightSum;
-    const needed = weightSum === 0 && futureWeightSum === 0
-      ? target
-      : (target * totalWeight - weightedSum) / futureWeightSum;
-
-    // impossible = even scoring 6.0 in all future exams won't reach the target after rounding
-    const rawBest = totalWeight > 0 ? (weightedSum + 6.0 * futureWeightSum) / totalWeight : 6.0;
-    const impossible = parseFloat(applyRounding(rawBest, rounding)) < target;
-    const alreadyAchieved = needed < 1.0;
-
-    return futureExams.map((exam) => ({
-      name: exam.name || $m.needed.examFallback,
-      needed,
-      impossible,
-      alreadyAchieved,
-    }));
+    if (g <= 1) return { kind: 'achieved' };
+    if (g > 6) {
+      const best = (currentSums.weightedSum + 6 * futureWeightSum) / totalWeight;
+      return { kind: 'impossible', best: applyRounding(best, rounding) };
+    }
+    return { kind: 'ok', grade: applyRounding(g, rounding) };
   });
-
-  let bestAttainable = $derived.by(() => {
-    const hasGrades = $grades.some((e) => e.grade !== '' && !isNaN(parseFloat(e.grade)));
-    if (!hasGrades) return 0;
-    const { weightSum, weightedSum } = computeWeightedSums($grades);
-    const futureWeightSum = futureExams.reduce((sum, e) => {
-      const w = parseFloat(e.weight);
-      return sum + (isNaN(w) || w <= 0 ? 100 : w);
-    }, 0);
-    const totalWeight = weightSum + futureWeightSum;
-    return totalWeight > 0 ? (weightedSum + 6.0 * futureWeightSum) / totalWeight : 6.0;
-  });
-
-  let noGradesError = $derived.by(() => {
-    const target = parseFloat(targetAverage);
-    if (isNaN(target) || target < 1 || target > 6) return false;
-    return !$grades.some((e) => e.grade !== '' && !isNaN(parseFloat(e.grade)));
-  });
-
-  let confirmClear = $state(false);
-  let confirmTimer: ReturnType<typeof setTimeout> | null = null;
 
   function clearAll() {
-    targetAverage = '';
-    futureExams = [{ id: crypto.randomUUID(), name: '', weight: '100' }];
-    if (browser) {
-      try { localStorage.removeItem(STORAGE_KEY); } catch {}
+    target = '';
+    count = 1;
+  }
+
+  onMount(() => {
+    const shared = readSharePayload('needed');
+    if (shared && shared.page === 'needed') {
+      grades.set(hydrateGrades(shared.grades));
+      target = shared.targetAverage;
+      count = sanitizeCount(shared.futureExams.length || 1);
+      rounding = shared.rounding;
     }
-  }
+  });
 
-  function handleClearAll() {
-    if (window.matchMedia('(pointer: coarse)').matches) {
-      if (confirmClear) {
-        confirmClear = false;
-        if (confirmTimer) clearTimeout(confirmTimer);
-        clearAll();
-      } else {
-        confirmClear = true;
-        confirmTimer = setTimeout(() => { confirmClear = false; }, 3000);
-      }
-    } else {
-      clearAll();
-    }
-  }
-
-  function addExam() {
-    futureExams = [...futureExams, { id: crypto.randomUUID(), name: '', weight: '100' }];
-  }
-
-  function removeExam(id: string) {
-    futureExams = futureExams.filter((e) => e.id !== id);
-  }
-
-
-  let isMac = $state(false);
-  $effect(() => { if (browser) isMac = /Macintosh|Mac OS X/.test(navigator.userAgent); });
-
-  function onWindowKeydown(e: KeyboardEvent) {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-      e.preventDefault();
-      addExam();
-      setTimeout(() => focusRowInput('.future-exams', '.exam-row', futureExams.length - 1), 0);
-    }
-  }
-
-  function onExamKeydown(e: KeyboardEvent, id: string) {
-    if ((e.ctrlKey && e.key === 'Delete') || (e.metaKey && e.key === 'Backspace')) {
-      e.preventDefault();
-      if (futureExams.length > 1) {
-        const index = futureExams.findIndex((ex) => ex.id === id);
-        removeExam(id);
-        setTimeout(() => focusRowInput('.future-exams', '.exam-row', index - 1), 0);
-      }
-    }
-  }
+  const payload = (): SharePayload => ({
+    v: 1,
+    page: 'needed',
+    grades: serializeGrades(normalizeGrades($grades)),
+    targetAverage: target,
+    futureExams: Array.from({ length: count }, () => ({ name: '', weight: '' })),
+    rounding
+  });
 </script>
 
-<svelte:head><title>{$m.needed.title}</title></svelte:head>
-<svelte:window onkeydown={onWindowKeydown} />
+<svelte:head><title>{$m.needed.title} — Swiss Grades</title></svelte:head>
 
-<div class="flex flex-col gap-8">
-  <div class="text-center space-y-4">
-    <h1 class="text-4xl font-black tracking-tight text-ctp-text">{$m.needed.title}</h1>
-    <p class="text-ctp-subtext1 max-w-lg mx-auto">{$m.needed.description}</p>
-    <div class="alert bg-ctp-mantle border-ctp-surface0 shadow-sm inline-flex w-auto py-2 px-4 rounded-2xl">
-      <p class="text-xs font-medium text-ctp-subtext1">
-        {$m.needed.hint} <a href="/average" class="text-ctp-lavender font-bold hover:underline">{$m.needed.hintLink}</a> {$m.needed.hintSuffix}
-      </p>
+<Page title={$m.needed.title} subtitle={$m.needed.description}>
+  <p class="-mt-4 mb-6 text-sm text-muted">
+    {$m.needed.hint}
+    <a class="text-accent hover:underline" href="/average">{$m.needed.hintLink}</a>
+    {$m.needed.hintSuffix}
+  </p>
+
+  <div class="flex flex-wrap items-end gap-x-8 gap-y-4">
+    <div class="w-28">
+      <NumberField
+        id="target"
+        label={$m.needed.targetLabel}
+        bind:value={target}
+        min={1}
+        max={6}
+        decimals={2}
+        placeholder="4.00"
+      />
     </div>
-  </div>
 
-  <div class="card bg-ctp-mantle shadow-xl border border-ctp-surface0">
-    <div class="card-body p-6 sm:p-8">
-      <div class="flex justify-between items-center gap-4 mb-8">
-        <RoundingSelect bind:value={rounding} />
-        <ShareButton getUrl={() => createShareUrl({
-          v: 1,
-          page: 'needed',
-          grades: serializeGrades($grades),
-          targetAverage,
-          futureExams: futureExams.map(({ name, weight }) => ({ name, weight })),
-          rounding
-        })} />
-      </div>
-
-      <div class="grid grid-cols-1 gap-8">
-        <div class="form-control w-full max-w-xs mx-auto text-center">
-          <label class="label pt-0 justify-center" for="target">
-            <span class="label-text font-bold text-ctp-subtext1">{$m.needed.targetLabel}</span>
-          </label>
-          <input
-            id="target"
-            type="text"
-            class="input input-bordered w-full bg-ctp-base border-ctp-surface1 focus:border-ctp-lavender focus:outline-none transition-all text-2xl font-black text-center"
-            inputmode="decimal"
-            placeholder="4.0"
-            bind:value={targetAverage}
-            use:numericInput
-            use:clampInput={{ min: 1, max: 6, decimals: 2 }}
-          />
-        </div>
-
-        <div class="space-y-4">
-          <p class="text-xs font-black uppercase tracking-widest text-ctp-overlay1 mb-2">{$m.needed.futureExamsLabel}</p>
-          <div class="flex flex-col gap-3 future-exams">
-            {#each futureExams as exam (exam.id)}
-              <!-- svelte-ignore a11y_no_static_element_interactions -->
-              <div class="flex items-center gap-3 p-2 rounded-2xl bg-ctp-base border border-ctp-surface0 transition-all hover:border-ctp-surface1" onkeydown={(e) => onExamKeydown(e, exam.id)}>
-                <input
-                  type="text"
-                  class="input input-ghost flex-grow bg-transparent focus:bg-ctp-surface0 border-none focus:outline-none px-4 font-bold text-ctp-text"
-                  autocomplete="off"
-                  placeholder={$m.needed.examNamePlaceholder}
-                  value={exam.name}
-                  oninput={(e) => {
-                    futureExams = futureExams.map((ex) =>
-                      ex.id === exam.id ? { ...ex, name: e.currentTarget.value } : ex
-                    );
-                  }}
-                />
-                <div class="flex items-center gap-1 bg-ctp-mantle px-3 py-2 rounded-xl border border-ctp-surface0 w-28">
-                  <input
-                    type="text"
-                    class="bg-transparent border-none focus:outline-none w-full text-right font-black text-ctp-text"
-                    inputmode="decimal"
-                    placeholder={$m.needed.weightPlaceholder}
-                    bind:value={exam.weight}
-                    use:numericInput
-                    use:clampInput={{ min: 0, max: 100 }}
-                  />
-                  <span class="text-xs font-black text-ctp-overlay1">%</span>
-                </div>
-                <button
-                  type="button"
-                  class="btn btn-ghost btn-circle btn-sm text-ctp-overlay1 hover:text-ctp-red"
-                  disabled={futureExams.length === 1}
-                  onclick={() => removeExam(exam.id)}
-                  aria-label="Remove exam"
-                >✕</button>
-              </div>
-            {/each}
-          </div>
-          <button type="button" class="btn btn-outline btn-block border-ctp-surface1 text-ctp-subtext1 hover:bg-ctp-surface0" onclick={addExam}>
-            <PlusOutline class="w-4 h-4" />
-            {$m.needed.addExam}
-          </button>
-        </div>
-      </div>
-
-      <div class="card-actions justify-center mt-8 pt-6 border-t border-ctp-surface0">
-        <button 
-          type="button" 
-          class="btn btn-ghost w-full sm:w-auto px-12 transition-all" 
-          class:btn-error={confirmClear}
-          class:bg-ctp-red={confirmClear}
-          class:text-ctp-base={confirmClear}
-          class:hover:bg-ctp-surface1={!confirmClear}
-          onclick={handleClearAll}
+    <div>
+      <span class="field-label">{$m.needed.remainingExams}</span>
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          class="grid size-9 shrink-0 place-items-center rounded-md border border-input-line text-muted transition-colors hover:border-accent hover:text-text disabled:opacity-40"
+          onclick={() => setCount(count - 1)}
+          disabled={count <= 1}
+          aria-label="−"
         >
-          <TrashBinOutline class="w-5 h-5" />
-          {confirmClear ? $m.needed.clearConfirm : $m.needed.clearAll}
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14" /></svg>
+        </button>
+        <input
+          class="field-input tnum w-14 text-center"
+          value={count}
+          inputmode="numeric"
+          aria-label={$m.needed.remainingExams}
+          oninput={(e) => {
+            const n = parseInt(e.currentTarget.value, 10);
+            if (Number.isFinite(n)) setCount(n);
+          }}
+          onblur={(e) => (e.currentTarget.value = String(count))}
+        />
+        <button
+          type="button"
+          class="grid size-9 shrink-0 place-items-center rounded-md border border-input-line text-muted transition-colors hover:border-accent hover:text-text disabled:opacity-40"
+          onclick={() => setCount(count + 1)}
+          disabled={count >= MAX_REMAINING}
+          aria-label="+"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
         </button>
       </div>
-      
-      <p class="text-center text-xs font-medium text-ctp-overlay1 mt-6 opacity-60 hidden sm:block">
-        <kbd class="kbd kbd-xs bg-ctp-surface0 border-ctp-surface1">{isMac ? '⌘' : 'Ctrl'}</kbd>+<kbd class="kbd kbd-xs bg-ctp-surface0 border-ctp-surface1">Enter</kbd> {$m.needed.shortcutAdd} 
-        <span class="mx-2 opacity-30">|</span>
-        <kbd class="kbd kbd-xs bg-ctp-surface0 border-ctp-surface1">{isMac ? '⌘' : 'Ctrl'}</kbd>+<kbd class="kbd kbd-xs bg-ctp-surface0 border-ctp-surface1">{isMac ? '⌫' : 'Del'}</kbd> {$m.needed.shortcutDelete}
-      </p>
     </div>
   </div>
 
-  {#if noGradesError}
-    <div class="alert alert-error bg-ctp-red/10 border-ctp-red text-ctp-red rounded-2xl shadow-lg" transition:fade>
-      <span class="text-sm font-bold">
-        {$m.needed.noGradesBefore}<a href="/average" class="underline mx-1">{$m.nav.average}</a>{$m.needed.noGradesAfter}
-      </span>
-    </div>
-  {/if}
-
-  {#if results.length > 0}
-    <div class="space-y-6" transition:fade>
-      <div class="flex flex-col sm:flex-row justify-between items-end gap-4 px-4">
-        <p class="text-xs font-black uppercase tracking-widest text-ctp-overlay1 italic">{$m.needed.assumption}</p>
-        <div class="flex items-center gap-4 p-4 rounded-2xl bg-ctp-mantle border border-ctp-surface0 shadow-xl">
-          <span class="text-xs font-black uppercase tracking-widest text-ctp-subtext1">{$m.needed.bestAttainablePrefix}</span>
-          <span 
-            class="text-3xl font-black tabular-nums"
-            style:color={gradeColor(bestAttainable)}
-          >
-            {applyRounding(bestAttainable, '2')}
-          </span>
+  <ResultBar>
+    {#if result.kind === 'noGrades'}
+      <p class="text-sm text-muted">
+        {$m.needed.noGradesBefore}<a class="text-accent hover:underline" href="/average">{$m.needed.hintLink}</a>{$m.needed.noGradesAfter}
+      </p>
+    {:else if result.kind === 'invalidTarget'}
+      <p class="text-sm" style="color: var(--ctp-yellow);">{$m.needed.invalidTarget}</p>
+    {:else if result.kind === 'achieved'}
+      <StatusChip tone="pass" label={$m.needed.alreadyAchieved} />
+    {:else if result.kind === 'impossible'}
+      <div class="flex flex-col gap-2">
+        <StatusChip tone="fail" label={$m.needed.impossible} />
+        <p class="text-sm text-muted">
+          {$m.needed.bestAttainablePrefix}<span class="tnum font-medium text-text">{result.best}</span>
+        </p>
+      </div>
+    {:else}
+      <div class="flex flex-col gap-1">
+        <div class="flex items-baseline gap-2">
+          <span class="text-sm text-muted">{$m.needed.tableRequired}</span>
+          <span class="tnum text-lg font-semibold text-text">{result.grade}</span>
         </div>
+        <p class="text-xs text-faint">{$m.needed.assumption}</p>
       </div>
-      
-      <div class="card bg-ctp-mantle shadow-2xl border-2 border-ctp-surface0 overflow-hidden">
-        <table class="table table-lg w-full">
-          <thead class="bg-ctp-surface0/50">
-            <tr class="border-ctp-surface0">
-              <th class="text-ctp-overlay1 font-black uppercase tracking-widest text-xs">{$m.needed.tableExam}</th>
-              <th class="text-ctp-overlay1 font-black uppercase tracking-widest text-xs text-right">{$m.needed.tableRequired}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each results as r}
-              <tr class="border-ctp-surface0 hover:bg-ctp-base/30 transition-colors">
-                <td class="font-bold text-ctp-text">{r.name}</td>
-                <td class="text-right">
-                  {#if r.impossible}
-                    <span class="badge badge-error bg-ctp-red text-ctp-base font-black px-3 py-3 border-none">{$m.needed.impossible}</span>
-                  {:else if r.alreadyAchieved}
-                    <span class="badge badge-success bg-ctp-green text-ctp-base font-black px-3 py-3 border-none">{$m.needed.alreadyAchieved}</span>
-                  {:else}
-                    <span 
-                      class="text-4xl font-black tabular-nums tracking-tighter"
-                      style:color={gradeColor(Math.min(r.needed, 6.0))}
-                    >
-                      {applyRounding(Math.min(r.needed, 6.0), '2')}
-                    </span>
-                  {/if}
-                </td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      </div>
+    {/if}
+  </ResultBar>
+
+  <div class="mt-4 flex flex-wrap items-center gap-3">
+    <RoundingSelect value={rounding} onChange={(v) => (rounding = v)} />
+    <div class="ml-auto flex items-center gap-2">
+      <ShareButton {payload} />
+      <ClearButton label={$m.needed.clearAll} confirmLabel={$m.needed.clearConfirm} onConfirm={clearAll} />
     </div>
-  {/if}
-</div>
+  </div>
+</Page>

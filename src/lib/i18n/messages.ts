@@ -1,12 +1,21 @@
-import type { CsvExportLabels } from '$lib/utils/export';
-
 export type Locale = 'de' | 'en' | 'fr' | 'it';
 
 export interface Messages {
   common: {
     close: string;
+    pass: string;
+    fail: string;
+    emptyState: string;
+    clearAll: string;
+    clearConfirm: string;
   };
   nav: {
+    calculator: string;
+    average: string;
+    needed: string;
+    qv: string;
+  };
+  navShort: {
     calculator: string;
     average: string;
     needed: string;
@@ -15,9 +24,7 @@ export interface Messages {
   gradeRow: {
     placeholderName: string;
     placeholderGrade: string;
-    placeholderGradeShort: string;
     placeholderWeight: string;
-    placeholderWeightShort: string;
     addSubgrade: string;
   };
   rounding: {
@@ -34,12 +41,12 @@ export interface Messages {
   };
   calculator: {
     title: string;
+    subtitle: string;
     formulaLabel: string;
     formulaNumerator: string;
     formulaDenominator: string;
     pointsLabel: string;
     maxPointsLabel: string;
-    calculateButton: string;
     clearAll: string;
     clearConfirm: string;
     invalidInput: string;
@@ -48,17 +55,14 @@ export interface Messages {
   };
   average: {
     title: string;
+    subtitle: string;
     addGrade: string;
-    exportCsv: string;
-    exportCsvTitle: string;
-    calculateButton: string;
     clearAll: string;
     clearConfirm: string;
     shortcutAdd: string;
     shortcutDelete: string;
     dragHandleTitle: string;
     resultPrefix: string;
-    csv: CsvExportLabels;
   };
   needed: {
     title: string;
@@ -67,59 +71,32 @@ export interface Messages {
     hintLink: string;
     hintSuffix: string;
     targetLabel: string;
-    futureExamsLabel: string;
-    examNamePlaceholder: string;
-    weightPlaceholder: string;
-    addExam: string;
-    calculateButton: string;
-    shortcutAdd: string;
-    shortcutDelete: string;
+    remainingExams: string;
     clearAll: string;
     clearConfirm: string;
     invalidTarget: string;
     noGradesBefore: string;
     noGradesAfter: string;
     assumption: string;
-    tableExam: string;
     tableRequired: string;
     impossible: string;
     bestAttainablePrefix: string;
     alreadyAchieved: string;
-    examFallback: string;
   };
   qv: {
     title: string;
     description: string;
-    overviewFallnotenTitle: string;
-    overviewFallnotenText: string;
-    overviewWeightsTitle: string;
-    overviewWeightsText: string;
-    overviewRoundingTitle: string;
-    overviewRoundingText: string;
-    overviewIpaTitle: string;
-    overviewIpaText: string;
     presetLabel: string;
     trackLabel: string;
-    regularTrack: string;
-    bmTrack: string;
-    bmWeightNote: string;
-    componentHeader: string;
     gradeHeader: string;
-    weightHeader: string;
-    statusHeader: string;
     modeLabel: string;
     dispensed: string;
-    partGrades: string;
     showDetails: string;
     hideDetails: string;
-    fallnotePending: string;
     fallnotePass: string;
     fallnoteFail: string;
-    noFallnote: string;
     finalGrade: string;
     rawFinalGrade: string;
-    roundedFinalGrade: string;
-    missingFields: string;
     pass: string;
     fail: string;
     pending: string;
@@ -128,8 +105,14 @@ export interface Messages {
     neededGradeSuffix: string;
     neededKnownFallnoteImpossible: string;
     neededMaxImpossible: string;
-    clearAll: string;
-    clearConfirm: string;
     advisory: string;
+  };
+  footer: {
+    tagline: string;
+    tools: string;
+    project: string;
+    source: string;
+    changelog: string;
+    license: string;
   };
 }

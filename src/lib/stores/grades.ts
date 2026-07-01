@@ -7,7 +7,7 @@ import { STORAGE_KEYS } from '$lib/storage-keys';
 const STORAGE_KEY = STORAGE_KEYS.grades;
 
 function loadInitial(): GradeEntry[] {
-  if (!browser) return Array.from({ length: 10 }, newEntry);
+  if (!browser) return Array.from({ length: 5 }, newEntry);
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
@@ -17,12 +17,11 @@ function loadInitial(): GradeEntry[] {
   } catch {
     // corrupted storage — fall through to default
   }
-  return Array.from({ length: 10 }, newEntry);
+  return Array.from({ length: 5 }, newEntry);
 }
 
 export const grades = writable<GradeEntry[]>(loadInitial());
 
-// Persist every change to localStorage
 if (browser) {
   grades.subscribe((value) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(value));

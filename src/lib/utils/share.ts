@@ -72,6 +72,13 @@ function sanitizeText(value: unknown): string | null {
   return value;
 }
 
+/** A shared leaf grade must be empty or a real 1–6 mark; reject e.g. "9". */
+function isGradeInRange(grade: string): boolean {
+  if (grade === '') return true;
+  const n = parseFloat(grade);
+  return isNaN(n) || (n >= 1 && n <= 6);
+}
+
 function isMeaningfulSharedGrade(entry: SharedGradeEntry): boolean {
   return Boolean(entry.name || entry.grade || entry.weight || entry.subgrades.length);
 }
@@ -91,6 +98,7 @@ function sanitizeSharedGrade(value: unknown, depth: number): SharedGradeEntry | 
 
   const subgrades = sanitizeSharedGrades(value.subgrades, depth + 1);
   if (subgrades === null) return null;
+  if (subgrades.length === 0 && !isGradeInRange(grade)) return null;
 
   return { name, grade, weight, subgrades };
 }
@@ -310,7 +318,7 @@ export function serializeGrades(entries: GradeEntry[]): SharedGradeEntry[] {
 
 export function hydrateGrades(entries: SharedGradeEntry[]): GradeEntry[] {
   const hydrated = entries.map(hydrateGrade);
-  return hydrated.length ? hydrated : Array.from({ length: 10 }, newEntry);
+  return hydrated.length ? hydrated : Array.from({ length: 5 }, newEntry);
 }
 
 export function createShareUrl(payload: SharePayload): string {
@@ -349,7 +357,9 @@ export function readSharePayload(expectedPage: SharePage): SharePayload | null {
   try {
     const parsed = JSON.parse(decodeBase64Url(encoded)) as unknown;
     const payload = sanitizePayload(parsed, expectedPage);
-    if (!payload) clearShareParam();
+    // Drop the param either way: a good payload is now in state, so a refresh
+    // must not re-apply it over the user's later edits.
+    clearShareParam();
     return payload;
   } catch {
     clearShareParam();

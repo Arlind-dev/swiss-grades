@@ -15,9 +15,6 @@ const buildDate = new Date().toISOString().slice(0, 10);
 
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit()],
-	optimizeDeps: {
-		exclude: ['flowbite-svelte-icons']
-	},
 	define: {
 		__APP_VERSION__: JSON.stringify(`v${pkg.version}`),
 		__APP_COMMIT__: JSON.stringify(commit),

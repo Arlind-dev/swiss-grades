@@ -7,13 +7,15 @@ A Swiss grade calculator built with SvelteKit.
 ## Features
 
 - **Grade Calculator:** convert points to a Swiss grade using the formula `(Points × 5 / Max points) + 1`
-- **Grade Average:** calculate a weighted average across multiple subjects with optional sub-grades, drag-to-reorder, and CSV export
-- **Required Grade:** find out what grade you need in future exams to reach a target average
+- **Grade Average:** weighted average across subjects with optional sub-grades and drag-to-reorder
+- **Required Grade:** find the grade you need across your remaining exams to reach a target average
+- **Final Grade (QV):** the final qualification (Qualifikationsverfahren) grade for common EFZ apprenticeships — per-preset weighted components, eliminatory fall grades, and pass/fail
+- Share any calculation via a link or the native share sheet
 - Configurable rounding (2 decimal, 1 decimal, 0.5, 0.25)
-- Available in German, English, French, Italian, Albanian, Somali, Russian, and Turkish
+- Available in German, English, French, and Italian
 - Light / dark theme
 - Fully responsive, mobile-friendly UI
-- Keyboard shortcuts (`Ctrl+Enter` to add, `Ctrl+Delete` to remove)
+- Keyboard shortcuts (`Ctrl/Cmd+Enter` to add a grade, `Ctrl/Cmd+Delete` to remove)
 
 ## Docker
 
