@@ -1,3 +1,5 @@
+## [2.0.0](https://github.com/Arlind-dev/swiss-grades/compare/v1.16.0...v2.0.0) (2026-07-01)
+
 ## [1.16.0](https://github.com/Arlind-dev/swiss-grades/compare/v1.15.0...v1.16.0) (2026-05-19)
 
 ### Features
