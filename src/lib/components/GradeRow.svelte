@@ -140,6 +140,9 @@
           <path d="M12 5v14M5 12h14" />
         </svg>
       </button>
+    {:else}
+      <!-- Keep the column width so the weight field doesn't shift when + is gone. -->
+      <div class="size-8" aria-hidden="true"></div>
     {/if}
     <button
       type="button"
