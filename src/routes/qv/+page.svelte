@@ -363,13 +363,17 @@
     </dl>
   {/if}
 
-  <p class="mt-6 text-xs text-faint">
-    {$m.qv.advisory}
-    {#each preset.sources as src, i (src.href)}<a
-        class="text-faint underline hover:text-muted"
-        href={src.href}
-        target="_blank"
-        rel="noreferrer">{src.label}</a
-      >{#if i < preset.sources.length - 1}, {/if}{/each}
-  </p>
+  <div class="mt-6 text-xs text-faint">
+    <p>{$m.qv.advisory}</p>
+    <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1.5">
+      {#each preset.sources as src (src.href)}
+        <a
+          class="text-faint underline underline-offset-2 transition-colors hover:text-muted"
+          href={src.href}
+          target="_blank"
+          rel="noreferrer">{src.label}</a
+        >
+      {/each}
+    </div>
+  </div>
 </Page>
