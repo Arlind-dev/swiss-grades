@@ -156,7 +156,7 @@
   </p>
 
   <div class="max-w-xs">
-    <NumberField id="target" label={$m.needed.targetLabel} bind:value={target} min={1} max={6} placeholder="4.0" />
+    <NumberField id="target" label={$m.needed.targetLabel} bind:value={target} min={1} max={6} decimals={2} placeholder="4.0" />
   </div>
 
   <h2 class="mt-6 mb-2 field-label">{$m.needed.futureExamsLabel}</h2>
@@ -165,12 +165,12 @@
     {#each exams as exam, i (exam.id)}
       <li class="flex items-center gap-2" onfocusin={() => (focusedExam = i)}>
         <input
-          class="field-input min-w-0 flex-1"
+          class="field-input hidden min-w-0 flex-1 sm:block"
           bind:value={exam.name}
           placeholder={$m.needed.examNamePlaceholder}
           autocomplete="off"
         />
-        <NumberField class="w-24 shrink-0" bind:value={exam.weight} min={1} max={100} suffix="%" ariaLabel={$m.needed.weightPlaceholder} />
+        <NumberField class="min-w-0 flex-1 sm:w-24 sm:flex-none" bind:value={exam.weight} min={1} max={100} suffix="%" ariaLabel={$m.needed.weightPlaceholder} />
         <button
           type="button"
           class="grid size-8 shrink-0 place-items-center rounded text-faint hover:bg-surface hover:text-fail"

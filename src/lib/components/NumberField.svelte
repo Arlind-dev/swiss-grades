@@ -8,6 +8,7 @@
     placeholder,
     min = 0,
     max = 1_000_000,
+    decimals,
     ariaLabel,
     suffix,
     class: className = ''
@@ -18,6 +19,7 @@
     placeholder?: string;
     min?: number;
     max?: number;
+    decimals?: number;
     ariaLabel?: string;
     suffix?: string;
     class?: string;
@@ -36,7 +38,7 @@
       autocomplete="off"
       bind:value
       use:numericInput
-      use:clampInput={{ min, max }}
+      use:clampInput={{ min, max, decimals }}
     />
     {#if suffix}
       <span

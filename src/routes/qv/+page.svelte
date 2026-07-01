@@ -229,7 +229,7 @@
               autocomplete="off"
               aria-label={c.label}
               use:numericInput
-              use:clampInput={{ min: 1, max: 6 }}
+              use:clampInput={{ min: 1, max: 6, decimals: 2 }}
             />
           {/if}
 
@@ -287,7 +287,7 @@
                     autocomplete="off"
                     aria-label={d.label}
                     use:numericInput
-                    use:clampInput={{ min: 1, max: 6 }}
+                    use:clampInput={{ min: 1, max: 6, decimals: 2 }}
                   />
                 </label>
               {/each}

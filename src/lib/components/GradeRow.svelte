@@ -1,7 +1,7 @@
 <script lang="ts">
   import { m } from '$lib/i18n';
   import type { GradeEntry } from '$lib/types';
-  import { newEntry, recomputeParentGrade } from '$lib/utils/grading';
+  import { newEntry } from '$lib/utils/grading';
   import NumberField from './NumberField.svelte';
   import GradeRow from './GradeRow.svelte';
 
@@ -25,7 +25,32 @@
 
   const isSub = $derived(depth > 0);
   const hasSubs = $derived(entry.subgrades.length > 0);
-  const parentGrade = $derived(hasSubs ? recomputeParentGrade(entry.subgrades) : '');
+
+  // Recursively resolve a node's grade so deep nests propagate up (layer 4 -> 1):
+  // a leaf uses its typed grade; a parent is the weighted average of its children.
+  function resolveGrade(e: GradeEntry): number | null {
+    if (e.subgrades.length === 0) {
+      const g = parseFloat(e.grade);
+      return isNaN(g) ? null : g;
+    }
+    let weighted = 0;
+    let weightSum = 0;
+    for (const child of e.subgrades) {
+      const cg = resolveGrade(child);
+      if (cg === null) continue;
+      const wv = parseFloat(child.weight);
+      const w = isNaN(wv) || wv <= 0 ? 100 : wv;
+      weighted += cg * w;
+      weightSum += w;
+    }
+    return weightSum > 0 ? weighted / weightSum : null;
+  }
+
+  const parentGrade = $derived.by(() => {
+    if (!hasSubs) return '';
+    const g = resolveGrade(entry);
+    return g !== null ? (Math.round(g * 100) / 100).toFixed(2) : '';
+  });
 
   // Reorder state for this entry's own subgrade list.
   let subDrag = $state<number | null>(null);
@@ -87,6 +112,7 @@
       bind:value={entry.grade}
       min={1}
       max={6}
+      decimals={2}
       placeholder={$m.gradeRow.placeholderGrade}
       ariaLabel={$m.gradeRow.placeholderGrade}
     />
