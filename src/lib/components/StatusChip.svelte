@@ -18,7 +18,4 @@
   );
 </script>
 
-<span class="inline-flex items-center gap-1.5 text-sm font-medium" style="color: {color};">
-  <span class="size-2 rounded-full" style="background: {color};" aria-hidden="true"></span>
-  {label}
-</span>
+<span class="text-sm font-medium" style="color: {color};">{label}</span>

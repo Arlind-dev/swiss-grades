@@ -53,7 +53,7 @@
 
     <a href="/average" class="shrink-0 font-semibold tracking-tight text-accent">Swiss Grades</a>
 
-    <nav class="hidden flex-1 items-center gap-1 sm:flex" aria-label="Tools">
+    <nav class="hidden flex-1 items-center justify-center gap-1 sm:flex" aria-label="Tools">
       {#if mounted}
         {#each items as item (item.href)}
           {@const active = $page.url.pathname === item.href}
