@@ -110,7 +110,7 @@
   }
 
   function clearAll() {
-    entries = Array.from({ length: 10 }, newEntry);
+    entries = Array.from({ length: 5 }, newEntry);
     focusedTop = 0;
   }
 

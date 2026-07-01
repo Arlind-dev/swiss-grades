@@ -310,7 +310,7 @@ export function serializeGrades(entries: GradeEntry[]): SharedGradeEntry[] {
 
 export function hydrateGrades(entries: SharedGradeEntry[]): GradeEntry[] {
   const hydrated = entries.map(hydrateGrade);
-  return hydrated.length ? hydrated : Array.from({ length: 10 }, newEntry);
+  return hydrated.length ? hydrated : Array.from({ length: 5 }, newEntry);
 }
 
 export function createShareUrl(payload: SharePayload): string {

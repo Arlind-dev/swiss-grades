@@ -170,7 +170,7 @@
           placeholder={$m.needed.examNamePlaceholder}
           autocomplete="off"
         />
-        <NumberField class="w-24 shrink-0" bind:value={exam.weight} min={1} max={100} placeholder={$m.needed.weightPlaceholder} ariaLabel={$m.needed.weightPlaceholder} />
+        <NumberField class="w-24 shrink-0" bind:value={exam.weight} min={1} max={100} suffix="%" ariaLabel={$m.needed.weightPlaceholder} />
         <button
           type="button"
           class="grid size-8 shrink-0 place-items-center rounded text-faint hover:bg-surface hover:text-fail"

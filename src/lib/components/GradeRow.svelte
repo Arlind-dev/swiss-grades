@@ -43,7 +43,7 @@
 
 <li
   data-row
-  class="flex flex-wrap items-center gap-2 py-1"
+  class="flex items-center gap-2 py-1"
   onfocusin={onFocusIn}
   ondragover={(e) => e.preventDefault()}
   ondrop={(e) => {
@@ -53,7 +53,7 @@
 >
   <button
     type="button"
-    class="grid size-7 shrink-0 cursor-grab touch-none place-items-center rounded text-faint hover:text-muted active:cursor-grabbing"
+    class="hidden size-7 shrink-0 cursor-grab touch-none place-items-center rounded text-faint hover:text-muted active:cursor-grabbing sm:grid"
     draggable="true"
     ondragstart={onDragStart}
     aria-label={$m.average.dragHandleTitle}
@@ -66,8 +66,9 @@
     </svg>
   </button>
 
+  <!-- Name is hidden on small screens so the row never wraps or overflows. -->
   <input
-    class="field-input min-w-0 flex-1 basis-40"
+    class="field-input hidden min-w-0 flex-1 basis-40 sm:block"
     bind:value={entry.name}
     placeholder={$m.gradeRow.placeholderName}
     autocomplete="off"
@@ -75,28 +76,28 @@
 
   {#if hasSubs}
     <input
-      class="field-input tnum w-20 shrink-0 text-muted"
+      class="field-input tnum min-w-0 flex-1 text-muted sm:w-44 sm:flex-none"
       value={parentGrade || '—'}
       disabled
       aria-label={$m.gradeRow.placeholderGrade}
     />
   {:else}
     <NumberField
-      class="w-20 shrink-0"
+      class="min-w-0 flex-1 sm:w-44 sm:flex-none"
       bind:value={entry.grade}
       min={1}
       max={6}
-      placeholder={$m.gradeRow.placeholderGradeShort}
+      placeholder={$m.gradeRow.placeholderGrade}
       ariaLabel={$m.gradeRow.placeholderGrade}
     />
   {/if}
 
   <NumberField
-    class="w-20 shrink-0"
+    class="w-24 shrink-0"
     bind:value={entry.weight}
     min={1}
     max={100}
-    placeholder={$m.gradeRow.placeholderWeightShort}
+    suffix="%"
     ariaLabel={$m.gradeRow.placeholderWeight}
   />
 

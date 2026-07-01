@@ -282,6 +282,7 @@
                     class="field-input tnum w-20 shrink-0"
                     value={state.detailGrades[c.id]?.[d.id] ?? ''}
                     oninput={(e) => setDetailGrade(c.id, d.id, e.currentTarget.value)}
+                    placeholder={$m.qv.gradeHeader}
                     inputmode="decimal"
                     autocomplete="off"
                     aria-label={d.label}
