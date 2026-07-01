@@ -55,7 +55,7 @@ jobs:
             @semantic-release/github
             @semantic-release/commit-analyzer
             @semantic-release/release-notes-generator
-            conventional-changelog-conventionalcommits
+            conventional-changelog-conventionalcommits@^9
             github:Arlind-dev/verified-git-commit
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
