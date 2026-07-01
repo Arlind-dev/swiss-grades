@@ -111,13 +111,15 @@ body {
   background: color-mix(in srgb, var(--accent) 28%, transparent);
 }
 
-a {
-  color: var(--accent);
-}
-
-/* Native select chevron picks up currentColor via the wrapper, not here. */
-select {
-  color: var(--text);
+/* In the base layer so text-colour utilities (text-muted, text-accent) can
+   still override link colour. */
+@layer base {
+  a {
+    color: var(--accent);
+  }
+  select {
+    color: var(--text);
+  }
 }
 
 @layer components {
@@ -191,7 +193,7 @@ select {
   }
 
   .btn-ghost {
-    color: var(--muted);
+    color: var(--text);
     background: transparent;
     border-color: var(--line);
   }

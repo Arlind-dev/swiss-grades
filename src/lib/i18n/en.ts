@@ -154,4 +154,12 @@ export const en: Messages = {
     clearConfirm: 'Sure?',
     advisory: 'Note: This calculation is advisory and not an official grade decision. Sources: ',
   },
+  footer: {
+    tagline: 'Swiss school grade tools',
+    tools: 'Tools',
+    project: 'Project',
+    source: 'Source',
+    changelog: 'Changelog',
+    license: 'License',
+  },
 };

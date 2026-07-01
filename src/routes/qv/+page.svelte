@@ -139,7 +139,7 @@
 
 <svelte:head><title>{$m.qv.title} — Swiss Grades</title></svelte:head>
 
-<Page title={$m.qv.title} subtitle={$m.qv.description} width="wide">
+<Page title={$m.qv.title} subtitle={$m.qv.description}>
   <!-- preset + track selectors -->
   <div class="grid gap-4 sm:grid-cols-2">
     <div>

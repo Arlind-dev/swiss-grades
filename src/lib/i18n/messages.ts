@@ -145,4 +145,12 @@ export interface Messages {
     clearConfirm: string;
     advisory: string;
   };
+  footer: {
+    tagline: string;
+    tools: string;
+    project: string;
+    source: string;
+    changelog: string;
+    license: string;
+  };
 }

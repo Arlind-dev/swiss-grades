@@ -154,4 +154,12 @@ export const fr: Messages = {
     clearConfirm: 'Sûr ?',
     advisory: "Remarque : ce calcul est indicatif et ne remplace pas une décision officielle. Sources : ",
   },
+  footer: {
+    tagline: 'Outils de notes suisses',
+    tools: 'Outils',
+    project: 'Projet',
+    source: 'Code source',
+    changelog: 'Nouveautés',
+    license: 'Licence',
+  },
 };

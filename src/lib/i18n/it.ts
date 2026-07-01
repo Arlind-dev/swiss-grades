@@ -154,4 +154,12 @@ export const it: Messages = {
     clearConfirm: 'Sicuro?',
     advisory: 'Nota: questo calcolo è indicativo e non sostituisce una decisione ufficiale. Fonti: ',
   },
+  footer: {
+    tagline: 'Strumenti per le note svizzere',
+    tools: 'Strumenti',
+    project: 'Progetto',
+    source: 'Codice sorgente',
+    changelog: 'Novità',
+    license: 'Licenza',
+  },
 };

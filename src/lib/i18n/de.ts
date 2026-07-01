@@ -154,4 +154,12 @@ export const de: Messages = {
     clearConfirm: 'Sicher?',
     advisory: 'Hinweis: Diese Berechnung ist eine Orientierung und kein offizieller Notenentscheid. Quellen: ',
   },
+  footer: {
+    tagline: 'Schweizer Notenrechner',
+    tools: 'Werkzeuge',
+    project: 'Projekt',
+    source: 'Quellcode',
+    changelog: 'Änderungen',
+    license: 'Lizenz',
+  },
 };

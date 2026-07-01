@@ -38,7 +38,7 @@
 />
 
 <header class="sticky top-0 z-30 border-b border-line bg-page/85 backdrop-blur">
-  <div class="mx-auto flex h-14 max-w-5xl items-center gap-3 px-4">
+  <div class="mx-auto flex h-14 max-w-3xl items-center gap-3 px-4">
     <button
       type="button"
       class="grid size-9 place-items-center rounded-md text-muted transition-colors hover:bg-surface hover:text-text sm:hidden"
@@ -51,7 +51,7 @@
       </svg>
     </button>
 
-    <a href="/average" class="shrink-0 font-semibold tracking-tight text-text">Swiss Grades</a>
+    <a href="/average" class="shrink-0 font-semibold tracking-tight text-accent">Swiss Grades</a>
 
     <nav class="hidden flex-1 items-center gap-1 sm:flex" aria-label="Tools">
       {#if mounted}
@@ -65,8 +65,7 @@
               ? 'bg-accent-soft font-medium text-accent'
               : 'text-muted hover:bg-surface hover:text-text'}"
           >
-            <span class="hidden lg:inline">{$m.nav[item.key]}</span>
-            <span class="lg:hidden">{$m.navShort[item.key]}</span>
+            {$m.navShort[item.key]}
           </a>
         {/each}
       {/if}
