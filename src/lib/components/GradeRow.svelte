@@ -94,7 +94,8 @@
   <NumberField
     class="w-20 shrink-0"
     bind:value={entry.weight}
-    min={0}
+    min={1}
+    max={100}
     placeholder={$m.gradeRow.placeholderWeightShort}
     ariaLabel={$m.gradeRow.placeholderWeight}
   />

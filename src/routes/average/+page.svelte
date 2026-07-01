@@ -103,7 +103,7 @@
     if (e.key === 'Enter') {
       e.preventDefault();
       addGrade();
-    } else if (e.key === 'Delete') {
+    } else if (e.key === 'Delete' || (e.metaKey && e.key === 'Backspace')) {
       e.preventDefault();
       removeFocused();
     }
