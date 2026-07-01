@@ -193,10 +193,12 @@ select {
   .btn-ghost {
     color: var(--muted);
     background: transparent;
+    border-color: var(--line);
   }
   .btn-ghost:not(:disabled):hover {
     background: var(--surface);
     color: var(--text);
+    border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
   }
 
   .btn-danger {

@@ -180,7 +180,7 @@
       {@const grade = gradeMap[c.id]}
       <div class="py-3">
         <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
-          <div class="min-w-0 flex-1">
+          <div class="w-full min-w-0 sm:w-auto sm:flex-1">
             <div class="font-medium text-text">{c.label}</div>
             {#if c.roundingNote}
               <div class="text-xs text-faint">{c.roundingNote}</div>
@@ -226,7 +226,7 @@
           <span class="tnum w-10 shrink-0 text-right text-sm text-muted">{c.weight}%</span>
 
           <!-- status -->
-          <div class="w-28 shrink-0 text-right">
+          <div class="ml-auto shrink-0 text-right sm:ml-0 sm:w-28">
             {#if excluded}
               <span class="text-xs text-faint">{$m.qv.dispensed}</span>
             {:else if grade === undefined}
@@ -242,6 +242,20 @@
         {#if details.length > 0 && !excluded}
           <div class="mt-2 flex flex-wrap items-center gap-2">
             <Button variant="ghost" onclick={() => toggleDetails(c.id)}>
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="transition-transform {expanded ? 'rotate-180' : ''}"
+                aria-hidden="true"
+              >
+                <path d="m6 9 6 6 6-6" />
+              </svg>
               {expanded ? $m.qv.hideDetails : $m.qv.showDetails}
             </Button>
           </div>
@@ -319,7 +333,7 @@
   <div class="mt-4 flex flex-wrap items-center gap-2">
     <div class="ml-auto flex items-center gap-2">
       <ShareButton {payload} />
-      <ClearButton label={$m.qv.clearAll} confirmLabel={$m.qv.clearConfirm} onConfirm={clearAll} />
+      <ClearButton label={$m.common.clearAll} confirmLabel={$m.common.clearConfirm} onConfirm={clearAll} />
     </div>
   </div>
 

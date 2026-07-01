@@ -28,8 +28,8 @@
             ? 'bg-accent-soft font-medium text-accent'
             : 'text-muted hover:bg-surface hover:text-text'}"
         >
-          <span class="hidden sm:inline">{$m.nav[item.key]}</span>
-          <span class="sm:hidden">{$m.navShort[item.key]}</span>
+          <span class="hidden md:inline">{$m.nav[item.key]}</span>
+          <span class="md:hidden">{$m.navShort[item.key]}</span>
         </a>
       {/each}
     </nav>

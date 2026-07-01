@@ -86,7 +86,7 @@
       bind:value={entry.grade}
       min={1}
       max={6}
-      placeholder={isSub ? $m.gradeRow.placeholderGradeShort : $m.gradeRow.placeholderGrade}
+      placeholder={$m.gradeRow.placeholderGradeShort}
       ariaLabel={$m.gradeRow.placeholderGrade}
     />
   {/if}
@@ -95,7 +95,7 @@
     class="w-20 shrink-0"
     bind:value={entry.weight}
     min={0}
-    placeholder={isSub ? $m.gradeRow.placeholderWeightShort : $m.gradeRow.placeholderWeight}
+    placeholder={$m.gradeRow.placeholderWeightShort}
     ariaLabel={$m.gradeRow.placeholderWeight}
   />
 
