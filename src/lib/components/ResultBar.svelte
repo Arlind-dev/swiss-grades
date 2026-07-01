@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import StatusChip from './StatusChip.svelte';
+  import { toneColor, type Tone } from '$lib/utils/grading';
 
   let {
     label,
@@ -12,21 +13,13 @@
   }: {
     label?: string;
     value?: string | null;
-    tone?: 'pass' | 'fail' | 'warn' | 'neutral';
+    tone?: Tone;
     statusLabel?: string;
     emptyText?: string;
     children?: Snippet;
   } = $props();
 
-  const color = $derived(
-    tone === 'pass'
-      ? 'var(--ctp-green)'
-      : tone === 'fail'
-        ? 'var(--ctp-red)'
-        : tone === 'warn'
-          ? 'var(--ctp-yellow)'
-          : 'var(--text)'
-  );
+  const color = $derived(toneColor(tone, 'var(--text)'));
 </script>
 
 <section class="mt-6 rounded-lg border border-line bg-surface px-4 py-3.5" aria-live="polite">

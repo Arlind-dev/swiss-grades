@@ -4,7 +4,7 @@
  * Catppuccin token layer.
  * Light = Latte (leaning white), dark = Mocha. One accent (blue); the
  * semantic --ctp-green / --ctp-yellow / --ctp-red are reserved for
- * pass / warning / fail and are read by gradeColor() in utils/grading.ts,
+ * pass / warning / fail and are referenced by toneColor() in utils/grading.ts,
  * so their names must not change.
  */
 :root,
@@ -173,14 +173,6 @@ body {
   .btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-  }
-
-  .btn-primary {
-    background: var(--accent);
-    color: var(--accent-contrast);
-  }
-  .btn-primary:not(:disabled):hover {
-    background: var(--accent-hover);
   }
 
   .btn-secondary {

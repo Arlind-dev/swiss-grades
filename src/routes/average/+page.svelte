@@ -5,7 +5,14 @@
   import { grades } from '$lib/stores/grades';
   import { settings } from '$lib/stores/settings';
   import type { GradeEntry, RoundingKey } from '$lib/types';
-  import { computeWeightedAverage, applyRounding, newEntry, normalizeGrades } from '$lib/utils/grading';
+  import {
+    computeWeightedAverage,
+    applyRounding,
+    newEntry,
+    normalizeGrades,
+    gradeTone,
+    isPassing
+  } from '$lib/utils/grading';
   import {
     serializeGrades,
     hydrateGrades,
@@ -32,9 +39,7 @@
   const averageDisplay = $derived(average !== null ? applyRounding(average, rounding) : null);
   const averageNum = $derived(averageDisplay !== null ? parseFloat(averageDisplay) : null);
 
-  const tone = $derived(
-    averageNum === null ? 'neutral' : averageNum >= 4.5 ? 'pass' : averageNum >= 4 ? 'warn' : 'fail'
-  );
+  const tone = $derived(gradeTone(averageNum));
 
   $effect(() => {
     grades.set(normalized);
@@ -133,7 +138,7 @@
       label={$m.average.resultPrefix}
       value={averageDisplay}
       {tone}
-      statusLabel={averageNum !== null && averageNum >= 4 ? $m.common.pass : $m.common.fail}
+      statusLabel={averageNum !== null && isPassing(averageNum) ? $m.common.pass : $m.common.fail}
     />
   {:else}
     <ResultBar emptyText={$m.common.emptyState} />

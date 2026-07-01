@@ -1,6 +1,6 @@
 <script lang="ts">
   import { m } from '$lib/i18n';
-  import { createShareUrl, type SharePayload } from '$lib/utils/share';
+  import { createShareUrl, MAX_SHARE_URL_LENGTH, type SharePayload } from '$lib/utils/share';
   import Button from './Button.svelte';
 
   let { payload }: { payload: () => SharePayload } = $props();
@@ -20,6 +20,10 @@
     try {
       url = createShareUrl(payload());
     } catch {
+      flash('tooLarge');
+      return;
+    }
+    if (url.length > MAX_SHARE_URL_LENGTH) {
       flash('tooLarge');
       return;
     }
@@ -70,5 +74,5 @@
     <circle cx="18" cy="19" r="3" />
     <path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" />
   </svg>
-  {label}
+  <span aria-live="polite">{label}</span>
 </Button>

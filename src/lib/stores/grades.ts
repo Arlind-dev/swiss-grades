@@ -22,7 +22,6 @@ function loadInitial(): GradeEntry[] {
 
 export const grades = writable<GradeEntry[]>(loadInitial());
 
-// Persist every change to localStorage
 if (browser) {
   grades.subscribe((value) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(value));

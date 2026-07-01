@@ -1,21 +1,15 @@
 <script lang="ts">
+  import { toneColor, type Tone } from '$lib/utils/grading';
+
   let {
     tone = 'neutral',
     label
   }: {
-    tone?: 'pass' | 'fail' | 'warn' | 'neutral';
+    tone?: Tone;
     label: string;
   } = $props();
 
-  const color = $derived(
-    tone === 'pass'
-      ? 'var(--ctp-green)'
-      : tone === 'fail'
-        ? 'var(--ctp-red)'
-        : tone === 'warn'
-          ? 'var(--ctp-yellow)'
-          : 'var(--muted)'
-  );
+  const color = $derived(toneColor(tone));
 </script>
 
 <span class="text-sm font-medium" style="color: {color};">{label}</span>

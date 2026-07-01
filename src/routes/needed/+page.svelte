@@ -133,6 +133,7 @@
             const n = parseInt(e.currentTarget.value, 10);
             if (Number.isFinite(n)) setCount(n);
           }}
+          onblur={(e) => (e.currentTarget.value = String(count))}
         />
         <button
           type="button"

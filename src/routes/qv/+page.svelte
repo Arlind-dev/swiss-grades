@@ -39,12 +39,14 @@
     return Number.isInteger(pct) ? String(pct) : pct.toFixed(1);
   }
 
+  function toNum(v: string): number | undefined {
+    const n = parseFloat(v);
+    return isNaN(n) ? undefined : n;
+  }
+
   function numMap(rec: Record<string, string> = {}): Record<string, number | undefined> {
     const out: Record<string, number | undefined> = {};
-    for (const [k, v] of Object.entries(rec)) {
-      const n = parseFloat(v);
-      out[k] = isNaN(n) ? undefined : n;
-    }
+    for (const [k, v] of Object.entries(rec)) out[k] = toNum(v);
     return out;
   }
 
@@ -55,8 +57,7 @@
     if (state.detailEnabled[c.id] && details.length) {
       return computeComponentGrade(c, numMap(state.detailGrades[c.id]), modeId) ?? undefined;
     }
-    const n = parseFloat(state.componentGrades[c.id] ?? '');
-    return isNaN(n) ? undefined : n;
+    return toNum(state.componentGrades[c.id] ?? '');
   }
 
   const gradeMap = $derived.by(() => {
@@ -170,6 +171,9 @@
       </div>
     {/if}
   </div>
+  {#if preset.description}
+    <p class="mt-3 text-sm text-muted">{preset.description}</p>
+  {/if}
   {#if activeTrack.note}
     <p class="mt-2 text-xs text-muted">{activeTrack.note}</p>
   {/if}

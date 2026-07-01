@@ -3,7 +3,7 @@
   import { get } from 'svelte/store';
   import { m } from '$lib/i18n';
   import { settings } from '$lib/stores/settings';
-  import { calculateGradeFromPoints, applyRounding } from '$lib/utils/grading';
+  import { calculateGradeFromPoints, applyRounding, gradeTone, isPassing } from '$lib/utils/grading';
   import { readSharePayload, type SharePayload } from '$lib/utils/share';
   import type { RoundingKey } from '$lib/types';
   import Page from '$lib/components/Page.svelte';
@@ -53,15 +53,7 @@
     return { kind: 'ok', value, grade: parseFloat(value) };
   });
 
-  const tone = $derived(
-    result.kind === 'ok'
-      ? result.grade >= 4.5
-        ? 'pass'
-        : result.grade >= 4
-          ? 'warn'
-          : 'fail'
-      : 'neutral'
-  );
+  const tone = $derived(gradeTone(result.kind === 'ok' ? result.grade : null));
 
   function clear() {
     points = '';
@@ -104,7 +96,7 @@
       label={$m.calculator.resultPrefix}
       value={result.value}
       {tone}
-      statusLabel={result.grade >= 4 ? $m.common.pass : $m.common.fail}
+      statusLabel={isPassing(result.grade) ? $m.common.pass : $m.common.fail}
     />
   {:else if result.kind === 'empty'}
     <ResultBar emptyText={$m.common.emptyState} />

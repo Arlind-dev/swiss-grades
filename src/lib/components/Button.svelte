@@ -11,7 +11,7 @@
     children,
     ...rest
   }: {
-    variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
+    variant?: 'secondary' | 'ghost' | 'danger';
     type?: 'button' | 'submit';
     href?: string;
     title?: string;
