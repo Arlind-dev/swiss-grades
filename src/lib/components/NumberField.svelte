@@ -11,6 +11,7 @@
     decimals,
     ariaLabel,
     suffix,
+    commitOnBlur = false,
     class: className = ''
   }: {
     value?: string;
@@ -22,6 +23,8 @@
     decimals?: number;
     ariaLabel?: string;
     suffix?: string;
+    /** Only write the value out on blur (not on every keystroke). */
+    commitOnBlur?: boolean;
     class?: string;
   } = $props();
 </script>
@@ -36,9 +39,10 @@
       aria-label={ariaLabel}
       inputmode="decimal"
       autocomplete="off"
-      bind:value
+      {value}
+      oninput={commitOnBlur ? undefined : (e) => (value = e.currentTarget.value)}
       use:numericInput
-      use:clampInput={{ min, max, decimals }}
+      use:clampInput={{ min, max, decimals, oncommit: (v) => (value = v) }}
     />
     {#if suffix}
       <span

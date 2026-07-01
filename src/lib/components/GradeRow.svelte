@@ -113,6 +113,7 @@
       min={1}
       max={6}
       decimals={2}
+      commitOnBlur
       placeholder={$m.gradeRow.placeholderGrade}
       ariaLabel={$m.gradeRow.placeholderGrade}
     />
@@ -124,6 +125,7 @@
     min={1}
     max={100}
     suffix="%"
+    commitOnBlur
     ariaLabel={$m.gradeRow.placeholderWeight}
   />
 
