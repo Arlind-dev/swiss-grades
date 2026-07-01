@@ -1,13 +1,12 @@
 <script lang="ts">
   import { m } from '$lib/i18n';
   import type { GradeEntry } from '$lib/types';
-  import { newEntry } from '$lib/utils/grading';
+  import { newEntry, recomputeParentGrade, normalizeGrades } from '$lib/utils/grading';
   import NumberField from './NumberField.svelte';
   import GradeRow from './GradeRow.svelte';
 
   let {
     entry,
-    index,
     depth = 0,
     onRemove,
     onDragStart,
@@ -15,7 +14,6 @@
     onFocusIn
   }: {
     entry: GradeEntry;
-    index: number;
     depth?: number;
     onRemove: () => void;
     onDragStart: () => void;
@@ -23,34 +21,10 @@
     onFocusIn?: () => void;
   } = $props();
 
-  const isSub = $derived(depth > 0);
   const hasSubs = $derived(entry.subgrades.length > 0);
 
-  // Recursively resolve a node's grade so deep nests propagate up (layer 4 -> 1):
-  // a leaf uses its typed grade; a parent is the weighted average of its children.
-  function resolveGrade(e: GradeEntry): number | null {
-    if (e.subgrades.length === 0) {
-      const g = parseFloat(e.grade);
-      return isNaN(g) ? null : g;
-    }
-    let weighted = 0;
-    let weightSum = 0;
-    for (const child of e.subgrades) {
-      const cg = resolveGrade(child);
-      if (cg === null) continue;
-      const wv = parseFloat(child.weight);
-      const w = isNaN(wv) || wv <= 0 ? 100 : wv;
-      weighted += cg * w;
-      weightSum += w;
-    }
-    return weightSum > 0 ? weighted / weightSum : null;
-  }
-
-  const parentGrade = $derived.by(() => {
-    if (!hasSubs) return '';
-    const g = resolveGrade(entry);
-    return g !== null ? (Math.round(g * 100) / 100).toFixed(2) : '';
-  });
+  // Deep nests propagate up (layer 4 -> 1): normalize children, then average them.
+  const parentGrade = $derived(hasSubs ? recomputeParentGrade(normalizeGrades(entry.subgrades)) : '');
 
   // Reorder state for this entry's own subgrade list.
   let subDrag = $state<number | null>(null);
@@ -166,7 +140,6 @@
       {#each entry.subgrades as sub, i (sub.id)}
         <GradeRow
           entry={sub}
-          index={i}
           depth={depth + 1}
           onRemove={() => entry.subgrades.splice(i, 1)}
           onDragStart={() => (subDrag = i)}

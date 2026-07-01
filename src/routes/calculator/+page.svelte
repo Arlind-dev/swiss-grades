@@ -18,7 +18,6 @@
   let maxPoints = $state(init.calculatorMaxPoints);
   let rounding = $state<RoundingKey>(init.calculatorRounding);
 
-  // Persist inputs + rounding back to settings.
   $effect(() => {
     settings.update((s) => ({
       ...s,
@@ -81,7 +80,6 @@
 <svelte:head><title>{$m.calculator.title} — Swiss Grades</title></svelte:head>
 
 <Page title={$m.calculator.title} subtitle={$m.calculator.subtitle}>
-  <!-- formula -->
   <div class="mb-6 flex items-center gap-3 text-sm text-muted">
     <span>{$m.calculator.formulaLabel}</span>
     <span class="inline-flex flex-col text-center leading-tight">

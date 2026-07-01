@@ -39,6 +39,14 @@ export function recomputeParentGrade(subgrades: GradeEntry[]): string {
   return avg !== null ? (Math.round(avg * 100) / 100).toFixed(2) : '';
 }
 
+/** Recursively resolve parent grades from subgrades, leaving leaf grades as typed. */
+export function normalizeGrades(entries: GradeEntry[]): GradeEntry[] {
+  return entries.map((e) => {
+    const subgrades = normalizeGrades(e.subgrades);
+    return { ...e, subgrades, grade: subgrades.length ? recomputeParentGrade(subgrades) : e.grade };
+  });
+}
+
 /** Create a blank grade entry with a unique id. */
 export function newEntry(): GradeEntry {
   return { id: crypto.randomUUID(), name: '', grade: '', weight: '', subgrades: [] };

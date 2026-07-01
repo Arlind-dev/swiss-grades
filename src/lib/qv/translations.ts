@@ -2,8 +2,6 @@ import type { Locale } from '../i18n/messages';
 
 export type QVTranslationLocale = Exclude<Locale, 'de'>;
 
-export type QVTranslationField = 'label' | 'shortLabel' | 'fachrichtung' | 'description' | 'title' | 'text' | 'note' | 'roundingNote';
-
 type TranslationRow = readonly [de: string, en: string, fr: string, it: string];
 
 const TEXT_TRANSLATION_ROWS = [

@@ -140,7 +140,6 @@
 <svelte:head><title>{$m.qv.title} — Swiss Grades</title></svelte:head>
 
 <Page title={$m.qv.title} subtitle={$m.qv.description}>
-  <!-- preset + track selectors -->
   <div class="grid gap-4 sm:grid-cols-2">
     <div>
       <label for="qv-preset" class="field-label">{$m.qv.presetLabel}</label>
@@ -175,7 +174,6 @@
     <p class="mt-2 text-xs text-muted">{activeTrack.note}</p>
   {/if}
 
-  <!-- components -->
   <div class="mt-6 divide-y divide-line">
     {#each components as c (c.id)}
       {@const modeId = state.componentModes[c.id]}
@@ -239,7 +237,6 @@
               : `${formatWeight((c.weight / evaluation.activeWeightSum) * 100)}%`}
           </span>
 
-          <!-- status -->
           <div class="ml-auto shrink-0 whitespace-nowrap text-right sm:ml-0">
             {#if excluded}
               <span class="text-xs text-faint">{$m.qv.dispensed}</span>
@@ -298,7 +295,6 @@
     {/each}
   </div>
 
-  <!-- result -->
   <ResultBar>
     {#if evaluation.finalGrade !== null}
       <div class="flex flex-col gap-2">
@@ -352,7 +348,6 @@
     </div>
   </div>
 
-  <!-- overview / reference -->
   {#if preset.overviewItems.length}
     <dl class="mt-8 grid gap-x-6 gap-y-3 border-t border-line pt-6 text-sm sm:grid-cols-2">
       {#each preset.overviewItems as item (item.id)}

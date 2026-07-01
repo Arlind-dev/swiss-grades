@@ -28,7 +28,6 @@
     <div
       class="mx-auto grid max-w-3xl grid-cols-1 gap-8 px-4 py-10 text-center sm:grid-cols-[1fr_auto_auto] sm:gap-16 sm:text-left"
     >
-      <!-- Brand + build metadata -->
       <div class="flex flex-col items-center gap-2 sm:items-start">
         <a href="/average" class="font-semibold tracking-tight text-accent">Swiss Grades</a>
         <div class="text-xs text-muted">{$m.footer.tagline}</div>
@@ -44,7 +43,6 @@
         </a>
       </div>
 
-      <!-- Tools -->
       <nav class="flex flex-col items-center gap-2.5 sm:items-start">
         <div class={heading}>{$m.footer.tools}</div>
         {#each tools as tool (tool.href)}
@@ -52,7 +50,6 @@
         {/each}
       </nav>
 
-      <!-- Project -->
       <nav class="flex flex-col items-center gap-2.5 sm:items-start">
         <div class={heading}>{$m.footer.project}</div>
         <a href={repo} target="_blank" rel="noreferrer" class={link}>{$m.footer.source}</a>

@@ -5,7 +5,7 @@
   import { grades } from '$lib/stores/grades';
   import { settings } from '$lib/stores/settings';
   import type { GradeEntry, RoundingKey } from '$lib/types';
-  import { computeWeightedAverage, applyRounding, newEntry } from '$lib/utils/grading';
+  import { computeWeightedAverage, applyRounding, newEntry, normalizeGrades } from '$lib/utils/grading';
   import {
     serializeGrades,
     hydrateGrades,
@@ -27,19 +27,7 @@
   let topDrag = $state<number | null>(null);
 
   // Parent grades are always derived from subgrades; normalize before any use.
-  function normalize(list: GradeEntry[]): GradeEntry[] {
-    return list.map((e) => {
-      const subgrades = normalize(e.subgrades);
-      const avg = computeWeightedAverage(subgrades);
-      return {
-        ...e,
-        subgrades,
-        grade: subgrades.length ? (avg !== null ? (Math.round(avg * 100) / 100).toFixed(2) : '') : e.grade
-      };
-    });
-  }
-
-  const normalized = $derived(normalize(entries));
+  const normalized = $derived(normalizeGrades(entries));
   const average = $derived(computeWeightedAverage(normalized));
   const averageDisplay = $derived(average !== null ? applyRounding(average, rounding) : null);
   const averageNum = $derived(averageDisplay !== null ? parseFloat(averageDisplay) : null);
@@ -48,7 +36,6 @@
     averageNum === null ? 'neutral' : averageNum >= 4.5 ? 'pass' : averageNum >= 4 ? 'warn' : 'fail'
   );
 
-  // Persist normalized entries + rounding.
   $effect(() => {
     grades.set(normalized);
   });
@@ -123,7 +110,6 @@
     {#each entries as entry, i (entry.id)}
       <GradeRow
         {entry}
-        index={i}
         onFocusIn={() => (focusedTop = i)}
         onRemove={() => {
           entries.splice(i, 1);

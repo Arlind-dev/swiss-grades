@@ -103,10 +103,6 @@ function loadInitial(): QVState {
 
 export const qv = writable<QVState>(loadInitial());
 
-export function resetQV() {
-  qv.set(defaults);
-}
-
 if (browser) {
   qv.subscribe((value) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(value));

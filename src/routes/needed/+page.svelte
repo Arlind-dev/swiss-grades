@@ -5,8 +5,8 @@
   import { grades } from '$lib/stores/grades';
   import { settings } from '$lib/stores/settings';
   import { needed, sanitizeCount, MAX_REMAINING } from '$lib/stores/needed';
-  import type { GradeEntry, RoundingKey } from '$lib/types';
-  import { computeWeightedAverage, computeWeightedSums, applyRounding } from '$lib/utils/grading';
+  import type { RoundingKey } from '$lib/types';
+  import { computeWeightedSums, applyRounding, normalizeGrades } from '$lib/utils/grading';
   import {
     serializeGrades,
     hydrateGrades,
@@ -28,23 +28,7 @@
   let count = $state(get(needed).count);
   let rounding = $state<RoundingKey>(get(settings).neededRounding);
 
-  function normalize(list: GradeEntry[]): GradeEntry[] {
-    return list.map((e) => {
-      const subgrades = normalize(e.subgrades);
-      const avg = computeWeightedAverage(subgrades);
-      return {
-        ...e,
-        subgrades,
-        grade: subgrades.length
-          ? avg !== null
-            ? (Math.round(avg * 100) / 100).toFixed(2)
-            : ''
-          : e.grade
-      };
-    });
-  }
-
-  const currentSums = $derived(computeWeightedSums(normalize($grades)));
+  const currentSums = $derived(computeWeightedSums(normalizeGrades($grades)));
   const futureWeightSum = $derived(count * EXAM_WEIGHT);
 
   $effect(() => {
@@ -99,7 +83,7 @@
   const payload = (): SharePayload => ({
     v: 1,
     page: 'needed',
-    grades: serializeGrades(normalize($grades)),
+    grades: serializeGrades(normalizeGrades($grades)),
     targetAverage: target,
     futureExams: Array.from({ length: count }, () => ({ name: '', weight: '' })),
     rounding
