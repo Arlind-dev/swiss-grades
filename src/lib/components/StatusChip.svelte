@@ -18,10 +18,7 @@
   );
 </script>
 
-<span
-  class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium"
-  style="color: {color}; background: color-mix(in srgb, {color} 12%, transparent);"
->
-  <span class="size-1.5 rounded-full" style="background: {color};" aria-hidden="true"></span>
+<span class="inline-flex items-center gap-1.5 text-sm font-medium" style="color: {color};">
+  <span class="size-2 rounded-full" style="background: {color};" aria-hidden="true"></span>
   {label}
 </span>

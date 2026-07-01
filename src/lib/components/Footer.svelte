@@ -32,22 +32,16 @@
       <div class="flex flex-col items-center gap-2 sm:items-start">
         <a href="/average" class="font-semibold tracking-tight text-accent">Swiss Grades</a>
         <div class="text-xs text-muted">{$m.footer.tagline}</div>
-        <div
-          class="mt-1 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[11px] text-faint sm:justify-start"
+        <a
+          href="{repo}/releases/tag/{version}"
+          target="_blank"
+          rel="noreferrer"
+          class="mt-1 inline-flex items-center gap-2 text-[11px] text-faint transition-colors hover:text-muted"
         >
-          <a
-            href="{repo}/releases/tag/{version}"
-            target="_blank"
-            rel="noreferrer"
-            title={version}
-            class="inline-flex items-center rounded-md border border-line px-2 py-0.5 text-[10px] font-semibold tracking-wide text-muted transition-colors hover:border-accent hover:text-accent"
-          >
-            {version}
-          </a>
-          <span class="tnum opacity-70">({commit})</span>
-          <span class="size-1 rounded-full bg-line" aria-hidden="true"></span>
-          <span class="tnum opacity-70">{buildDate}</span>
-        </div>
+          <span class="font-medium">{version}</span>
+          <span class="tnum">{commit}</span>
+          <span class="tnum">{buildDate}</span>
+        </a>
       </div>
 
       <!-- Tools -->
