@@ -50,13 +50,20 @@ jobs:
         id: semantic-release
         uses: cycjimmy/semantic-release-action@v6
         with:
+          semantic_version: 25.0.5
+          # Versions are pinned and bumped by Renovate (see .github/renovate.json).
+          # conventional-changelog-conventionalcommits is held on 9.x: v10 switched to a
+          # new template engine that release-notes-generator@14 (which still bundles
+          # conventional-changelog-writer@8) can't render, yielding an empty changelog.
+          # Let it move to 10.x only once semantic-release adopts writer@9:
+          # https://github.com/semantic-release/release-notes-generator/issues/992
           extra_plugins: |
-            @semantic-release/changelog
-            @semantic-release/github
-            @semantic-release/commit-analyzer
-            @semantic-release/release-notes-generator
-            conventional-changelog-conventionalcommits@^9
-            github:Arlind-dev/verified-git-commit
+            @semantic-release/changelog@6.0.3
+            @semantic-release/github@12.0.9
+            @semantic-release/commit-analyzer@13.0.1
+            @semantic-release/release-notes-generator@14.1.1
+            conventional-changelog-conventionalcommits@9.3.1
+            github:Arlind-dev/verified-git-commit#v1.0.9
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           GIT_AUTHOR_NAME: "arlind-bot[bot]"
