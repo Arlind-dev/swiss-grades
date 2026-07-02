@@ -63,7 +63,7 @@ jobs:
             @semantic-release/commit-analyzer@13.0.1
             @semantic-release/release-notes-generator@14.1.1
             conventional-changelog-conventionalcommits@9.3.1
-            github:Arlind-dev/verified-git-commit#v1.0.9
+            github:Arlind-dev/verified-git-commit#v1.0.12
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           GIT_AUTHOR_NAME: "arlind-bot[bot]"
