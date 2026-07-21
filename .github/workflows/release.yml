@@ -58,7 +58,7 @@ jobs:
           # Let it move to 10.x only once semantic-release adopts writer@9:
           # https://github.com/semantic-release/release-notes-generator/issues/992
           extra_plugins: |
-            @semantic-release/changelog@6.0.3
+            @semantic-release/changelog@7.0.0
             @semantic-release/github@12.0.9
             @semantic-release/commit-analyzer@13.0.1
             @semantic-release/release-notes-generator@14.1.1
