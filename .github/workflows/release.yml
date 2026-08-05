@@ -50,7 +50,7 @@ jobs:
         id: semantic-release
         uses: cycjimmy/semantic-release-action@v6
         with:
-          semantic_version: 25.0.5
+          semantic_version: 25.0.9
           # Versions are pinned and bumped by Renovate (see .github/renovate.json).
           # conventional-changelog-conventionalcommits is held on 9.x: v10 switched to a
           # new template engine that release-notes-generator@14 (which still bundles
