@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   release:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
 
     permissions:
@@ -58,7 +58,7 @@ jobs:
           # Let it move to 10.x only once semantic-release adopts writer@9:
           # https://github.com/semantic-release/release-notes-generator/issues/992
           extra_plugins: |
-            @semantic-release/changelog@6.0.3
+            @semantic-release/changelog@7.0.0
             @semantic-release/github@12.0.9
             @semantic-release/commit-analyzer@13.0.1
             @semantic-release/release-notes-generator@14.1.1
@@ -72,7 +72,7 @@ jobs:
           GIT_COMMITTER_EMAIL: "${{ vars.APP_ID }}+arlind-bot[bot]@users.noreply.github.com"
 
   build:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
 
     permissions:
@@ -103,7 +103,7 @@ jobs:
           path: build/
 
   docker:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
 
     permissions:
@@ -192,7 +192,7 @@ jobs:
           retention-days: 1
 
   docker-merge:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
 
     permissions:
@@ -241,7 +241,7 @@ jobs:
             $(printf '${{ steps.image.outputs.name }}@sha256:%s ' *)
 
   cloudflare:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
 
     permissions:
